@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MatrizCostos from '../components/MatrizCostos';
 import CatalogoCeviches from '../components/CatalogoCeviches';
 import CalculadoraPedidos from '../components/CalculadoraPedidos';
@@ -7,6 +8,8 @@ import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter 
 import defaultConfig from '../config/defaultPrices.json';
 
 function AdminPage() {
+  const navigate = useNavigate();
+
   const [prices, setPrices] = useState<RawMaterialPrices>(() => {
     const saved = localStorage.getItem('rawMaterialPrices');
     return saved ? JSON.parse(saved) : defaultConfig.rawMaterials;
@@ -80,15 +83,33 @@ function AdminPage() {
       setPrices(defaultConfig.rawMaterials);
       setMarkup(defaultConfig.markup);
       setCustomPrices(defaultConfig.customPrices);
-      localStorage.clear();
+      // Clear all except authentication
+      localStorage.removeItem('rawMaterialPrices');
+      localStorage.removeItem('markup');
+      localStorage.removeItem('customPrices');
       alert('Precios reseteados a valores por defecto');
+    }
+  };
+
+  const handleLogout = () => {
+    if (confirm('¿Cerrar sesión?')) {
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('authTimestamp');
+      navigate('/login');
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 relative">
+          <button
+            onClick={handleLogout}
+            className="absolute top-0 right-0 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
+          >
+            🚪 Cerrar Sesión
+          </button>
+
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
             Gestión de Producción y Venta de Ceviches
           </h1>
