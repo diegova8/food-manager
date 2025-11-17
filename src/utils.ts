@@ -1,4 +1,4 @@
-import type { RawMaterialPrices, Ceviche, CevicheCost } from './types';
+import type { RawMaterialPrices, Ceviche } from './types';
 
 export const formatCurrency = (amount: number): string => {
   return `₡${amount.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
