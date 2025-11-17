@@ -1,0 +1,16 @@
+{
+  "rawMaterials": {
+    "pescado": 7,
+    "camaron": 10.5,
+    "pulpo": 17,
+    "piangua": 70,
+    "olores": 2,
+    "jugoLimon": 1.5,
+    "jugoNaranja": 1.1,
+    "sal": 0.84,
+    "azucar": 0.74,
+    "envase": 160
+  },
+  "markup": 2.5,
+  "customPrices": {}
+}

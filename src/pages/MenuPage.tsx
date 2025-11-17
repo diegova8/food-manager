@@ -2,37 +2,32 @@ import { useState, useMemo } from 'react';
 import MenuCeviches from '../components/MenuCeviches';
 import type { CevicheCost } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
-
-// Precios por defecto (los mismos que en Admin)
-const defaultPrices = {
-  pescado: 7,
-  camaron: 10.5,
-  pulpo: 17,
-  piangua: 70,
-  olores: 2,
-  jugoLimon: 1.5,
-  jugoNaranja: 1.1,
-  sal: 0.84,
-  azucar: 0.74,
-  envase: 160
-};
-
-const defaultMarkup = 2.5;
+import defaultConfig from '../config/defaultPrices.json';
 
 function MenuPage() {
-  // Cargar precios personalizados desde localStorage (si existen)
+  // Cargar precios desde localStorage o usar valores por defecto
+  const prices = useMemo(() => {
+    const saved = localStorage.getItem('rawMaterialPrices');
+    return saved ? JSON.parse(saved) : defaultConfig.rawMaterials;
+  }, []);
+
+  const markup = useMemo(() => {
+    const saved = localStorage.getItem('markup');
+    return saved ? parseFloat(saved) : defaultConfig.markup;
+  }, []);
+
   const [customPrices] = useState<{ [key: string]: number }>(() => {
     const saved = localStorage.getItem('customPrices');
-    return saved ? JSON.parse(saved) : {};
+    return saved ? JSON.parse(saved) : defaultConfig.customPrices;
   });
 
   const cevicheCosts = useMemo<CevicheCost[]>(() => {
     const ceviches = getCevichesList();
-    const mezclaJugoCostPerLiter = calculateMezclaJugoCostPerLiter(defaultPrices);
+    const mezclaJugoCostPerLiter = calculateMezclaJugoCostPerLiter(prices);
 
     return ceviches.map(ceviche => {
-      const costoProd = calculateCevicheCost(ceviche, defaultPrices, mezclaJugoCostPerLiter);
-      const precioVenta = costoProd * defaultMarkup;
+      const costoProd = calculateCevicheCost(ceviche, prices, mezclaJugoCostPerLiter);
+      const precioVenta = costoProd * markup;
 
       return {
         ceviche,
@@ -40,7 +35,7 @@ function MenuPage() {
         precioVenta
       };
     });
-  }, []);
+  }, [prices, markup]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
