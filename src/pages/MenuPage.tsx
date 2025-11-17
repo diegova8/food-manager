@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import MenuCeviches from '../components/MenuCeviches';
 import type { CevicheCost } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
@@ -21,7 +21,7 @@ const defaultMarkup = 2.5;
 
 function MenuPage() {
   // Cargar precios personalizados desde localStorage (si existen)
-  const [customPrices, setCustomPrices] = useState<{ [key: string]: number }>(() => {
+  const [customPrices] = useState<{ [key: string]: number }>(() => {
     const saved = localStorage.getItem('customPrices');
     return saved ? JSON.parse(saved) : {};
   });
