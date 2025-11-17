@@ -12,5 +12,21 @@
     "envase": 160
   },
   "markup": 2.5,
-  "customPrices": {}
+  "customPrices": {
+    "pescado": 7000,
+    "camaron": 10000,
+    "pulpo": 14000,
+    "piangua": 11000,
+    "pescado-camaron": 9000,
+    "pescado-pulpo": 11000,
+    "pescado-piangua": 9000,
+    "camaron-pulpo": 12000,
+    "camaron-piangua": 10000,
+    "pulpo-piangua": 12000,
+    "pescado-camaron-pulpo": 11000,
+    "pescado-camaron-piangua": 10000,
+    "pescado-pulpo-piangua": 11000,
+    "camaron-pulpo-piangua": 12000,
+    "pescado-camaron-pulpo-piangua": 12000
+  }
 }
