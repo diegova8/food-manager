@@ -206,7 +206,6 @@ function AdminPage() {
               🔄 Resetear a valores por defecto
             </button>
           </div>
-        </header>
 
             <div className="space-y-8">
               <MatrizCostos

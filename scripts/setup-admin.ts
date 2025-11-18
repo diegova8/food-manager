@@ -57,6 +57,18 @@ async function setupAdmin() {
       }
     }
 
+    // Check if email is already used by another user
+    if (email) {
+      const emailExists = await User.findOne({
+        email,
+        _id: { $ne: existingAdmin?._id }
+      });
+
+      if (emailExists) {
+        throw new Error(`Email ${email} is already registered to another user. Please use a different email.`);
+      }
+    }
+
     // Hash password
     console.log('\nHashing password...');
     const hashedPassword = await hashPassword(password);
