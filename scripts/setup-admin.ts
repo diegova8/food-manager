@@ -1,7 +1,12 @@
+import dotenv from 'dotenv';
+import { resolve } from 'path';
 import mongoose from 'mongoose';
 import { hashPassword } from '../api/lib/auth';
 import { User, Config } from '../api/lib/models';
 import defaultConfig from '../src/config/defaultPrices.json';
+
+// Load environment variables from .env.local
+dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
 async function setupAdmin() {
   try {
@@ -86,8 +91,8 @@ async function setupAdmin() {
 }
 
 // Helper para leer input del usuario
-function askQuestion(question: string): Promise<string> {
-  const readline = require('readline');
+async function askQuestion(question: string): Promise<string> {
+  const readline = await import('readline');
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout

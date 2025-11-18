@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "setup-admin": "tsx scripts/setup-admin.ts"
+    "setup-admin": "tsx --env-file=.env.local scripts/setup-admin.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.17",
