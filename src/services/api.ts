@@ -157,6 +157,38 @@ class ApiService {
     });
     return response;
   }
+
+  async getOrders(params?: { status?: string; limit?: number; offset?: number }): Promise<{
+    success: boolean;
+    orders: any[];
+    totalCount: number;
+    limit: number;
+    offset: number;
+  }> {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+    const response = await this.fetch<{
+      success: boolean;
+      orders: any[];
+      totalCount: number;
+      limit: number;
+      offset: number;
+    }>(`/orders${queryParams.toString() ? `?${queryParams.toString()}` : ''}`, {
+      method: 'GET',
+    });
+    return response;
+  }
+
+  async updateOrderStatus(orderId: string, status: string): Promise<{ success: boolean; message: string; order: any }> {
+    const response = await this.fetch<{ success: boolean; message: string; order: any }>('/orders/update-status', {
+      method: 'PUT',
+      body: JSON.stringify({ orderId, status }),
+    });
+    return response;
+  }
 }
 
 export const api = new ApiService();

@@ -3,13 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import MatrizCostos from '../components/MatrizCostos';
 import CatalogoCeviches from '../components/CatalogoCeviches';
 import CalculadoraPedidos from '../components/CalculadoraPedidos';
+import OrdersManagementPage from './OrdersManagementPage';
 import type { RawMaterialPrices, CevicheCost } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
 import { api } from '../services/api';
 import defaultConfig from '../config/defaultPrices.json';
 
+type AdminTab = 'prices' | 'orders';
+
 function AdminPage() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<AdminTab>('prices');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -141,16 +145,47 @@ function AdminPage() {
           </button>
 
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Gestión de Producción y Venta de Ceviches
+            Panel de Administración
           </h1>
           <p className="text-gray-600">
-            Sistema integral para calcular costos, precios y ganancias
+            Gestión de precios y pedidos
           </p>
           {saving && (
             <p className="text-sm text-blue-600 mt-2">
               💾 Guardando cambios...
             </p>
           )}
+        </header>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6 justify-center">
+          <button
+            onClick={() => setActiveTab('prices')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              activeTab === 'prices'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            💰 Gestión de Precios
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              activeTab === 'orders'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            📦 Pedidos
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'orders' ? (
+          <OrdersManagementPage />
+        ) : (
+          <div>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <button
               onClick={copyMenuLink}
@@ -173,26 +208,28 @@ function AdminPage() {
           </div>
         </header>
 
-        <div className="space-y-8">
-          <MatrizCostos
-            prices={prices}
-            setPrices={setPrices}
-            markup={markup}
-            setMarkup={setMarkup}
-          />
+            <div className="space-y-8">
+              <MatrizCostos
+                prices={prices}
+                setPrices={setPrices}
+                markup={markup}
+                setMarkup={setMarkup}
+              />
 
-          <CatalogoCeviches
-            cevicheCosts={cevicheCosts}
-            customPrices={customPrices}
-            setCustomPrices={setCustomPrices}
-          />
+              <CatalogoCeviches
+                cevicheCosts={cevicheCosts}
+                customPrices={customPrices}
+                setCustomPrices={setCustomPrices}
+              />
 
-          <CalculadoraPedidos cevicheCosts={cevicheCosts} customPrices={customPrices} />
-        </div>
+              <CalculadoraPedidos cevicheCosts={cevicheCosts} customPrices={customPrices} />
+            </div>
 
-        <footer className="mt-8 text-center text-sm text-gray-600">
-          <p>Sistema de Gestión de Ceviches - Todos los precios en colones (₡)</p>
-        </footer>
+            <footer className="mt-8 text-center text-sm text-gray-600">
+              <p>Sistema de Gestión de Ceviches - Todos los precios en colones (₡)</p>
+            </footer>
+          </div>
+        )}
       </div>
     </div>
   );
