@@ -189,6 +189,19 @@ class ApiService {
     });
     return response;
   }
+
+  // Email
+  async sendEmail(params: {
+    email: string;
+    subject: string;
+    html: string;
+  }): Promise<{ success: boolean; message: string; data?: { id: string } }> {
+    const response = await this.fetch<{ success: boolean; message: string; data?: { id: string } }>('/send-email', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+    return response;
+  }
 }
 
 export const api = new ApiService();
