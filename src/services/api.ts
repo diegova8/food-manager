@@ -141,6 +141,22 @@ class ApiService {
     });
     return response.config;
   }
+
+  // Orders
+  async createOrder(orderData: {
+    items: Array<{ cevicheType: string; quantity: number; price: number }>;
+    total: number;
+    personalInfo: { name: string; phone: string; email?: string };
+    deliveryMethod: string;
+    notes?: string;
+    paymentProof: string;
+  }): Promise<{ success: boolean; orderId: string; message: string }> {
+    const response = await this.fetch<{ success: boolean; orderId: string; message: string }>('/orders/create', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+    return response;
+  }
 }
 
 export const api = new ApiService();
