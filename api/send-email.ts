@@ -6,7 +6,7 @@ if (!process.env.RESEND_API_KEY) {
 }
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = 'noreply@mail.cevichedemitata.app';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@mail.cevichedemitata.app';
 
 interface SendEmailRequest {
   email: string;
