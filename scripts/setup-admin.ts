@@ -21,13 +21,14 @@ async function setupAdmin() {
     console.log('Connected to MongoDB successfully!');
 
     // Verificar si ya existe un usuario admin
-    const existingUser = await User.findOne({ username: 'admin' });
+    let existingAdmin = await User.findOne({ isAdmin: true });
 
-    if (existingUser) {
+    if (existingAdmin) {
       console.log('⚠️  Admin user already exists!');
-      console.log('Username:', existingUser.username);
+      console.log('Username:', existingAdmin.username);
+      console.log('Email:', existingAdmin.email || 'Not set');
 
-      const answer = await askQuestion('Do you want to reset the password? (yes/no): ');
+      const answer = await askQuestion('Do you want to update the admin user? (yes/no): ');
 
       if (answer.toLowerCase() !== 'yes') {
         console.log('Setup cancelled.');
@@ -35,30 +36,47 @@ async function setupAdmin() {
       }
     }
 
-    // Pedir username y password
-    const username = await askQuestion('Enter admin username (default: admin): ') || 'admin';
-    const password = await askQuestion('Enter admin password: ');
+    // Pedir información del admin
+    console.log('\n=== Admin User Setup ===\n');
 
-    if (!password || password.length < 6) {
-      throw new Error('Password must be at least 6 characters long');
+    const username = await askQuestion('Enter admin username (default: admin): ') || 'admin';
+    const password = await askQuestion('Enter admin password (min 8 characters): ');
+    const email = await askQuestion('Enter admin email (optional, for notifications): ') || '';
+    const name = await askQuestion('Enter admin name (optional): ') || 'Administrator';
+
+    // Validar password
+    if (!password || password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+
+    // Validar email si se proporcionó
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Invalid email format');
+      }
     }
 
     // Hash password
-    console.log('Hashing password...');
+    console.log('\nHashing password...');
     const hashedPassword = await hashPassword(password);
 
-    // Crear o actualizar usuario
-    if (existingUser) {
-      existingUser.password = hashedPassword;
-      existingUser.username = username;
-      existingUser.isAdmin = true;
-      existingUser.emailVerified = true; // Admin doesn't need email verification
-      await existingUser.save();
-      console.log('✅ Admin password updated successfully!');
+    // Crear o actualizar usuario admin
+    if (existingAdmin) {
+      existingAdmin.username = username;
+      existingAdmin.password = hashedPassword;
+      existingAdmin.email = email || existingAdmin.email;
+      existingAdmin.name = name || existingAdmin.name;
+      existingAdmin.isAdmin = true;
+      existingAdmin.emailVerified = true; // Admin doesn't need email verification
+      await existingAdmin.save();
+      console.log('✅ Admin user updated successfully!');
     } else {
       await User.create({
         username,
         password: hashedPassword,
+        email: email || undefined,
+        name,
         isAdmin: true,
         emailVerified: true
       });
@@ -83,9 +101,14 @@ async function setupAdmin() {
     console.log('\n=================================');
     console.log('Setup completed successfully! 🎉');
     console.log('=================================');
-    console.log('Username:', username);
-    console.log('Password: ******** (you just entered it)');
-    console.log('\nYou can now login with these credentials.');
+    console.log('Admin User Details:');
+    console.log('  Username:', username);
+    console.log('  Name:', name);
+    console.log('  Email:', email || 'Not set');
+    console.log('  Password: ******** (you just entered it)');
+    console.log('  Is Admin: true');
+    console.log('  Email Verified: true');
+    console.log('\nYou can now login at /login with these credentials.');
 
     process.exit(0);
   } catch (error) {
