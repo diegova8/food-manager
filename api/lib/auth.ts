@@ -12,6 +12,7 @@ const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días
 export interface JWTPayload {
   userId: string;
   username: string;
+  isAdmin?: boolean;
 }
 
 // Generar JWT token
