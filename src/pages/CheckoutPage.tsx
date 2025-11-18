@@ -23,7 +23,6 @@ function CheckoutPage() {
 
   // Check if user is authenticated
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
 
   // Form data
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({

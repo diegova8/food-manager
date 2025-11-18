@@ -187,24 +187,24 @@ function AdminPage() {
         ) : (
           <div>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <button
-              onClick={copyMenuLink}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-lg"
-            >
-              📋 Copiar link del menú público
-            </button>
-            <button
-              onClick={exportConfiguration}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
-            >
-              💾 Exportar configuración
-            </button>
-            <button
-              onClick={resetToDefaults}
-              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-lg"
-            >
-              🔄 Resetear a valores por defecto
-            </button>
+              <button
+                onClick={copyMenuLink}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+              >
+                📋 Copiar link del menú público
+              </button>
+              <button
+                onClick={exportConfiguration}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+              >
+                💾 Exportar configuración
+              </button>
+              <button
+                onClick={resetToDefaults}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-lg"
+              >
+                🔄 Resetear a valores por defecto
+              </button>
             </div>
 
             <div className="space-y-8">
