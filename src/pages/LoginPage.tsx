@@ -91,10 +91,19 @@ function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-sm text-gray-600">
+              ¿No tienes cuenta?{' '}
+              <a
+                href="/register"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Regístrate aquí
+              </a>
+            </p>
             <a
               href="/menu"
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-blue-600 hover:text-blue-700 block"
             >
               Ver menú público →
             </a>

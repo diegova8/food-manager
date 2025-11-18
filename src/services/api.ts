@@ -76,6 +76,32 @@ class ApiService {
     return response;
   }
 
+  async register(data: {
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+    address?: string;
+    birthday?: string;
+    dietaryPreferences?: string;
+  }): Promise<{ success: boolean; message: string; user: { id: string; email: string; name: string } }> {
+    const response = await this.fetch<{ success: boolean; message: string; user: { id: string; email: string; name: string } }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+
+    return response;
+  }
+
+  async verifyEmail(token: string): Promise<{ success: boolean; message: string }> {
+    const response = await this.fetch<{ success: boolean; message: string }>('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+
+    return response;
+  }
+
   async verifyToken(): Promise<boolean> {
     try {
       await this.fetch('/auth/verify', {

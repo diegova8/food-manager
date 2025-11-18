@@ -51,12 +51,16 @@ async function setupAdmin() {
     if (existingUser) {
       existingUser.password = hashedPassword;
       existingUser.username = username;
+      existingUser.isAdmin = true;
+      existingUser.emailVerified = true; // Admin doesn't need email verification
       await existingUser.save();
       console.log('✅ Admin password updated successfully!');
     } else {
       await User.create({
         username,
-        password: hashedPassword
+        password: hashedPassword,
+        isAdmin: true,
+        emailVerified: true
       });
       console.log('✅ Admin user created successfully!');
     }
