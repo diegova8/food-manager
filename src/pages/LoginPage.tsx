@@ -1,26 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 import logo from '../assets/logo.png';
 
-// CAMBIA ESTA CONTRASEÑA POR LA QUE QUIERAS
-const ADMIN_PASSWORD = 'admin123';
-
 function LoginPage() {
+  const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    if (password === ADMIN_PASSWORD) {
-      // Guardar token de autenticación
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('authTimestamp', Date.now().toString());
+    try {
+      await api.login(username, password);
       navigate('/admin');
-    } else {
-      setError('Contraseña incorrecta');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
       setPassword('');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,6 +42,25 @@ function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Usuario
+              </label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setError('');
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nombre de usuario"
+                autoComplete="username"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Contraseña
               </label>
@@ -53,7 +74,8 @@ function LoginPage() {
                 }}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ingresa tu contraseña"
-                autoFocus
+                autoComplete="current-password"
+                disabled={loading}
               />
               {error && (
                 <p className="mt-2 text-sm text-red-600">{error}</p>
@@ -62,9 +84,10 @@ function LoginPage() {
 
             <button
               type="submit"
-              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Iniciar Sesión
+              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </form>
 

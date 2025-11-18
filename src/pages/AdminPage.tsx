@@ -5,39 +5,53 @@ import CatalogoCeviches from '../components/CatalogoCeviches';
 import CalculadoraPedidos from '../components/CalculadoraPedidos';
 import type { RawMaterialPrices, CevicheCost } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
+import { api } from '../services/api';
 import defaultConfig from '../config/defaultPrices.json';
 
 function AdminPage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [prices, setPrices] = useState<RawMaterialPrices>(() => {
-    const saved = localStorage.getItem('rawMaterialPrices');
-    return saved ? JSON.parse(saved) : defaultConfig.rawMaterials;
-  });
+  const [prices, setPrices] = useState<RawMaterialPrices>(defaultConfig.rawMaterials);
+  const [markup, setMarkup] = useState<number>(defaultConfig.markup);
+  const [customPrices, setCustomPrices] = useState<{ [key: string]: number }>(defaultConfig.customPrices);
 
-  const [markup, setMarkup] = useState<number>(() => {
-    const saved = localStorage.getItem('markup');
-    return saved ? parseFloat(saved) : defaultConfig.markup;
-  });
-
-  // Cargar precios personalizados desde localStorage
-  const [customPrices, setCustomPrices] = useState<{ [key: string]: number }>(() => {
-    const saved = localStorage.getItem('customPrices');
-    return saved ? JSON.parse(saved) : defaultConfig.customPrices;
-  });
-
-  // Guardar todos los precios en localStorage cuando cambien
+  // Cargar configuración desde la API
   useEffect(() => {
-    localStorage.setItem('rawMaterialPrices', JSON.stringify(prices));
-  }, [prices]);
+    async function loadConfig() {
+      try {
+        const config = await api.getConfig();
+        setPrices(config.rawMaterials);
+        setMarkup(config.markup);
+        setCustomPrices(config.customPrices);
+      } catch (error) {
+        console.error('Error loading config:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadConfig();
+  }, []);
 
+  // Guardar configuración en la API cuando cambie (con debounce)
   useEffect(() => {
-    localStorage.setItem('markup', markup.toString());
-  }, [markup]);
+    if (loading) return; // No guardar durante la carga inicial
 
-  useEffect(() => {
-    localStorage.setItem('customPrices', JSON.stringify(customPrices));
-  }, [customPrices]);
+    const timeoutId = setTimeout(async () => {
+      try {
+        setSaving(true);
+        await api.updateConfig({ rawMaterials: prices, markup, customPrices });
+      } catch (error) {
+        console.error('Error saving config:', error);
+        alert('Error al guardar la configuración');
+      } finally {
+        setSaving(false);
+      }
+    }, 1000); // Guardar 1 segundo después del último cambio
+
+    return () => clearTimeout(timeoutId);
+  }, [prices, markup, customPrices, loading]);
 
   const cevicheCosts = useMemo<CevicheCost[]>(() => {
     const ceviches = getCevichesList();
@@ -78,26 +92,42 @@ function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
-  const resetToDefaults = () => {
+  const resetToDefaults = async () => {
     if (confirm('¿Estás seguro de que quieres resetear todos los precios a los valores por defecto?')) {
       setPrices(defaultConfig.rawMaterials);
       setMarkup(defaultConfig.markup);
       setCustomPrices(defaultConfig.customPrices);
-      // Clear all except authentication
-      localStorage.removeItem('rawMaterialPrices');
-      localStorage.removeItem('markup');
-      localStorage.removeItem('customPrices');
-      alert('Precios reseteados a valores por defecto');
+
+      try {
+        await api.updateConfig({
+          rawMaterials: defaultConfig.rawMaterials,
+          markup: defaultConfig.markup,
+          customPrices: defaultConfig.customPrices
+        });
+        alert('Precios reseteados a valores por defecto');
+      } catch (error) {
+        alert('Error al resetear los precios');
+      }
     }
   };
 
   const handleLogout = () => {
     if (confirm('¿Cerrar sesión?')) {
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('authTimestamp');
+      api.logout();
       navigate('/login');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-gray-600">Cargando configuración...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
@@ -116,6 +146,11 @@ function AdminPage() {
           <p className="text-gray-600">
             Sistema integral para calcular costos, precios y ganancias
           </p>
+          {saving && (
+            <p className="text-sm text-blue-600 mt-2">
+              💾 Guardando cambios...
+            </p>
+          )}
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <button
               onClick={copyMenuLink}

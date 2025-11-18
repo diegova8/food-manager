@@ -1,25 +1,33 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import MenuCeviches from '../components/MenuCeviches';
-import type { CevicheCost } from '../types';
+import type { CevicheCost, RawMaterialPrices } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
+import { api } from '../services/api';
 import defaultConfig from '../config/defaultPrices.json';
 
 function MenuPage() {
-  // Cargar precios desde localStorage o usar valores por defecto
-  const prices = useMemo(() => {
-    const saved = localStorage.getItem('rawMaterialPrices');
-    return saved ? JSON.parse(saved) : defaultConfig.rawMaterials;
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [prices, setPrices] = useState<RawMaterialPrices>(defaultConfig.rawMaterials);
+  const [markup, setMarkup] = useState<number>(defaultConfig.markup);
+  const [customPrices, setCustomPrices] = useState<{ [key: string]: number }>(defaultConfig.customPrices);
 
-  const markup = useMemo(() => {
-    const saved = localStorage.getItem('markup');
-    return saved ? parseFloat(saved) : defaultConfig.markup;
+  // Cargar configuración desde la API
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const config = await api.getConfig();
+        setPrices(config.rawMaterials);
+        setMarkup(config.markup);
+        setCustomPrices(config.customPrices);
+      } catch (error) {
+        console.error('Error loading config:', error);
+        // Usar valores por defecto si falla
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadConfig();
   }, []);
-
-  const [customPrices] = useState<{ [key: string]: number }>(() => {
-    const saved = localStorage.getItem('customPrices');
-    return saved ? JSON.parse(saved) : defaultConfig.customPrices;
-  });
 
   const cevicheCosts = useMemo<CevicheCost[]>(() => {
     const ceviches = getCevichesList();
@@ -36,6 +44,17 @@ function MenuPage() {
       };
     });
   }, [prices, markup]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-gray-600">Cargando menú...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
