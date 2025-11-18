@@ -186,7 +186,7 @@ function AdminPage() {
           <OrdersManagementPage />
         ) : (
           <div>
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
             <button
               onClick={copyMenuLink}
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-lg"
@@ -205,7 +205,7 @@ function AdminPage() {
             >
               🔄 Resetear a valores por defecto
             </button>
-          </div>
+            </div>
 
             <div className="space-y-8">
               <MatrizCostos
