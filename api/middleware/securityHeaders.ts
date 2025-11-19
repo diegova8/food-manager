@@ -11,7 +11,7 @@ import type { Handler } from './index.js';
  * - And more
  */
 
-export function withSecurityHeaders(handler: Handler<any>) {
+export function withSecurityHeaders(handler: Handler) {
   return async (req: VercelRequest, res: VercelResponse) => {
     // Prevent MIME type sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');

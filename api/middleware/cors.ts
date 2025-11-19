@@ -16,7 +16,7 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [
   'https://ceviche-manager.vercel.app'
 ];
 
-export function withCORS(handler: Handler<any>) {
+export function withCORS(handler: Handler) {
   return async (req: VercelRequest, res: VercelResponse) => {
     const origin = req.headers.origin;
 

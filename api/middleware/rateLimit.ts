@@ -27,7 +27,7 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 export function withRateLimit(config: RateLimitConfig) {
-  return (handler: Handler<any>) => {
+  return (handler: Handler) => {
     return async (req: VercelRequest, res: VercelResponse) => {
       // Get client IP
       const forwardedFor = req.headers['x-forwarded-for'];

@@ -21,14 +21,17 @@ export { withValidation } from './validation.js';
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export type Handler<T = void> = T extends void
-  ? (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse> | void | VercelResponse
-  : (req: VercelRequest, res: VercelResponse, validatedData: T) => Promise<void | VercelResponse> | void | VercelResponse;
+// Base handler type for regular endpoints (2 params)
+export type Handler = (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse> | void | VercelResponse;
 
-export type Middleware = (handler: Handler<any>) => Handler<any>;
+// Validation handler type for endpoints with validated data (3 params)
+export type ValidationHandler<T> = (req: VercelRequest, res: VercelResponse, validatedData: T) => Promise<void | VercelResponse> | void | VercelResponse;
 
-export function compose(...middlewares: Middleware[]): (handler: Handler<any>) => Handler<any> {
-  return (handler: Handler<any>): Handler<any> => {
+// Middleware accepts and returns a handler
+export type Middleware = (handler: Handler) => Handler;
+
+export function compose(...middlewares: Middleware[]): (handler: Handler) => Handler {
+  return (handler: Handler): Handler => {
     return middlewares.reduceRight((acc, middleware) => middleware(acc), handler);
   };
 }
