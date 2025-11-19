@@ -8,7 +8,7 @@ import { z } from 'zod';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import validator from 'validator';
 import { errorResponse } from '../lib/responses.js';
-import type { Handler, ValidationHandler } from './index.js';
+import type { Handler, ValidationHandler, ValidationMiddleware } from './index.js';
 
 /**
  * Sanitize an object by escaping HTML in all string values
@@ -38,7 +38,7 @@ function sanitizeObject(obj: any): any {
  * @param schema - Zod schema to validate against
  * @returns Middleware function that validates and sanitizes request body
  */
-export function withValidation<T>(schema: z.ZodSchema<T>) {
+export function withValidation<T>(schema: z.ZodSchema<T>): ValidationMiddleware<T> {
   return (handler: ValidationHandler<T>): Handler => {
     return async (req: VercelRequest, res: VercelResponse) => {
       try {

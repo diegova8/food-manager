@@ -30,6 +30,9 @@ export type ValidationHandler<T> = (req: VercelRequest, res: VercelResponse, val
 // Middleware accepts and returns a handler
 export type Middleware = (handler: Handler) => Handler;
 
+// Validation middleware accepts ValidationHandler and returns Handler
+export type ValidationMiddleware<T> = (handler: ValidationHandler<T>) => Handler;
+
 export function compose(...middlewares: Middleware[]): (handler: Handler) => Handler {
   return (handler: Handler): Handler => {
     return middlewares.reduceRight((acc, middleware) => middleware(acc), handler);
