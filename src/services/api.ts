@@ -142,6 +142,37 @@ class ApiService {
     return response.config;
   }
 
+  // File Upload
+  async uploadPaymentProof(file: File): Promise<{ url: string }> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        try {
+          const base64Data = reader.result as string;
+
+          const response = await this.fetch<{ success: boolean; data: { url: string } }>('/upload/payment-proof', {
+            method: 'POST',
+            body: JSON.stringify({
+              filename: file.name,
+              data: base64Data
+            }),
+          });
+
+          resolve({ url: response.data.url });
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
   // Orders
   async createOrder(orderData: {
     items: Array<{ cevicheType: string; quantity: number; price: number }>;

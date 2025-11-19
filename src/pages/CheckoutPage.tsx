@@ -121,40 +121,34 @@ function CheckoutPage() {
     setError('');
 
     try {
-      // Convert image to base64
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          const base64Image = reader.result as string;
+      if (!paymentProof) {
+        setError('Por favor sube el comprobante de pago');
+        setLoading(false);
+        return;
+      }
 
-          const orderData = {
-            items: items.map(item => ({
-              cevicheType: item.name,
-              quantity: item.quantity,
-              price: item.price
-            })),
-            total: getTotalPrice(),
-            personalInfo,
-            deliveryMethod,
-            notes,
-            paymentProof: base64Image
-          };
+      // Step 1: Upload payment proof image to cloud storage
+      const { url: paymentProofUrl } = await api.uploadPaymentProof(paymentProof);
 
-          // Send order to API
-          await api.createOrder(orderData);
-
-          // Clear cart and navigate to success page
-          clearCart();
-          navigate('/order-success');
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Error al procesar el pedido');
-          setLoading(false);
-        }
+      // Step 2: Create order with the image URL
+      const orderData = {
+        items: items.map(item => ({
+          cevicheType: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total: getTotalPrice(),
+        personalInfo,
+        deliveryMethod,
+        notes,
+        paymentProof: paymentProofUrl
       };
 
-      if (paymentProof) {
-        reader.readAsDataURL(paymentProof);
-      }
+      await api.createOrder(orderData);
+
+      // Clear cart and navigate to success page
+      clearCart();
+      navigate('/order-success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al procesar el pedido');
       setLoading(false);

@@ -22,7 +22,7 @@ export const createOrderSchema = z.object({
     errorMap: () => ({ message: 'Delivery method must be either "pickup" or "uber-flash"' })
   }),
   notes: z.string().max(500, 'Notes are too long').optional(),
-  paymentProof: z.string().min(1, 'Payment proof is required')
+  paymentProof: z.string().url('Payment proof must be a valid URL')
 });
 
 export const updateOrderStatusSchema = z.object({
