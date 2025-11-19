@@ -2,8 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { Order } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow PUT
   if (req.method !== 'PUT') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -54,3 +55,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default compose(
+  withCORS,
+  withSecurityHeaders,
+  withRateLimit({ maxRequests: 30, windowMs: 60 * 1000 }) // 30 per minute
+)(handler);

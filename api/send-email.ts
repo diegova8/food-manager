@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import { compose, withCORS, withSecurityHeaders, withRateLimit } from './middleware/index.js';
 
 if (!process.env.RESEND_API_KEY) {
   throw new Error('RESEND_API_KEY is not set');
@@ -14,7 +15,7 @@ interface SendEmailRequest {
   html: string;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -89,3 +90,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
+
+export default compose(
+  withCORS,
+  withSecurityHeaders,
+  withRateLimit({ maxRequests: 10, windowMs: 60 * 60 * 1000 }) // 10 emails per hour
+)(handler);

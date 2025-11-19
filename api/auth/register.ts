@@ -4,8 +4,9 @@ import connectDB from '../lib/mongodb.js';
 import { User, EmailVerification } from '../lib/models.js';
 import { hashPassword } from '../lib/auth.js';
 import { sendVerificationEmail } from '../lib/email.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -98,3 +99,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default compose(
+  withCORS,
+  withSecurityHeaders,
+  withRateLimit({ maxRequests: 3, windowMs: 60 * 60 * 1000 }) // 3 registrations per hour
+)(handler);

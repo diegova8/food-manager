@@ -2,8 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User } from '../lib/models.js';
 import { comparePassword, generateToken } from '../lib/auth.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -66,3 +67,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+// Apply middleware: CORS, Security Headers, and Rate Limiting (5 attempts per 15 minutes)
+export default compose(
+  withCORS,
+  withSecurityHeaders,
+  withRateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 5 })
+)(handler);

@@ -2,8 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { Config } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await connectDB();
 
@@ -134,3 +135,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default compose(
+  withCORS,
+  withSecurityHeaders,
+  withRateLimit({
+    maxRequests: 30,
+    windowMs: 60 * 1000, // 30 per minute for GET
+    keyGenerator: (req) => {
+      // Different rate limits for GET vs PUT
+      if (req.method === 'PUT') {
+        return `config-put-${req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'}`;
+      }
+      return `config-get-${req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'}`;
+    }
+  })
+)(handler);
