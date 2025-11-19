@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User, EmailVerification } from '../lib/models.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { verifyEmailSchema, type VerifyEmailInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: VerifyEmailInput) {
+const handler: ValidationHandler<VerifyEmailInput> = async (req: VercelRequest, res: VercelResponse, validatedData: VerifyEmailInput) => {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -53,11 +53,12 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: V
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
+
+const validatedHandler = withValidation(verifyEmailSchema)(handler);
 
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ maxRequests: 10, windowMs: 60 * 60 * 1000 }), // 10 attempts per hour
-  withValidation(verifyEmailSchema)
-)(handler);
+  withRateLimit({ maxRequests: 10, windowMs: 60 * 60 * 1000 }) // 10 attempts per hour
+)(validatedHandler);

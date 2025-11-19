@@ -2,11 +2,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User } from '../lib/models.js';
 import { comparePassword, generateToken } from '../lib/auth.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { loginSchema, type LoginInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: LoginInput) {
+const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: VercelResponse, validatedData: LoginInput) => {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -66,12 +66,13 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: L
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
 
-// Apply middleware: CORS, Security Headers, Rate Limiting, and Validation
+const validatedHandler = withValidation(loginSchema)(handler);
+
+// Apply middleware: CORS, Security Headers, Rate Limiting
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 5 }),
-  withValidation(loginSchema)
-)(handler);
+  withRateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 5 })
+)(validatedHandler);

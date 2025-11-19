@@ -4,11 +4,11 @@ import connectDB from '../lib/mongodb.js';
 import { User, EmailVerification } from '../lib/models.js';
 import { hashPassword } from '../lib/auth.js';
 import { sendVerificationEmail } from '../lib/email.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { registerSchema, type RegisterInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: RegisterInput) {
+const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res: VercelResponse, validatedData: RegisterInput) => {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -80,11 +80,12 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: R
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
+
+const validatedHandler = withValidation(registerSchema)(handler);
 
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ maxRequests: 3, windowMs: 60 * 60 * 1000 }), // 3 registrations per hour
-  withValidation(registerSchema)
-)(handler);
+  withRateLimit({ maxRequests: 3, windowMs: 60 * 60 * 1000 }) // 3 registrations per hour
+)(validatedHandler);

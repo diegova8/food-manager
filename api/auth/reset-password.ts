@@ -2,11 +2,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User } from '../lib/models.js';
 import { hashPassword } from '../lib/auth.js';
-import { compose, withCORS, withSecurityHeaders, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { resetPasswordSchema, type ResetPasswordInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: ResetPasswordInput) {
+const handler: ValidationHandler<ResetPasswordInput> = async (req: VercelRequest, res: VercelResponse, validatedData: ResetPasswordInput) => {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -40,11 +40,12 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: R
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
 
-// Apply middleware: CORS, Security Headers, and Validation
+const validatedHandler = withValidation(resetPasswordSchema)(handler);
+
+// Apply middleware: CORS, Security Headers
 export default compose(
   withCORS,
-  withSecurityHeaders,
-  withValidation(resetPasswordSchema)
-)(handler);
+  withSecurityHeaders
+)(validatedHandler);

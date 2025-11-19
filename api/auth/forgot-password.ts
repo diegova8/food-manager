@@ -3,11 +3,11 @@ import { randomBytes } from 'crypto';
 import connectDB from '../lib/mongodb.js';
 import { User } from '../lib/models.js';
 import { sendPasswordResetEmail } from '../lib/email.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: ForgotPasswordInput) {
+const handler: ValidationHandler<ForgotPasswordInput> = async (req: VercelRequest, res: VercelResponse, validatedData: ForgotPasswordInput) => {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -47,12 +47,13 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: F
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
 
-// Apply middleware: CORS, Security Headers, Rate Limiting (3 attempts per 5 minutes), and Validation
+const validatedHandler = withValidation(forgotPasswordSchema)(handler);
+
+// Apply middleware: CORS, Security Headers, Rate Limiting (3 attempts per 5 minutes)
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ windowMs: 5 * 60 * 1000, maxRequests: 3 }),
-  withValidation(forgotPasswordSchema)
-)(handler);
+  withRateLimit({ windowMs: 5 * 60 * 1000, maxRequests: 3 })
+)(validatedHandler);
