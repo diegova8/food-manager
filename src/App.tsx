@@ -27,6 +27,8 @@ function App() {
           }
         />
         <Route path="/" element={<Navigate to="/menu" replace />} />
+        {/* Catch-all route for 404 - redirect to menu */}
+        <Route path="*" element={<Navigate to="/menu" replace />} />
       </Routes>
     </Router>
   );
