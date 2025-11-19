@@ -5,12 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['@vercel/blob'] // Exclude server-only packages
-  },
-  server: {
-    fs: {
-      // Don't serve files from api/ folder
-      deny: ['**/api/**']
-    }
+    exclude: ['@vercel/blob'] // Exclude server-only packages from browser bundling
   }
 })
