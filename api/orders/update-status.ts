@@ -44,9 +44,10 @@ const handler: ValidationHandler<UpdateOrderStatusInput> = async (req: VercelReq
   }
 };
 
+const validatedHandler = withValidation(updateOrderStatusSchema)(handler);
+
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ maxRequests: 30, windowMs: 60 * 1000 }), // 30 per minute
-  withValidation(updateOrderStatusSchema)
-)(handler);
+  withRateLimit({ maxRequests: 30, windowMs: 60 * 1000 }) // 30 per minute
+)(validatedHandler);
