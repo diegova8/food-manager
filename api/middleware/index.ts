@@ -4,9 +4,9 @@
  * Convenience file to import all middleware from one place
  */
 
-export { withCORS } from './cors';
-export { withRateLimit, type RateLimitConfig } from './rateLimit';
-export { withSecurityHeaders } from './securityHeaders';
+export { withCORS } from './cors.js';
+export { withRateLimit, type RateLimitConfig } from './rateLimit.js';
+export { withSecurityHeaders } from './securityHeaders.js';
 
 /**
  * Compose multiple middleware functions
@@ -18,8 +18,8 @@ export { withSecurityHeaders } from './securityHeaders';
  *     withRateLimit({ windowMs: 60000, maxRequests: 10 })
  *   )(handler);
  */
-export function compose(...middlewares: Function[]) {
-  return (handler: Function) => {
+export function compose(...middlewares: any[]) {
+  return (handler: any) => {
     return middlewares.reduceRight((acc, middleware) => middleware(acc), handler);
   };
 }
