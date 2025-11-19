@@ -289,3 +289,92 @@ export async function sendNewOrderNotification(
     `
   });
 }
+
+export async function sendPasswordResetEmail(
+  to: string,
+  name: string,
+  resetToken: string
+): Promise<void> {
+  const resetUrl = `${APP_URL}/reset-password?token=${resetToken}`;
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: 'Restablecer contraseña - Ceviche de mi Tata',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 10px;
+              padding: 30px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .header h1 {
+              color: #2563eb;
+              margin: 0;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 30px;
+              background-color: #2563eb;
+              color: white;
+              text-decoration: none;
+              border-radius: 5px;
+              margin: 20px 0;
+              font-weight: bold;
+            }
+            .warning {
+              background-color: #fef2f2;
+              border-left: 4px solid #dc2626;
+              padding: 15px;
+              margin: 20px 0;
+            }
+            .footer {
+              margin-top: 30px;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🦐 Ceviche de mi Tata</h1>
+            </div>
+            <h2>Hola ${name},</h2>
+            <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+            <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+            <div style="text-align: center;">
+              <a href="${resetUrl}" class="button">Restablecer contraseña</a>
+            </div>
+            <p>Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:</p>
+            <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+            <div class="warning">
+              <p><strong>⚠️ Este enlace expirará en 1 hora.</strong></p>
+            </div>
+            <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este correo de forma segura. Tu contraseña actual no ha sido modificada.</p>
+            <div class="footer">
+              <p>© 2024 Ceviche de mi Tata. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  });
+}

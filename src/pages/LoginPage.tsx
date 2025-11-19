@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import logo from '../assets/logo.png';
 
@@ -80,6 +80,11 @@ function LoginPage() {
               {error && (
                 <p className="mt-2 text-sm text-red-600">{error}</p>
               )}
+              <div className="mt-2 text-right">
+                <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
             </div>
 
             <button
@@ -94,19 +99,19 @@ function LoginPage() {
           <div className="mt-6 text-center space-y-3">
             <p className="text-sm text-gray-600">
               ¿No tienes cuenta?{' '}
-              <a
-                href="/register"
+              <Link
+                to="/register"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
                 Regístrate aquí
-              </a>
+              </Link>
             </p>
-            <a
-              href="/menu"
+            <Link
+              to="/menu"
               className="text-sm text-blue-600 hover:text-blue-700 block"
             >
               Ver menú público →
-            </a>
+            </Link>
           </div>
         </div>
       </div>
