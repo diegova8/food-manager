@@ -18,8 +18,13 @@ export { withSecurityHeaders } from './securityHeaders.js';
  *     withRateLimit({ windowMs: 60000, maxRequests: 10 })
  *   )(handler);
  */
-export function compose(...middlewares: any[]) {
-  return (handler: any) => {
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+type Handler = (req: VercelRequest, res: VercelResponse) => Promise<void> | void;
+type Middleware = (handler: Handler) => Handler;
+
+export function compose(...middlewares: Middleware[]) {
+  return (handler: Handler): Handler => {
     return middlewares.reduceRight((acc, middleware) => middleware(acc), handler);
   };
 }

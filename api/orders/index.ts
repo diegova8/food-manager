@@ -28,7 +28,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const { status, limit = '50', offset = '0' } = req.query;
 
     // Build query
-    const query: any = {};
+    interface OrderQuery {
+      status?: string;
+    }
+    const query: OrderQuery = {};
     if (status && typeof status === 'string') {
       query.status = status;
     }

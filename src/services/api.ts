@@ -1,4 +1,4 @@
-import type { RawMaterialPrices } from '../types';
+import type { RawMaterialPrices, Order } from '../types';
 
 const API_BASE_URL = import.meta.env.PROD ? '/api' : '/api';
 
@@ -160,10 +160,12 @@ class ApiService {
 
   async getOrders(params?: { status?: string; limit?: number; offset?: number }): Promise<{
     success: boolean;
-    orders: any[];
-    totalCount: number;
-    limit: number;
-    offset: number;
+    data: {
+      orders: Order[];
+      totalCount: number;
+      limit: number;
+      offset: number;
+    };
   }> {
     const queryParams = new URLSearchParams();
     if (params?.status) queryParams.append('status', params.status);
@@ -172,18 +174,20 @@ class ApiService {
 
     const response = await this.fetch<{
       success: boolean;
-      orders: any[];
-      totalCount: number;
-      limit: number;
-      offset: number;
+      data: {
+        orders: Order[];
+        totalCount: number;
+        limit: number;
+        offset: number;
+      };
     }>(`/orders${queryParams.toString() ? `?${queryParams.toString()}` : ''}`, {
       method: 'GET',
     });
     return response;
   }
 
-  async updateOrderStatus(orderId: string, status: string): Promise<{ success: boolean; message: string; order: any }> {
-    const response = await this.fetch<{ success: boolean; message: string; order: any }>('/orders/update-status', {
+  async updateOrderStatus(orderId: string, status: string): Promise<{ success: boolean; data: { order: Order }; message?: string }> {
+    const response = await this.fetch<{ success: boolean; data: { order: Order }; message?: string }>('/orders/update-status', {
       method: 'PUT',
       body: JSON.stringify({ orderId, status }),
     });

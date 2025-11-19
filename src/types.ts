@@ -36,3 +36,34 @@ export interface OrderItem {
   cevicheId: string;
   quantity: number;
 }
+
+export type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
+
+export interface PersonalInfo {
+  name: string;
+  phone: string;
+  email?: string;
+}
+
+export interface Order {
+  _id: string;
+  user?: {
+    _id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  guestInfo?: PersonalInfo;
+  items: Array<{
+    cevicheType: string;
+    quantity: number;
+    price: number;
+  }>;
+  total: number;
+  deliveryMethod: 'pickup' | 'uber-flash';
+  paymentProof: string;
+  notes?: string;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+}

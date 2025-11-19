@@ -72,7 +72,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Validar que los precios sean números positivos
-      const validatePrices = (prices: any) => {
+      const validatePrices = (prices: Record<string, number>) => {
         return Object.values(prices).every((price) => {
           return typeof price === 'number' && price >= 0 && isFinite(price);
         });

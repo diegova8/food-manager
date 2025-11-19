@@ -1,20 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils';
-
-interface Order {
-  _id: string;
-  items: Array<{ cevicheType: string; quantity: number; price: number }>;
-  total: number;
-  guestInfo?: { name: string; phone: string; email?: string };
-  user?: { name: string; email: string; phone: string };
-  deliveryMethod: 'pickup' | 'uber-flash';
-  paymentProof?: string;
-  notes?: string;
-  status: 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Order } from '../types';
 
 function OrdersManagementPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -32,7 +19,7 @@ function OrdersManagementPage() {
     try {
       const params = filterStatus ? { status: filterStatus } : {};
       const response = await api.getOrders(params);
-      setOrders(response.orders);
+      setOrders(response.data.orders);
     } catch (error) {
       console.error('Error loading orders:', error);
       alert('Error al cargar los pedidos');
