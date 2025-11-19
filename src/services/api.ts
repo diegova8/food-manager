@@ -19,7 +19,7 @@ interface LoginResponse {
 
 interface ConfigResponse {
   success: boolean;
-  config: {
+  data: {
     rawMaterials: RawMaterialPrices;
     markup: number;
     customPrices: { [key: string]: number };
@@ -129,23 +129,23 @@ class ApiService {
   }
 
   // Configuration
-  async getConfig(): Promise<ConfigResponse['config']> {
+  async getConfig(): Promise<ConfigResponse['data']> {
     const response = await this.fetch<ConfigResponse>('/config', {
       method: 'GET',
     });
-    return response.config;
+    return response.data;
   }
 
   async updateConfig(config: {
     rawMaterials: RawMaterialPrices;
     markup: number;
     customPrices: { [key: string]: number };
-  }): Promise<ConfigResponse['config']> {
+  }): Promise<ConfigResponse['data']> {
     const response = await this.fetch<ConfigResponse>('/config', {
       method: 'PUT',
       body: JSON.stringify(config),
     });
-    return response.config;
+    return response.data;
   }
 
   // File Upload
