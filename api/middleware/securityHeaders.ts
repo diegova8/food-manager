@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Handler } from './index.js';
 
 /**
  * Security headers middleware to protect against common web vulnerabilities
@@ -10,9 +11,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
  * - And more
  */
 
-export function withSecurityHeaders(
-  handler: (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse>
-) {
+export function withSecurityHeaders(handler: Handler<any>) {
   return async (req: VercelRequest, res: VercelResponse) => {
     // Prevent MIME type sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');

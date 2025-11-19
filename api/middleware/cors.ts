@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Handler } from './index.js';
 
 /**
  * CORS middleware to control which origins can access the API
@@ -15,9 +16,7 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(',') || [
   'https://ceviche-manager.vercel.app'
 ];
 
-export function withCORS(
-  handler: (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse>
-) {
+export function withCORS(handler: Handler<any>) {
   return async (req: VercelRequest, res: VercelResponse) => {
     const origin = req.headers.origin;
 

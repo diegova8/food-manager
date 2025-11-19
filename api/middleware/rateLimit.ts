@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Handler } from './index.js';
 
 /**
  * Rate limiting middleware to prevent brute force attacks
@@ -26,7 +27,7 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 export function withRateLimit(config: RateLimitConfig) {
-  return (handler: (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse>) => {
+  return (handler: Handler<any>) => {
     return async (req: VercelRequest, res: VercelResponse) => {
       // Get client IP
       const forwardedFor = req.headers['x-forwarded-for'];
