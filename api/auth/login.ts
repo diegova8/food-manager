@@ -2,10 +2,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User } from '../lib/models.js';
 import { comparePassword, generateToken } from '../lib/auth.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { loginSchema, type LoginInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse, validatedData: LoginInput) {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -14,12 +15,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await connectDB();
 
-    const { username, password } = req.body;
-
-    // Validar inputs
-    if (!username || !password) {
-      return errorResponse(res, 'Username and password are required', 400);
-    }
+    const { username, password } = validatedData;
 
     // Buscar usuario por username o email
     const user = await User.findOne({
@@ -72,9 +68,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-// Apply middleware: CORS, Security Headers, and Rate Limiting (5 attempts per 15 minutes)
+// Apply middleware: CORS, Security Headers, Rate Limiting, and Validation
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 5 })
+  withRateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 5 }),
+  withValidation(loginSchema)
 )(handler);

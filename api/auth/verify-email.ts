@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User, EmailVerification } from '../lib/models.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { verifyEmailSchema, type VerifyEmailInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse, validatedData: VerifyEmailInput) {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -13,11 +14,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await connectDB();
 
-    const { token } = req.body;
-
-    if (!token) {
-      return errorResponse(res, 'Verification token is required', 400);
-    }
+    const { token } = validatedData;
 
     // Find verification record
     const verification = await EmailVerification.findOne({ token });
@@ -61,5 +58,6 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ maxRequests: 10, windowMs: 60 * 60 * 1000 }) // 10 attempts per hour
+  withRateLimit({ maxRequests: 10, windowMs: 60 * 60 * 1000 }), // 10 attempts per hour
+  withValidation(verifyEmailSchema)
 )(handler);

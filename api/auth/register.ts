@@ -4,10 +4,11 @@ import connectDB from '../lib/mongodb.js';
 import { User, EmailVerification } from '../lib/models.js';
 import { hashPassword } from '../lib/auth.js';
 import { sendVerificationEmail } from '../lib/email.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { registerSchema, type RegisterInput } from '../schemas/auth.js';
 
-async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse, validatedData: RegisterInput) {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -16,23 +17,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await connectDB();
 
-    const { email, password, name, phone, address, birthday, dietaryPreferences } = req.body;
-
-    // Validate required fields
-    if (!email || !password || !name || !phone) {
-      return errorResponse(res, 'Email, password, name, and phone are required', 400);
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return errorResponse(res, 'Invalid email format', 400);
-    }
-
-    // Validate password strength (min 8 characters)
-    if (password.length < 8) {
-      return errorResponse(res, 'Password must be at least 8 characters long', 400);
-    }
+    const { email, password, name, phone, address, birthday, dietaryPreferences } = validatedData;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -100,5 +85,6 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ maxRequests: 3, windowMs: 60 * 60 * 1000 }) // 3 registrations per hour
+  withRateLimit({ maxRequests: 3, windowMs: 60 * 60 * 1000 }), // 3 registrations per hour
+  withValidation(registerSchema)
 )(handler);

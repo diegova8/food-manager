@@ -3,10 +3,11 @@ import connectDB from '../lib/mongodb.js';
 import { Order, User } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { sendOrderConfirmation, sendNewOrderNotification } from '../lib/email.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { createOrderSchema, type CreateOrderInput } from '../schemas/order.js';
 
-async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: VercelRequest, res: VercelResponse, validatedData: CreateOrderInput) {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -15,24 +16,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     await connectDB();
 
-    const { items, total, personalInfo, deliveryMethod, notes, paymentProof } = req.body;
-
-    // Validate required fields
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return errorResponse(res, 'Items are required', 400);
-    }
-
-    if (!total || typeof total !== 'number') {
-      return errorResponse(res, 'Total is required', 400);
-    }
-
-    if (!personalInfo || !personalInfo.name || !personalInfo.phone) {
-      return errorResponse(res, 'Name and phone are required', 400);
-    }
-
-    if (!deliveryMethod || !['pickup', 'uber-flash'].includes(deliveryMethod)) {
-      return errorResponse(res, 'Invalid delivery method', 400);
-    }
+    const { items, total, personalInfo, deliveryMethod, notes, paymentProof } = validatedData;
 
     // Check if user is authenticated
     let userId = null;
@@ -103,5 +87,6 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 export default compose(
   withCORS,
   withSecurityHeaders,
-  withRateLimit({ maxRequests: 5, windowMs: 60 * 60 * 1000 }) // 5 orders per hour
+  withRateLimit({ maxRequests: 5, windowMs: 60 * 60 * 1000 }), // 5 orders per hour
+  withValidation(createOrderSchema)
 )(handler);

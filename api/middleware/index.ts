@@ -7,6 +7,7 @@
 export { withCORS } from './cors.js';
 export { withRateLimit, type RateLimitConfig } from './rateLimit.js';
 export { withSecurityHeaders } from './securityHeaders.js';
+export { withValidation } from './validation.js';
 
 /**
  * Compose multiple middleware functions
