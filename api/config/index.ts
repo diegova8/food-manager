@@ -125,13 +125,6 @@ export default compose(
   withSecurityHeaders,
   withRateLimit({
     maxRequests: 30,
-    windowMs: 60 * 1000, // 30 per minute for GET
-    keyGenerator: (req) => {
-      // Different rate limits for GET vs PUT
-      if (req.method === 'PUT') {
-        return `config-put-${req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'}`;
-      }
-      return `config-get-${req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown'}`;
-    }
+    windowMs: 60 * 1000 // 30 per minute
   })
 )(handler);
