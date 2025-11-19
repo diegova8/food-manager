@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { CevicheCost } from '../types';
-import { formatCurrency } from '../utils';
+import { formatCurrency, categorizeByIngredientCount } from '../utils';
 import { useCart } from '../context/CartContext';
 import CevicheCounter from './CevicheCounter';
 import logo from '../assets/logo.png';
@@ -37,25 +37,7 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
   };
 
   // Agrupar ceviches por número de ingredientes
-  const singleIngredient = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 1;
-  });
-
-  const twoIngredients = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 2;
-  });
-
-  const threeIngredients = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 3;
-  });
-
-  const fourIngredients = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 4;
-  });
+  const { single: singleIngredient, double: twoIngredients, triple: threeIngredients, quadruple: fourIngredients } = categorizeByIngredientCount(cevicheCosts);
 
   const renderMenuSection = (ceviches: CevicheCost[], title: string) => (
     <div className="mb-8">

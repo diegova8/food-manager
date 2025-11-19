@@ -176,3 +176,35 @@ export const getCevichesList = (): Ceviche[] => {
 
   return ceviches;
 };
+
+/**
+ * Count the number of ingredients in a ceviche
+ */
+export const countCevicheIngredients = (ceviche: Ceviche): number => {
+  return Object.values(ceviche.ingredients).filter(v => v !== undefined && v > 0).length;
+};
+
+/**
+ * Filter ceviches by number of ingredients
+ */
+export const filterCevichesByIngredientCount = <T extends { ceviche: Ceviche }>(
+  cevicheCosts: T[],
+  count: number
+): T[] => {
+  return cevicheCosts.filter(c => countCevicheIngredients(c.ceviche) === count);
+};
+
+/**
+ * Categorize ceviches by ingredient count
+ * Returns an object with arrays for 1, 2, 3, and 4+ ingredients
+ */
+export const categorizeByIngredientCount = <T extends { ceviche: Ceviche }>(
+  cevicheCosts: T[]
+) => {
+  return {
+    single: filterCevichesByIngredientCount(cevicheCosts, 1),
+    double: filterCevichesByIngredientCount(cevicheCosts, 2),
+    triple: filterCevichesByIngredientCount(cevicheCosts, 3),
+    quadruple: filterCevichesByIngredientCount(cevicheCosts, 4)
+  };
+};

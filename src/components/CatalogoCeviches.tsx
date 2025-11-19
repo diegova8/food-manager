@@ -1,6 +1,6 @@
 import React from 'react';
 import type { CevicheCost } from '../types';
-import { formatCurrency } from '../utils';
+import { formatCurrency, categorizeByIngredientCount } from '../utils';
 
 interface CatalogoCevichesProps {
   cevicheCosts: CevicheCost[];
@@ -14,25 +14,7 @@ const CatalogoCeviches: React.FC<CatalogoCevichesProps> = ({ cevicheCosts, custo
     setCustomPrices({ ...customPrices, [cevicheId]: numValue });
   };
   // Agrupar ceviches por número de ingredientes
-  const singleIngredient = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 1;
-  });
-
-  const twoIngredients = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 2;
-  });
-
-  const threeIngredients = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 3;
-  });
-
-  const fourIngredients = cevicheCosts.filter(c => {
-    const count = Object.values(c.ceviche.ingredients).filter(v => v !== undefined).length;
-    return count === 4;
-  });
+  const { single: singleIngredient, double: twoIngredients, triple: threeIngredients, quadruple: fourIngredients } = categorizeByIngredientCount(cevicheCosts);
 
   const renderIngredientPills = (ceviche: CevicheCost['ceviche']) => {
     const ingredientLabels: { [key: string]: { emoji: string; color: string } } = {
