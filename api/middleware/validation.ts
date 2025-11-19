@@ -9,7 +9,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import validator from 'validator';
 import { errorResponse } from '../lib/responses.js';
 
-type Handler<T> = (req: VercelRequest, res: VercelResponse, validatedData: T) => Promise<void> | void;
+type Handler<T> = (req: VercelRequest, res: VercelResponse, validatedData: T) => Promise<void | VercelResponse> | void | VercelResponse;
 
 /**
  * Sanitize an object by escaping HTML in all string values

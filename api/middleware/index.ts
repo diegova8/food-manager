@@ -21,7 +21,7 @@ export { withValidation } from './validation.js';
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-type Handler = (req: VercelRequest, res: VercelResponse) => Promise<void> | void;
+type Handler = (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse> | void | VercelResponse;
 type Middleware = (handler: Handler) => Handler;
 
 export function compose(...middlewares: Middleware[]) {
