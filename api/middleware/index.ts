@@ -21,11 +21,14 @@ export { withValidation } from './validation.js';
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-type Handler = (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse> | void | VercelResponse;
-type Middleware = (handler: Handler) => Handler;
+export type Handler<T = void> = T extends void
+  ? (req: VercelRequest, res: VercelResponse) => Promise<void | VercelResponse> | void | VercelResponse
+  : (req: VercelRequest, res: VercelResponse, validatedData: T) => Promise<void | VercelResponse> | void | VercelResponse;
 
-export function compose(...middlewares: Middleware[]) {
-  return (handler: Handler): Handler => {
+export type Middleware = (handler: Handler<any>) => Handler<any>;
+
+export function compose(...middlewares: Middleware[]): (handler: Handler<any>) => Handler<any> {
+  return (handler: Handler<any>): Handler<any> => {
     return middlewares.reduceRight((acc, middleware) => middleware(acc), handler);
   };
 }

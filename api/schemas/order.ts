@@ -19,7 +19,7 @@ export const createOrderSchema = z.object({
     email: z.string().email('Invalid email format').optional().or(z.literal(''))
   }),
   deliveryMethod: z.enum(['pickup', 'uber-flash'], {
-    errorMap: () => ({ message: 'Delivery method must be either "pickup" or "uber-flash"' })
+    message: 'Delivery method must be either "pickup" or "uber-flash"'
   }),
   notes: z.string().max(500, 'Notes are too long').optional(),
   paymentProof: z.string().url('Payment proof must be a valid URL')
@@ -28,7 +28,7 @@ export const createOrderSchema = z.object({
 export const updateOrderStatusSchema = z.object({
   orderId: z.string().min(1, 'Order ID is required'),
   status: z.enum(['pending', 'confirmed', 'ready', 'completed', 'cancelled'], {
-    errorMap: () => ({ message: 'Invalid status value' })
+    message: 'Invalid status value'
   })
 });
 

@@ -8,8 +8,7 @@ import { z } from 'zod';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import validator from 'validator';
 import { errorResponse } from '../lib/responses.js';
-
-type Handler<T> = (req: VercelRequest, res: VercelResponse, validatedData: T) => Promise<void | VercelResponse> | void | VercelResponse;
+import type { Handler } from './index.js';
 
 /**
  * Sanitize an object by escaping HTML in all string values
@@ -58,7 +57,7 @@ export function withValidation<T>(schema: z.ZodSchema<T>) {
             res,
             {
               error: 'Validation failed',
-              details: error.errors.map(err => ({
+              details: error.issues.map((err: z.ZodIssue) => ({
                 field: err.path.join('.'),
                 message: err.message
               }))
