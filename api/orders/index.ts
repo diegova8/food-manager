@@ -3,11 +3,12 @@ import connectDB from '../lib/mongodb.js';
 import { Order } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow GET
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   }
 
   try {
@@ -15,10 +16,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const payload = verifyAuth(req);
       if (!payload.isAdmin) {
-        return res.status(403).json({ error: 'Unauthorized - Admin access required' });
+        return errorResponse(res, 'Unauthorized - Admin access required', 403);
       }
     } catch (error) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return errorResponse(res, 'Unauthorized', 401);
     }
 
     await connectDB();
@@ -43,16 +44,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Get total count for pagination
     const totalCount = await Order.countDocuments(query);
 
-    return res.status(200).json({
-      success: true,
+    return successResponse(res, {
       orders,
       totalCount,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string)
     });
   } catch (error) {
-    console.error('List orders error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 

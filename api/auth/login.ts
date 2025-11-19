@@ -3,11 +3,12 @@ import connectDB from '../lib/mongodb.js';
 import { User } from '../lib/models.js';
 import { comparePassword, generateToken } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   }
 
   try {
@@ -17,7 +18,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validar inputs
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+      return errorResponse(res, 'Username and password are required', 400);
     }
 
     // Buscar usuario por username o email
@@ -26,22 +27,23 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return errorResponse(res, 'Invalid credentials', 401);
     }
 
     // Verificar password
     const isValidPassword = await comparePassword(password, user.password);
 
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return errorResponse(res, 'Invalid credentials', 401);
     }
 
     // Verificar email (solo para usuarios no admin con email)
     if (user.email && !user.isAdmin && !user.emailVerified) {
-      return res.status(403).json({
-        error: 'Please verify your email before logging in. Check your inbox for the verification link.',
-        code: 'EMAIL_NOT_VERIFIED'
-      });
+      return errorResponse(
+        res,
+        'Please verify your email before logging in. Check your inbox for the verification link.',
+        403
+      );
     }
 
     // Generar token
@@ -51,20 +53,22 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       isAdmin: user.isAdmin
     });
 
-    return res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        name: user.name,
-        isAdmin: user.isAdmin
-      }
-    });
+    return successResponse(
+      res,
+      {
+        token,
+        user: {
+          id: user._id.toString(),
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          isAdmin: user.isAdmin
+        }
+      },
+      'Login successful'
+    );
   } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 

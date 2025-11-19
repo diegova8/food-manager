@@ -5,11 +5,12 @@ import { User, EmailVerification } from '../lib/models.js';
 import { hashPassword } from '../lib/auth.js';
 import { sendVerificationEmail } from '../lib/email.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   }
 
   try {
@@ -19,22 +20,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate required fields
     if (!email || !password || !name || !phone) {
-      return res.status(400).json({
-        error: 'Email, password, name, and phone are required'
-      });
+      return errorResponse(res, 'Email, password, name, and phone are required', 400);
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+      return errorResponse(res, 'Invalid email format', 400);
     }
 
     // Validate password strength (min 8 characters)
     if (password.length < 8) {
-      return res.status(400).json({
-        error: 'Password must be at least 8 characters long'
-      });
+      return errorResponse(res, 'Password must be at least 8 characters long', 400);
     }
 
     // Check if user already exists
@@ -43,9 +40,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (existingUser) {
-      return res.status(400).json({
-        error: 'A user with this email already exists'
-      });
+      return errorResponse(res, 'A user with this email already exists', 400);
     }
 
     // Hash password
@@ -85,18 +80,20 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       // Don't fail registration if email fails, user can request new verification
     }
 
-    return res.status(201).json({
-      success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name
-      }
-    });
+    return successResponse(
+      res,
+      {
+        user: {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name
+        }
+      },
+      'Registration successful. Please check your email to verify your account.',
+      201
+    );
   } catch (error) {
-    console.error('Registration error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 

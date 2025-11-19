@@ -2,11 +2,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { User, EmailVerification } from '../lib/models.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   }
 
   try {
@@ -15,36 +16,33 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const { token } = req.body;
 
     if (!token) {
-      return res.status(400).json({ error: 'Verification token is required' });
+      return errorResponse(res, 'Verification token is required', 400);
     }
 
     // Find verification record
     const verification = await EmailVerification.findOne({ token });
 
     if (!verification) {
-      return res.status(400).json({ error: 'Invalid or expired verification token' });
+      return errorResponse(res, 'Invalid or expired verification token', 400);
     }
 
     // Check if token has expired
     if (new Date() > verification.expiresAt) {
       await EmailVerification.deleteOne({ token });
-      return res.status(400).json({ error: 'Verification token has expired' });
+      return errorResponse(res, 'Verification token has expired', 400);
     }
 
     // Find and update user
     const user = await User.findOne({ email: verification.email });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return errorResponse(res, 'User not found', 404);
     }
 
     if (user.emailVerified) {
       // Already verified, clean up token
       await EmailVerification.deleteOne({ token });
-      return res.status(200).json({
-        success: true,
-        message: 'Email already verified'
-      });
+      return successResponse(res, null, 'Email already verified');
     }
 
     // Mark email as verified
@@ -54,13 +52,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Delete verification token
     await EmailVerification.deleteOne({ token });
 
-    return res.status(200).json({
-      success: true,
-      message: 'Email verified successfully! You can now log in.'
-    });
+    return successResponse(res, null, 'Email verified successfully! You can now log in.');
   } catch (error) {
-    console.error('Email verification error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 

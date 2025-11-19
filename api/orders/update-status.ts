@@ -3,11 +3,12 @@ import connectDB from '../lib/mongodb.js';
 import { Order } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow PUT
   if (req.method !== 'PUT') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   }
 
   try {
@@ -15,10 +16,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const payload = verifyAuth(req);
       if (!payload.isAdmin) {
-        return res.status(403).json({ error: 'Unauthorized - Admin access required' });
+        return errorResponse(res, 'Unauthorized - Admin access required', 403);
       }
     } catch (error) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return errorResponse(res, 'Unauthorized', 401);
     }
 
     await connectDB();
@@ -27,32 +28,27 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate inputs
     if (!orderId) {
-      return res.status(400).json({ error: 'Order ID is required' });
+      return errorResponse(res, 'Order ID is required', 400);
     }
 
     if (!status || !['pending', 'confirmed', 'ready', 'completed', 'cancelled'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
+      return errorResponse(res, 'Invalid status', 400);
     }
 
     // Find and update order
     const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return errorResponse(res, 'Order not found', 404);
     }
 
     order.status = status;
     order.updatedAt = new Date();
     await order.save();
 
-    return res.status(200).json({
-      success: true,
-      message: 'Order status updated successfully',
-      order
-    });
+    return successResponse(res, { order }, 'Order status updated successfully');
   } catch (error) {
-    console.error('Update order status error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 

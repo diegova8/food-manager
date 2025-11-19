@@ -3,6 +3,7 @@ import connectDB from '../lib/mongodb.js';
 import { Config } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -48,13 +49,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         });
       }
 
-      return res.status(200).json({
-        success: true,
-        config: {
-          rawMaterials: config.rawMaterials,
-          markup: config.markup,
-          customPrices: config.customPrices
-        }
+      return successResponse(res, {
+        rawMaterials: config.rawMaterials,
+        markup: config.markup,
+        customPrices: config.customPrices
       });
     }
 
@@ -63,18 +61,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         verifyAuth(req);
       } catch (error) {
-        return res.status(401).json({
-          error: 'Unauthorized'
-        });
+        return errorResponse(res, 'Unauthorized', 401);
       }
 
       const { rawMaterials, markup, customPrices } = req.body;
 
       // Validar inputs
       if (!rawMaterials || !markup) {
-        return res.status(400).json({
-          error: 'Missing required fields'
-        });
+        return errorResponse(res, 'Missing required fields', 400);
       }
 
       // Validar que los precios sean números positivos
@@ -85,21 +79,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       };
 
       if (!validatePrices(rawMaterials)) {
-        return res.status(400).json({
-          error: 'Invalid raw material prices'
-        });
+        return errorResponse(res, 'Invalid raw material prices', 400);
       }
 
       if (typeof markup !== 'number' || markup <= 0 || !isFinite(markup)) {
-        return res.status(400).json({
-          error: 'Invalid markup value'
-        });
+        return errorResponse(res, 'Invalid markup value', 400);
       }
 
       if (customPrices && !validatePrices(customPrices)) {
-        return res.status(400).json({
-          error: 'Invalid custom prices'
-        });
+        return errorResponse(res, 'Invalid custom prices', 400);
       }
 
       // Actualizar o crear configuración
@@ -119,20 +107,16 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         await config.save();
       }
 
-      return res.status(200).json({
-        success: true,
-        config: {
-          rawMaterials: config.rawMaterials,
-          markup: config.markup,
-          customPrices: config.customPrices
-        }
-      });
+      return successResponse(res, {
+        rawMaterials: config.rawMaterials,
+        markup: config.markup,
+        customPrices: config.customPrices
+      }, 'Configuration updated successfully');
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   } catch (error) {
-    console.error('Config error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 

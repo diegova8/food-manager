@@ -4,11 +4,12 @@ import { Order, User } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { sendOrderConfirmation, sendNewOrderNotification } from '../lib/email.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return errorResponse(res, 'Method not allowed', 405);
   }
 
   try {
@@ -18,19 +19,19 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate required fields
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Items are required' });
+      return errorResponse(res, 'Items are required', 400);
     }
 
     if (!total || typeof total !== 'number') {
-      return res.status(400).json({ error: 'Total is required' });
+      return errorResponse(res, 'Total is required', 400);
     }
 
     if (!personalInfo || !personalInfo.name || !personalInfo.phone) {
-      return res.status(400).json({ error: 'Name and phone are required' });
+      return errorResponse(res, 'Name and phone are required', 400);
     }
 
     if (!deliveryMethod || !['pickup', 'uber-flash'].includes(deliveryMethod)) {
-      return res.status(400).json({ error: 'Invalid delivery method' });
+      return errorResponse(res, 'Invalid delivery method', 400);
     }
 
     // Check if user is authenticated
@@ -85,14 +86,17 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       // Don't fail the order if email fails
     }
 
-    return res.status(201).json({
-      success: true,
-      orderId: order._id,
-      message: 'Order created successfully'
-    });
+    return successResponse(
+      res,
+      {
+        orderId: order._id.toString(),
+        status: order.status
+      },
+      'Order created successfully',
+      201
+    );
   } catch (error) {
-    console.error('Create order error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 }
 
