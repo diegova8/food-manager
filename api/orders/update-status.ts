@@ -2,11 +2,11 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
 import { Order } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateOrderStatusSchema, type UpdateOrderStatusInput } from '../schemas/order.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: UpdateOrderStatusInput) {
+const handler: ValidationHandler<UpdateOrderStatusInput> = async (req: VercelRequest, res: VercelResponse, validatedData: UpdateOrderStatusInput) => {
   // Only allow PUT
   if (req.method !== 'PUT') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -42,7 +42,7 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: U
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
 
 export default compose(
   withCORS,

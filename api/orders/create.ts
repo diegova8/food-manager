@@ -3,11 +3,11 @@ import connectDB from '../lib/mongodb.js';
 import { Order, User } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { sendOrderConfirmation, sendNewOrderNotification } from '../lib/email.js';
-import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation } from '../middleware/index.js';
+import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { createOrderSchema, type CreateOrderInput } from '../schemas/order.js';
 
-async function handler(req: VercelRequest, res: VercelResponse, validatedData: CreateOrderInput) {
+const handler: ValidationHandler<CreateOrderInput> = async (req: VercelRequest, res: VercelResponse, validatedData: CreateOrderInput) => {
   // Only allow POST
   if (req.method !== 'POST') {
     return errorResponse(res, 'Method not allowed', 405);
@@ -82,7 +82,7 @@ async function handler(req: VercelRequest, res: VercelResponse, validatedData: C
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
-}
+};
 
 export default compose(
   withCORS,

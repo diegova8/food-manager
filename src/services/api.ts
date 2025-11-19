@@ -4,11 +4,17 @@ const API_BASE_URL = import.meta.env.PROD ? '/api' : '/api';
 
 interface LoginResponse {
   success: boolean;
-  token: string;
-  user: {
-    id: string;
-    username: string;
+  data: {
+    token: string;
+    user: {
+      id: string;
+      username: string;
+      email?: string;
+      name?: string;
+      isAdmin: boolean;
+    };
   };
+  message: string;
 }
 
 interface ConfigResponse {
@@ -69,8 +75,8 @@ class ApiService {
       body: JSON.stringify({ username, password }),
     });
 
-    if (response.token) {
-      this.setToken(response.token);
+    if (response.data?.token) {
+      this.setToken(response.data.token);
     }
 
     return response;
