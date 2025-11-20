@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import MenuCeviches from '../components/MenuCeviches';
+import Header from '../components/Header';
 import type { CevicheCost, RawMaterialPrices } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
 import { api } from '../services/api';
@@ -57,9 +58,12 @@ function MenuPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <MenuCeviches cevicheCosts={cevicheCosts} customPrices={customPrices} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <Header />
+      <div className="py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <MenuCeviches cevicheCosts={cevicheCosts} customPrices={customPrices} />
+        </div>
       </div>
     </div>
   );

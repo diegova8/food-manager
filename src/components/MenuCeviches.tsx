@@ -77,9 +77,6 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg shadow-lg p-8">
-      <div className="text-center mb-8">
-        <img src={logo} alt="Ceviche de mi Tata" className="mx-auto h-40 mb-4 rounded-full" />
-      </div>
 
       {renderMenuSection(singleIngredient, 'Ceviches de 1 sabor')}
       {renderMenuSection(twoIngredients, 'Ceviches de 2 sabores')}

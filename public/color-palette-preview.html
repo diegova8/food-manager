@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Palette - Ceviche de mi Tata</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .color-swatch {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .color-swatch:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .section {
+      margin-bottom: 48px;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+      <div class="flex items-center gap-4 mb-4">
+        <span class="text-6xl">🦐</span>
+        <div>
+          <h1 class="text-4xl font-bold text-slate-900">Ceviche de mi Tata</h1>
+          <p class="text-slate-600">Warm & Appetizing Color Palette</p>
+        </div>
+      </div>
+      <p class="text-slate-700 mt-4">
+        Coral-based warm palette designed to stimulate appetite and create an inviting, energetic atmosphere.
+        Click any color to copy its hex code.
+      </p>
+    </div>
+
+    <!-- Primary Colors -->
+    <div class="section">
+      <h2 class="text-3xl font-bold text-slate-900 mb-6">🔥 Primary Colors</h2>
+
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <h3 class="text-xl font-bold text-slate-800 mb-4">Coral Zest (Primary Brand) ⭐</h3>
+        <div class="grid grid-cols-2 md:grid-cols-7 gap-4">
+          <div>
+            <div class="color-swatch bg-orange-900 text-white" onclick="copyColor('#7C2D12')" title="Click to copy">
+              <span>900</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#7C2D12</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-orange-700 text-white" onclick="copyColor('#C2410C')" title="Click to copy">
+              <span>700</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#C2410C</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-orange-600 text-white" onclick="copyColor('#F97316')" title="Click to copy">
+              <span class="text-lg">⭐ 600</span>
+            </div>
+            <p class="text-sm font-bold text-orange-600 text-center">#F97316</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-orange-500 text-white" onclick="copyColor('#FB923C')" title="Click to copy">
+              <span>500</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#FB923C</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-orange-400 text-white" onclick="copyColor('#FDBA74')" title="Click to copy">
+              <span>400</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#FDBA74</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-orange-100 text-orange-900" onclick="copyColor('#FFEDD5')" title="Click to copy">
+              <span>100</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#FFEDD5</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-orange-50 text-orange-900 border-2 border-orange-200" onclick="copyColor('#FFF7ED')" title="Click to copy">
+              <span>50</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#FFF7ED</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-bold text-slate-800 mb-4">Amber Warm (Secondary Brand)</h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div>
+            <div class="color-swatch bg-amber-700 text-white" onclick="copyColor('#B45309')" title="Click to copy">
+              <span>700</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#B45309</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-amber-600 text-white" onclick="copyColor('#D97706')" title="Click to copy">
+              <span class="text-lg">⭐ 600</span>
+            </div>
+            <p class="text-sm font-bold text-amber-600 text-center">#D97706</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-amber-500 text-white" onclick="copyColor('#F59E0B')" title="Click to copy">
+              <span>500</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#F59E0B</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-amber-100 text-amber-900" onclick="copyColor('#FEF3C7')" title="Click to copy">
+              <span>100</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#FEF3C7</p>
+          </div>
+          <div>
+            <div class="color-swatch bg-amber-50 text-amber-900 border-2 border-amber-200" onclick="copyColor('#FFFBEB')" title="Click to copy">
+              <span>50</span>
+            </div>
+            <p class="text-sm text-slate-600 text-center">#FFFBEB</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accent Colors -->
+    <div class="section">
+      <h2 class="text-3xl font-bold text-slate-900 mb-6">🎨 Accent Colors</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-xl font-bold text-slate-800 mb-4">💚 Teal Fresh (Cool Balance)</h3>
+          <div class="grid grid-cols-4 gap-4">
+            <div>
+              <div class="color-swatch bg-teal-700 text-white" onclick="copyColor('#0F766E')" title="Click to copy">
+                <span>700</span>
+              </div>
+              <p class="text-sm text-slate-600 text-center">#0F766E</p>
+            </div>
+            <div>
+              <div class="color-swatch bg-teal-600 text-white" onclick="copyColor('#0D9488')" title="Click to copy">
+                <span class="text-lg">⭐ 600</span>
+              </div>
+              <p class="text-sm font-bold text-teal-600 text-center">#0D9488</p>
+            </div>
+            <div>
+              <div class="color-swatch bg-teal-500 text-white" onclick="copyColor('#14B8A6')" title="Click to copy">
+                <span>500</span>
+              </div>
+              <p class="text-sm text-slate-600 text-center">#14B8A6</p>
+            </div>
+            <div>
+              <div class="color-swatch bg-teal-100 text-teal-900" onclick="copyColor('#CCFBF1')" title="Click to copy">
+                <span>100</span>
+              </div>
+              <p class="text-sm text-slate-600 text-center">#CCFBF1</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-xl font-bold text-slate-800 mb-4">🍋 Lime Fresh (Citrus)</h3>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <div class="color-swatch bg-lime-600 text-white" onclick="copyColor('#65A30D')" title="Click to copy">
+                <span class="text-lg">⭐ 600</span>
+              </div>
+              <p class="text-sm font-bold text-lime-600 text-center">#65A30D</p>
+            </div>
+            <div>
+              <div class="color-swatch bg-lime-500 text-white" onclick="copyColor('#84CC16')" title="Click to copy">
+                <span>500</span>
+              </div>
+              <p class="text-sm text-slate-600 text-center">#84CC16</p>
+            </div>
+            <div>
+              <div class="color-swatch bg-lime-100 text-lime-900" onclick="copyColor('#ECFCCB')" title="Click to copy">
+                <span>100</span>
+              </div>
+              <p class="text-sm text-slate-600 text-center">#ECFCCB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semantic Colors -->
+    <div class="section">
+      <h2 class="text-3xl font-bold text-slate-900 mb-6">✅ Semantic Colors</h2>
+
+      <div class="grid md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-bold text-slate-800 mb-4">Success</h3>
+          <div class="color-swatch bg-green-500 text-white" onclick="copyColor('#10B981')" title="Click to copy">
+            <span>✓</span>
+          </div>
+          <p class="text-sm text-slate-600 text-center">#10B981</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-bold text-slate-800 mb-4">Warning</h3>
+          <div class="color-swatch bg-amber-500 text-white" onclick="copyColor('#F59E0B')" title="Click to copy">
+            <span>⚠️</span>
+          </div>
+          <p class="text-sm text-slate-600 text-center">#F59E0B</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-bold text-slate-800 mb-4">Error</h3>
+          <div class="color-swatch bg-red-500 text-white" onclick="copyColor('#EF4444')" title="Click to copy">
+            <span>✕</span>
+          </div>
+          <p class="text-sm text-slate-600 text-center">#EF4444</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-bold text-slate-800 mb-4">Admin</h3>
+          <div class="color-swatch bg-purple-600 text-white" onclick="copyColor('#7C3AED')" title="Click to copy">
+            <span>👨‍💼</span>
+          </div>
+          <p class="text-sm text-slate-600 text-center">#7C3AED</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gradient Examples -->
+    <div class="section">
+      <h2 class="text-3xl font-bold text-slate-900 mb-6">🌅 Gradient Examples</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl shadow-lg p-8 border-2 border-orange-200">
+          <h3 class="text-2xl font-bold text-slate-800 mb-2">Warm Sunset</h3>
+          <p class="text-slate-600">from-orange-50 to-orange-100</p>
+          <p class="text-xs text-slate-500 mt-2">#FFF7ED → #FFEDD5</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl shadow-lg p-8 border-2 border-amber-200">
+          <h3 class="text-2xl font-bold text-slate-800 mb-2">Coral Breeze</h3>
+          <p class="text-slate-600">from-amber-50 to-amber-100</p>
+          <p class="text-xs text-slate-500 mt-2">#FFFBEB → #FEF3C7</p>
+        </div>
+
+        <div class="bg-gradient-to-r from-orange-600 to-orange-500 rounded-xl shadow-lg p-8">
+          <h3 class="text-2xl font-bold text-white mb-2">Primary CTA</h3>
+          <p class="text-orange-50">from-orange-600 to-orange-500</p>
+        </div>
+
+        <div class="bg-gradient-to-r from-amber-600 to-amber-500 rounded-xl shadow-lg p-8">
+          <h3 class="text-2xl font-bold text-white mb-2">Secondary CTA</h3>
+          <p class="text-amber-50">from-amber-600 to-amber-500</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-orange-50 to-teal-100 rounded-xl shadow-lg p-8 border-2 border-orange-200">
+          <h3 class="text-2xl font-bold text-slate-800 mb-2">Fresh Balance</h3>
+          <p class="text-slate-600">from-orange-50 to-teal-100</p>
+          <p class="text-xs text-slate-500 mt-2">#FFF7ED → #CCFBF1</p>
+        </div>
+
+        <div class="bg-gradient-to-r from-teal-600 to-teal-500 rounded-xl shadow-lg p-8">
+          <h3 class="text-2xl font-bold text-white mb-2">Success CTA</h3>
+          <p class="text-teal-50">from-teal-600 to-teal-500</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button Examples -->
+    <div class="section">
+      <h2 class="text-3xl font-bold text-slate-900 mb-6">🔘 Button Examples</h2>
+
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="flex flex-wrap gap-4">
+          <button class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-colors shadow-md">
+            Primary Button
+          </button>
+          <button class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold transition-colors shadow-md">
+            Secondary Button
+          </button>
+          <button class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold transition-colors shadow-md">
+            Success / Fresh
+          </button>
+          <button class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors shadow-md">
+            Admin Action
+          </button>
+          <button class="px-6 py-3 border-2 border-orange-600 text-orange-600 hover:bg-orange-50 rounded-lg font-semibold transition-colors">
+            Outline Button
+          </button>
+          <button class="px-6 py-3 text-orange-600 hover:bg-orange-50 rounded-lg font-semibold transition-colors">
+            Ghost Button
+          </button>
+          <button class="px-6 py-3 bg-slate-200 text-slate-400 rounded-lg font-semibold cursor-not-allowed">
+            Disabled Button
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Component Examples -->
+    <div class="section">
+      <h2 class="text-3xl font-bold text-slate-900 mb-6">🎯 UI Component Examples</h2>
+
+      <!-- Price Card Example -->}
+      <div class="grid md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white border-2 border-slate-200 hover:border-orange-500 rounded-xl p-6 transition-all hover:shadow-xl">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-3xl">🦐</span>
+            <h4 class="text-lg font-bold text-slate-800">Ceviche de Camarón</h4>
+          </div>
+          <p class="text-3xl font-bold text-orange-600 mb-4">₡5,000</p>
+          <button class="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white py-2 rounded-lg font-semibold transition-all">
+            Agregar al Carrito
+          </button>
+        </div>
+
+        <div class="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-xl p-6 shadow-lg">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="bg-lime-500 text-white text-xs font-bold px-2 py-1 rounded">NUEVO</span>
+            <span class="text-3xl">🐙</span>
+            <h4 class="text-lg font-bold text-slate-800">Ceviche de Pulpo</h4>
+          </div>
+          <p class="text-3xl font-bold text-orange-600 mb-4">₡6,500</p>
+          <button class="w-full bg-gradient-to-r from-amber-600 to-amber-500 text-white py-2 rounded-lg font-semibold shadow-md">
+            ¡Ordenar Ahora!
+          </button>
+        </div>
+
+        <div class="bg-white border-2 border-slate-200 rounded-xl p-6 opacity-75">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-3xl grayscale">🐟</span>
+            <h4 class="text-lg font-bold text-slate-500">Ceviche de Pescado</h4>
+          </div>
+          <p class="text-xl font-bold text-slate-400 mb-4">
+            <span class="line-through">₡4,500</span>
+            <span class="ml-2 bg-red-100 text-red-600 text-sm px-2 py-1 rounded">AGOTADO</span>
+          </p>
+          <button class="w-full bg-slate-200 text-slate-400 py-2 rounded-lg font-semibold cursor-not-allowed">
+            No Disponible
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert Examples -->
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-green-50 border-2 border-green-200 text-green-800 p-4 rounded-lg">
+          <strong class="font-bold">✓ Pedido confirmado:</strong> Tu ceviche estará listo en 15 minutos.
+        </div>
+        <div class="bg-amber-50 border-2 border-amber-200 text-amber-800 p-4 rounded-lg">
+          <strong class="font-bold">⚠️ Stock bajo:</strong> Quedan solo 3 unidades disponibles.
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl shadow-xl p-8 text-center">
+      <p class="text-lg mb-2">Hecho con ❤️ para Ceviche de mi Tata</p>
+      <p class="text-orange-100 text-sm">
+        Paleta de colores cálidos y apetitosos • Primary: Coral Zest (#F97316)
+      </p>
+      <p class="text-orange-100 text-sm mt-2">
+        Para ver la guía completa de uso, consulta <code class="bg-orange-700 px-2 py-1 rounded">docs/COLOR_PALETTE.md</code>
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    function copyColor(hex) {
+      navigator.clipboard.writeText(hex).then(() => {
+        // Create a temporary notification
+        const notification = document.createElement('div');
+        notification.textContent = `Copiado: ${hex}`;
+        notification.className = 'fixed top-4 right-4 bg-slate-900 text-white px-6 py-3 rounded-lg shadow-xl font-semibold z-50';
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.remove();
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

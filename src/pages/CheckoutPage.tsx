@@ -4,6 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import { useCart } from '../context/CartContext';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils';
+import Header from '../components/Header';
 import logo from '../assets/logo.png';
 
 type DeliveryMethod = 'pickup' | 'uber-flash';
@@ -412,8 +413,10 @@ function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <Header />
+      <div className="py-8 px-4">
+        <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-6">
             <img src={logo} alt="Ceviche de mi Tata" className="mx-auto h-20 mb-4 rounded-full" />
@@ -467,6 +470,7 @@ function CheckoutPage() {
               ← Volver al menú
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
