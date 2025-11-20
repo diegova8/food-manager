@@ -4,7 +4,6 @@ import type { CevicheCost } from '../types';
 import { formatCurrency, categorizeByIngredientCount } from '../utils';
 import { useCart } from '../context/CartContext';
 import CevicheCounter from './CevicheCounter';
-import logo from '../assets/logo.png';
 
 interface MenuCevichesProps {
   cevicheCosts: CevicheCost[];
