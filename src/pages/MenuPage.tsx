@@ -57,7 +57,7 @@ function MenuPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <MenuCeviches cevicheCosts={cevicheCosts} customPrices={customPrices} />
       </div>
