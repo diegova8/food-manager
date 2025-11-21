@@ -1,6 +1,7 @@
 import React from 'react';
-import { StarRating } from './StarRating';
 import CevicheCounter from './CevicheCounter';
+import logo from '../assets/logo.png';
+import { formatCurrency } from '../utils';
 
 interface MenuCardProps {
   id: string;
@@ -17,7 +18,6 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   id,
   name,
   image,
-  rating,
   subtitle,
   price,
   quantity,
@@ -25,10 +25,6 @@ export const MenuCard: React.FC<MenuCardProps> = ({
 }) => {
   const handleOrderNow = () => {
     onQuantityChange(id, 1);
-  };
-
-  const formatPrice = (price: number) => {
-    return (price / 1000).toFixed(2);
   };
 
   return (
@@ -41,16 +37,11 @@ export const MenuCard: React.FC<MenuCardProps> = ({
             alt={name}
             loading="lazy"
             onError={(e) => {
-              e.currentTarget.src = '/placeholder-ceviche.jpg';
+              e.currentTarget.src = logo;
             }}
             className="w-full h-full object-cover"
           />
         </div>
-      </div>
-
-      {/* Star Rating */}
-      <div className="mb-3">
-        <StarRating rating={rating} size="md" color="orange-600" />
       </div>
 
       {/* Title */}
@@ -66,7 +57,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       {/* Price */}
       <div className="text-center mb-4">
         <span className="text-2xl font-bold text-orange-600">
-          ${formatPrice(price)}
+          {formatCurrency(price)}
         </span>
       </div>
 
