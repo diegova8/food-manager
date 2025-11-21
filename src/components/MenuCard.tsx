@@ -63,17 +63,30 @@ export const MenuCard: React.FC<MenuCardProps> = ({
               <button
                 onClick={handleOrderNow}
                 aria-label={`Add ${name} to cart`}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 text-xs whitespace-nowrap"
+                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 flex items-center justify-center text-xl shadow-md"
               >
-                Agregar
+                +
               </button>
             ) : (
-              <div className="scale-75 origin-center">
-                <CevicheCounter
-                  id={id}
-                  name={name}
-                  price={price}
-                />
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={() => onQuantityChange(id, quantity + 1)}
+                  className="w-8 h-8 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-center text-lg shadow-sm"
+                  aria-label="Aumentar cantidad"
+                >
+                  +
+                </button>
+                <div className="text-center font-bold text-slate-900 text-sm min-w-[24px]">
+                  {quantity}
+                </div>
+                <button
+                  onClick={() => onQuantityChange(id, quantity - 1)}
+                  disabled={quantity === 0}
+                  className="w-8 h-8 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center justify-center text-lg shadow-sm disabled:cursor-not-allowed"
+                  aria-label="Disminuir cantidad"
+                >
+                  −
+                </button>
               </div>
             )}
           </div>
