@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { CevicheCost } from '../types';
 import { formatCurrency, categorizeByIngredientCount } from '../utils';
 import { useCart } from '../context/CartContext';
-import CevicheCounter from './CevicheCounter';
+import { MenuCard } from './MenuCard';
 
 interface MenuCevichesProps {
   cevicheCosts: CevicheCost[];
@@ -12,7 +12,7 @@ interface MenuCevichesProps {
 
 const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices }) => {
   const navigate = useNavigate();
-  const { getTotalItems, getTotalPrice } = useCart();
+  const { addItem, removeItem, getTotalItems, getTotalPrice, getItemQuantity } = useCart();
 
   const getFinalPrice = (ceviche: CevicheCost): number => {
     return customPrices[ceviche.ceviche.id] || ceviche.precioVenta;
@@ -23,51 +23,84 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
       alert('Tu carrito está vacío. Agrega algunos ceviches para continuar.');
       return;
     }
-    // TODO: Navigate to checkout page
     navigate('/checkout');
   };
-  const getCevicheEmojis = (cevicheId: string): string => {
-    const emojis: string[] = [];
-    if (cevicheId.includes('pescado')) emojis.push('🐟');
-    if (cevicheId.includes('camaron')) emojis.push('🦐');
-    if (cevicheId.includes('pulpo')) emojis.push('🐙');
-    if (cevicheId.includes('piangua')) emojis.push('🐚');
-    return emojis.join('');
+
+  const getPlaceholderImage = (cevicheId: string): string => {
+    const imageMap: Record<string, string> = {
+      'pescado': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'camaron': 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=400&fit=crop',
+      'pulpo': 'https://images.unsplash.com/photo-1534352956036-cd81e27dd615?w=400&h=400&fit=crop',
+      'piangua': 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=400&fit=crop',
+      'pescado-camaron': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'pescado-pulpo': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'pescado-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'camaron-pulpo': 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=400&fit=crop',
+      'camaron-piangua': 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=400&fit=crop',
+      'pulpo-piangua': 'https://images.unsplash.com/photo-1534352956036-cd81e27dd615?w=400&h=400&fit=crop',
+      'pescado-camaron-pulpo': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'pescado-camaron-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'pescado-pulpo-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+      'camaron-pulpo-piangua': 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=400&fit=crop',
+      'pescado-camaron-pulpo-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
+    };
+    return imageMap[cevicheId] || 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop';
+  };
+
+  const calculateDefaultRating = (ceviche: CevicheCost): number => {
+    const ingredients = ceviche.ceviche.ingredients;
+    const ingredientCount = Object.values(ingredients).filter(v => v && v > 0).length;
+
+    if (ingredientCount >= 4) return 5;
+    if (ingredientCount === 3) return 5;
+    if (ingredientCount === 2) return 4;
+    return 4;
+  };
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    const ceviche = cevicheCosts.find(c => c.ceviche.id === id);
+    if (!ceviche) return;
+
+    const finalPrice = getFinalPrice(ceviche);
+
+    if (quantity === 0) {
+      removeItem(id);
+    } else {
+      const currentQuantity = getItemQuantity(id);
+      if (quantity > currentQuantity) {
+        addItem(id, ceviche.ceviche.name, finalPrice);
+      } else {
+        removeItem(id);
+      }
+    }
   };
 
   // Agrupar ceviches por número de ingredientes
   const { single: singleIngredient, double: twoIngredients, triple: threeIngredients, quadruple: fourIngredients } = categorizeByIngredientCount(cevicheCosts);
 
   const renderMenuSection = (ceviches: CevicheCost[], title: string) => (
-    <div className="mb-8">
-      <h3 className="text-xl font-bold mb-4 text-blue-800 border-b-2 border-blue-300 pb-2">
+    <div className="mb-12">
+      <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
         {title}
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
         {ceviches.map((c) => {
           const finalPrice = getFinalPrice(c);
+          const image = c.image || getPlaceholderImage(c.ceviche.id);
+          const rating = c.rating || calculateDefaultRating(c);
+
           return (
-            <div
+            <MenuCard
               key={c.ceviche.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors shadow-sm"
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <div className="text-2xl">{getCevicheEmojis(c.ceviche.id)}</div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-800 text-lg">{c.ceviche.name}</div>
-                  <div className="text-xl font-bold text-green-600 mt-1">
-                    {formatCurrency(finalPrice)}
-                  </div>
-                </div>
-              </div>
-              <div className="ml-4">
-                <CevicheCounter
-                  id={c.ceviche.id}
-                  name={c.ceviche.name}
-                  price={finalPrice}
-                />
-              </div>
-            </div>
+              id={c.ceviche.id}
+              name={c.ceviche.name}
+              image={image}
+              rating={rating}
+              subtitle="Ceviche Porteño Tradicional"
+              price={finalPrice}
+              quantity={getItemQuantity(c.ceviche.id)}
+              onQuantityChange={handleQuantityChange}
+            />
           );
         })}
       </div>
@@ -75,36 +108,60 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
   );
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg shadow-lg p-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 pb-32">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {renderMenuSection(singleIngredient, 'Ceviches de 1 sabor')}
+        {renderMenuSection(twoIngredients, 'Ceviches de 2 sabores')}
+        {renderMenuSection(threeIngredients, 'Ceviches de 3 sabores')}
+        {renderMenuSection(fourIngredients, 'Ceviche Mixto Full')}
 
-      {renderMenuSection(singleIngredient, 'Ceviches de 1 sabor')}
-      {renderMenuSection(twoIngredients, 'Ceviches de 2 sabores')}
-      {renderMenuSection(threeIngredients, 'Ceviches de 3 sabores')}
-      {renderMenuSection(fourIngredients, 'Ceviche Mixto Full')}
+        <div className="mt-8 text-center text-sm text-slate-600">
+          <p>Precios en colones costarricenses (₡)</p>
+          <p className="mt-2 text-xs">
+            Máximo 100 ceviches por pedido online. Para pedidos mayores, contáctanos directamente.
+          </p>
+        </div>
+      </div>
 
-      {/* Cart Summary and Checkout Button */}
+      {/* Cart Summary Fixed Footer */}
       {getTotalItems() > 0 && (
-        <div className="mt-8 sticky bottom-4 bg-white rounded-lg shadow-2xl border-2 border-blue-400 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm text-gray-600">Total de ceviches</div>
-              <div className="text-2xl font-bold text-blue-600">
-                {getTotalItems()} {getTotalItems() === 1 ? 'ceviche' : 'ceviches'}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-orange-200 shadow-lg p-4 z-40">
+          <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div>
+                <span className="text-slate-600 text-sm block">Total de ceviches</span>
+                <span className="text-slate-900 font-semibold text-lg">
+                  {getTotalItems()} {getTotalItems() === 1 ? 'ceviche' : 'ceviches'}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-600 text-sm block">Total a pagar</span>
+                <span className="text-2xl font-bold text-orange-600">
+                  {formatCurrency(getTotalPrice())}
+                </span>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-600">Total a pagar</div>
-              <div className="text-3xl font-bold text-green-600">
-                {formatCurrency(getTotalPrice())}
-              </div>
-            </div>
+            <button
+              onClick={handleCheckout}
+              className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              Realizar Pedido
+            </button>
           </div>
-          <button
-            onClick={handleCheckout}
-            className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
-          >
-            Realizar Pedido 🛒
-          </button>
           {getTotalItems() >= 90 && (
             <p className="text-xs text-amber-600 mt-2 text-center">
               ⚠️ Estás cerca del límite de 100 ceviches
@@ -112,13 +169,6 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
           )}
         </div>
       )}
-
-      <div className="mt-8 text-center text-sm text-gray-500">
-        <p>Precios en colones costarricenses (₡)</p>
-        <p className="mt-2 text-xs">
-          Máximo 100 ceviches por pedido online. Para pedidos mayores, contáctanos directamente.
-        </p>
-      </div>
     </div>
   );
 };

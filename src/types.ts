@@ -30,6 +30,8 @@ export interface CevicheCost {
   ceviche: Ceviche;
   costoProd: number;
   precioVenta: number;
+  image?: string;
+  rating?: number;
 }
 
 export interface OrderItem {
