@@ -51,7 +51,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
           <div className="flex-1 flex flex-col justify-between min-w-0">
             {/* Title */}
             <div>
-              <h3 className="font-bold text-base text-slate-900 mb-1 truncate">
+              <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2">
                 {name}
               </h3>
             </div>
