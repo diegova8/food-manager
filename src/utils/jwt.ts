@@ -2,9 +2,15 @@
  * JWT token utilities
  */
 
-interface JWTPayload {
+export interface JWTPayload {
   userId: string;
   username: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  birthday?: string;
+  dietaryPreferences?: string;
   isAdmin?: boolean;
   exp?: number;
   iat?: number;
