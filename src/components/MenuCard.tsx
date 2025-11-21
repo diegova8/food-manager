@@ -56,12 +56,15 @@ export const MenuCard: React.FC<MenuCardProps> = ({
               </h3>
             </div>
 
-            {/* Price and Action */}
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-lg font-bold text-orange-600 whitespace-nowrap">
+            {/* Price */}
+            <div className="mb-2">
+              <span className="text-lg font-bold text-orange-600">
                 {formatCurrency(price)}
               </span>
+            </div>
 
+            {/* Action Button or Counter */}
+            <div className="flex items-center justify-end">
               {quantity === 0 ? (
                 <button
                   onClick={handleOrderNow}
@@ -71,7 +74,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
                   + Agregar
                 </button>
               ) : (
-                <div className="scale-90 origin-right">
+                <div className="w-full flex justify-end">
                   <CevicheCounter
                     id={id}
                     name={name}
