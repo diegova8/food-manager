@@ -21,7 +21,7 @@ async function setupAdmin() {
     console.log('Connected to MongoDB successfully!');
 
     // Verificar si ya existe un usuario admin
-    let existingAdmin = await User.findOne({ isAdmin: true });
+    const existingAdmin = await User.findOne({ isAdmin: true });
 
     if (existingAdmin) {
       console.log('⚠️  Admin user already exists!');

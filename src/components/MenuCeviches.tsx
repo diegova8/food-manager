@@ -6,10 +6,10 @@ import { useCart } from '../context/CartContext';
 import { MenuCard } from './MenuCard';
 
 // Import local ceviche images
-const camaronImg = '/camaron.png';
-const pulpoImg = '/pulpo.png';
-const camaronPulpoImg = '/camaron-pulpo.png';
-const pulpoPianguaImg = '/pulpo-piangua.png';
+import camaronImg from '../assets/ceviches/camaron.png';
+import pulpoImg from '../assets/ceviches/pulpo.png';
+import camaronPulpoImg from '../assets/ceviches/camaron-pulpo.png';
+import pulpoPianguaImg from '../assets/ceviches/pulpo-piangua.png';
 
 interface MenuCevichesProps {
   cevicheCosts: CevicheCost[];

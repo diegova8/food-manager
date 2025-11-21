@@ -31,7 +31,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const base64Data = data.replace(/^data:image\/\w+;base64,/, '');
       buffer = Buffer.from(base64Data, 'base64');
     } catch (error) {
-      return errorResponse(res, 'Invalid base64 data', 400);
+      return errorResponse(res, `Invalid base64 data: ${error} `, 400);
     }
 
     // Check file size (max 10MB)
