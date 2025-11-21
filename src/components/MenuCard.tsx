@@ -2,7 +2,6 @@ import React from 'react';
 import CevicheCounter from './CevicheCounter';
 import logo from '../assets/logo.png';
 import { formatCurrency } from '../utils';
-import { StarRating } from './StarRating';
 
 interface MenuCardProps {
   id: string;
@@ -19,7 +18,6 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   id,
   name,
   image,
-  rating,
   subtitle,
   price,
   quantity,
@@ -51,14 +49,11 @@ export const MenuCard: React.FC<MenuCardProps> = ({
 
           {/* Content - Right */}
           <div className="flex-1 flex flex-col justify-between min-w-0">
-            {/* Title and Rating */}
+            {/* Title */}
             <div>
               <h3 className="font-bold text-base text-slate-900 mb-1 truncate">
                 {name}
               </h3>
-              <div className="mb-2">
-                <StarRating rating={rating} size="sm" color="orange-600" />
-              </div>
             </div>
 
             {/* Price and Action */}
@@ -104,11 +99,6 @@ export const MenuCard: React.FC<MenuCardProps> = ({
               className="w-full h-full object-cover"
             />
           </div>
-        </div>
-
-        {/* Star Rating */}
-        <div className="mb-3">
-          <StarRating rating={rating} size="md" color="orange-600" />
         </div>
 
         {/* Title */}
