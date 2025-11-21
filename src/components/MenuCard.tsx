@@ -30,11 +30,11 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   return (
     <>
       {/* Mobile Layout (Horizontal) */}
-      <div className="md:hidden bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-4 border-2 border-slate-100 hover:border-orange-300">
-        <div className="flex gap-4">
+      <div className="md:hidden bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-3 border-2 border-slate-100 hover:border-orange-300">
+        <div className="flex gap-3 items-center">
           {/* Circular Image - Left */}
           <div className="flex-shrink-0">
-            <div className="w-20 h-20 rounded-full border-3 border-dashed border-slate-300 shadow-sm overflow-hidden">
+            <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-300 shadow-sm overflow-hidden">
               <img
                 src={image}
                 alt={name}
@@ -47,42 +47,35 @@ export const MenuCard: React.FC<MenuCardProps> = ({
             </div>
           </div>
 
-          {/* Content - Right */}
-          <div className="flex-1 flex flex-col justify-between min-w-0">
-            {/* Title */}
-            <div>
-              <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2">
-                {name}
-              </h3>
-            </div>
+          {/* Content - Center */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-sm text-slate-900 mb-1 line-clamp-2">
+              {name}
+            </h3>
+            <span className="text-base font-bold text-orange-600">
+              {formatCurrency(price)}
+            </span>
+          </div>
 
-            {/* Price */}
-            <div className="mb-2">
-              <span className="text-lg font-bold text-orange-600">
-                {formatCurrency(price)}
-              </span>
-            </div>
-
-            {/* Action Button or Counter */}
-            <div className="flex items-center justify-end">
-              {quantity === 0 ? (
-                <button
-                  onClick={handleOrderNow}
-                  aria-label={`Add ${name} to cart`}
-                  className="bg-orange-100 hover:bg-orange-200 text-orange-600 font-semibold py-2 px-4 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 text-sm whitespace-nowrap"
-                >
-                  + Agregar
-                </button>
-              ) : (
-                <div className="w-full flex justify-end">
-                  <CevicheCounter
-                    id={id}
-                    name={name}
-                    price={price}
-                  />
-                </div>
-              )}
-            </div>
+          {/* Action - Right */}
+          <div className="flex-shrink-0">
+            {quantity === 0 ? (
+              <button
+                onClick={handleOrderNow}
+                aria-label={`Add ${name} to cart`}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 text-xs whitespace-nowrap"
+              >
+                Agregar
+              </button>
+            ) : (
+              <div className="scale-75 origin-center">
+                <CevicheCounter
+                  id={id}
+                  name={name}
+                  price={price}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
