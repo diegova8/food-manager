@@ -5,6 +5,12 @@ import { formatCurrency, categorizeByIngredientCount } from '../utils';
 import { useCart } from '../context/CartContext';
 import { MenuCard } from './MenuCard';
 
+// Import local ceviche images
+const camaronImg = '/camaron.png';
+const pulpoImg = '/pulpo.png';
+const camaronPulpoImg = '/camaron-pulpo.png';
+const pulpoPianguaImg = '/pulpo-piangua.png';
+
 interface MenuCevichesProps {
   cevicheCosts: CevicheCost[];
   customPrices: { [key: string]: number };
@@ -29,15 +35,15 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
   const getPlaceholderImage = (cevicheId: string): string => {
     const imageMap: Record<string, string> = {
       'pescado': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
-      'camaron': '/camaron.png',
-      'pulpo': '/pulpo.png',
+      'camaron': camaronImg,
+      'pulpo': pulpoImg,
       'piangua': 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=400&h=400&fit=crop',
       'pescado-camaron': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
       'pescado-pulpo': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
       'pescado-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
-      'camaron-pulpo': '/camaron-pulpo.png',
+      'camaron-pulpo': camaronPulpoImg,
       'camaron-piangua': 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=400&fit=crop',
-      'pulpo-piangua': '/pulpo-piangua.png',
+      'pulpo-piangua': pulpoPianguaImg,
       'pescado-camaron-pulpo': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
       'pescado-camaron-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
       'pescado-pulpo-piangua': 'https://images.unsplash.com/photo-1559737558-2f2c99e9b3e7?w=400&h=400&fit=crop',
