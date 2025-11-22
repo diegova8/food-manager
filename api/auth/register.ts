@@ -19,9 +19,15 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
 
     const { email, password, firstName, lastName, phone, address, birthday, dietaryPreferences } = validatedData;
 
-    // Check if user already exists
+    // Normalize email to lowercase
+    const emailLower = email.toLowerCase();
+
+    // Check if user already exists (case-insensitive)
     const existingUser = await User.findOne({
-      $or: [{ email }, { username: email }]
+      $or: [
+        { email: { $regex: new RegExp(`^${emailLower}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${emailLower}$`, 'i') } }
+      ]
     });
 
     if (existingUser) {
@@ -31,10 +37,10 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Create user with lowercase email
     const user = await User.create({
-      username: email, // Use email as username for customer accounts
-      email,
+      username: emailLower, // Use email as username for customer accounts
+      email: emailLower,
       password: hashedPassword,
       firstName,
       lastName,
@@ -53,7 +59,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
 
     // Save verification token
     await EmailVerification.create({
-      email,
+      email: emailLower,
       token: verificationToken,
       expiresAt
     });
@@ -61,7 +67,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
     // Send verification email
     const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Usuario';
     try {
-      await sendVerificationEmail(email, fullName, verificationToken);
+      await sendVerificationEmail(emailLower, fullName, verificationToken);
     } catch (emailError) {
       console.error('Error sending verification email:', emailError);
       // Don't fail registration if email fails, user can request new verification

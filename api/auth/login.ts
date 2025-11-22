@@ -17,9 +17,13 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
 
     const { username, password } = validatedData;
 
-    // Buscar usuario por username o email
+    // Buscar usuario por username o email (case-insensitive)
+    const usernameLower = username.toLowerCase();
     const user = await User.findOne({
-      $or: [{ username }, { email: username }]
+      $or: [
+        { username: { $regex: new RegExp(`^${usernameLower}$`, 'i') } },
+        { email: { $regex: new RegExp(`^${usernameLower}$`, 'i') } }
+      ]
     });
 
     if (!user) {

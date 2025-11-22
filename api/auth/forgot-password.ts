@@ -18,8 +18,11 @@ const handler: ValidationHandler<ForgotPasswordInput> = async (req: VercelReques
 
     const { email } = validatedData;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email (case-insensitive)
+    const emailLower = email.toLowerCase();
+    const user = await User.findOne({
+      email: { $regex: new RegExp(`^${emailLower}$`, 'i') }
+    });
 
     // Don't reveal if email exists (security best practice)
     if (!user) {
