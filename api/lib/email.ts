@@ -695,7 +695,7 @@ export async function sendTicketConfirmation(
           <div class="wrapper">
             <div class="container">
               <div class="header" style="background: linear-gradient(135deg, ${typeColor} 0%, ${ticketDetails.type === 'suggestion' ? '#059669' : '#dc2626'} 100%);">
-                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
+                <div class="header-icon" style="width: 80px; height: 80px; background-color: white; border-radius: 50%; margin: 0 auto 16px; padding: 12px; box-sizing: border-box;"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" /></div>
                 <h1>Ticket Recibido</h1>
                 <p>#${ticketDetails.ticketId.slice(-8)}</p>
               </div>
@@ -781,7 +781,7 @@ export async function sendTicketNotificationToSupport(
           <div class="wrapper">
             <div class="container">
               <div class="header" style="background: linear-gradient(135deg, ${typeColor} 0%, ${ticketDetails.type === 'suggestion' ? '#059669' : '#dc2626'} 100%);">
-                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
+                <div class="header-icon" style="width: 80px; height: 80px; background-color: white; border-radius: 50%; margin: 0 auto 16px; padding: 12px; box-sizing: border-box;"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" /></div>
                 <h1>Nuevo Ticket</h1>
                 <p>${typeLabel} #${ticketDetails.ticketId.slice(-8)}</p>
               </div>
