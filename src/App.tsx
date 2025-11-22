@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import MenuPage from './pages/MenuPage';
 import AdminPage from './pages/AdminPage';
+import TicketsManagementPage from './pages/TicketsManagementPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
@@ -57,6 +58,14 @@ function App() {
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/tickets"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <TicketsManagementPage />
             </ProtectedRoute>
           }
         />

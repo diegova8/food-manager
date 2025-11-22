@@ -523,7 +523,10 @@ function CheckoutPage() {
         </p>
         <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-200">
           <p className="text-3xl font-bold text-orange-600 text-center tracking-wider">
-            +506 6000 8080
+            6000 8080
+          </p>
+          <p className="text-sm text-orange-700 text-center mt-2">
+            A nombre de: <span className="font-semibold">Diego Arturo Vargas Aponte</span>
           </p>
         </div>
         <p className="text-sm text-orange-700 mt-3 text-center">
@@ -598,7 +601,7 @@ function CheckoutPage() {
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
           className="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-orange-400 focus:bg-white transition-all duration-200 text-slate-900 placeholder-slate-400 resize-none"
-          placeholder="Ej: Sin cebolla, extra picante, etc."
+          placeholder="Ej: Sin cebolla, sin culantro, alergia a..."
         />
       </div>
     </div>

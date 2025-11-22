@@ -666,3 +666,164 @@ export async function sendPasswordResetEmail(
     `
   });
 }
+
+export async function sendTicketConfirmation(
+  to: string,
+  ticketDetails: {
+    ticketId: string;
+    name: string;
+    type: 'suggestion' | 'bug';
+    title: string;
+  }
+): Promise<void> {
+  const typeLabel = ticketDetails.type === 'suggestion' ? 'Sugerencia' : 'Reporte de Error';
+  const typeColor = ticketDetails.type === 'suggestion' ? '#10b981' : '#ef4444';
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: `Ticket recibido #${ticketDetails.ticketId.slice(-8)} - Ceviche de mi Tata`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>${baseStyles}</style>
+        </head>
+        <body>
+          <div class="wrapper">
+            <div class="container">
+              <div class="header" style="background: linear-gradient(135deg, ${typeColor} 0%, ${ticketDetails.type === 'suggestion' ? '#059669' : '#dc2626'} 100%);">
+                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
+                <h1>Ticket Recibido</h1>
+                <p>#${ticketDetails.ticketId.slice(-8)}</p>
+              </div>
+              <div class="content">
+                <h2 class="greeting">¡Hola ${ticketDetails.name}!</h2>
+                <p class="text">Hemos recibido tu ${typeLabel.toLowerCase()} y la revisaremos pronto.</p>
+
+                <div class="card">
+                  <p class="card-title">Detalles del ticket</p>
+                  <div class="info-row">
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Tipo</span></td>
+                        <td style="text-align: right;"><span class="badge" style="background-color: ${ticketDetails.type === 'suggestion' ? '#ccfbf1' : '#fee2e2'}; color: ${ticketDetails.type === 'suggestion' ? '#0f766e' : '#991b1b'};">${typeLabel}</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="info-row">
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Título</span></td>
+                        <td style="text-align: right;"><span class="info-value">${ticketDetails.title}</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <p class="text" style="color: #64748b; font-size: 14px;">
+                  Gracias por ayudarnos a mejorar. Te notificaremos cuando haya actualizaciones sobre tu ticket.
+                </p>
+              </div>
+              <div class="footer">
+                <p>© ${new Date().getFullYear()} Ceviche de mi Tata. Todos los derechos reservados.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  });
+}
+
+export async function sendTicketNotificationToSupport(
+  ticketDetails: {
+    ticketId: string;
+    name: string;
+    email: string;
+    type: 'suggestion' | 'bug';
+    title: string;
+    description: string;
+    images?: string[];
+  }
+): Promise<void> {
+  const typeLabel = ticketDetails.type === 'suggestion' ? 'Sugerencia' : 'Reporte de Error';
+  const typeColor = ticketDetails.type === 'suggestion' ? '#10b981' : '#ef4444';
+
+  const imagesHtml = ticketDetails.images && ticketDetails.images.length > 0
+    ? `
+      <div class="card">
+        <p class="card-title">Imágenes adjuntas (${ticketDetails.images.length})</p>
+        ${ticketDetails.images.map((img, i) => `
+          <p class="text" style="margin-bottom: 8px;">
+            <a href="${img}" class="link" target="_blank">Ver imagen ${i + 1} →</a>
+          </p>
+        `).join('')}
+      </div>
+    `
+    : '';
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: 'soporte@cevichedemitata.app',
+    subject: `[${typeLabel.toUpperCase()}] #${ticketDetails.ticketId.slice(-8)} - ${ticketDetails.title}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>${baseStyles}</style>
+        </head>
+        <body>
+          <div class="wrapper">
+            <div class="container">
+              <div class="header" style="background: linear-gradient(135deg, ${typeColor} 0%, ${ticketDetails.type === 'suggestion' ? '#059669' : '#dc2626'} 100%);">
+                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
+                <h1>Nuevo Ticket</h1>
+                <p>${typeLabel} #${ticketDetails.ticketId.slice(-8)}</p>
+              </div>
+              <div class="content">
+                <div class="card card-orange">
+                  <p class="card-title">Información del usuario</p>
+                  <div class="info-row">
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Nombre</span></td>
+                        <td style="text-align: right;"><span class="info-value">${ticketDetails.name}</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div class="info-row">
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Email</span></td>
+                        <td style="text-align: right;"><span class="info-value">${ticketDetails.email}</span></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <p class="card-title">${ticketDetails.title}</p>
+                  <p class="text">${ticketDetails.description.replace(/\n/g, '<br>')}</p>
+                </div>
+
+                ${imagesHtml}
+
+                <div style="text-align: center; margin: 32px 0;">
+                  <a href="${APP_URL}/admin/tickets" class="button">Ver en Admin</a>
+                </div>
+              </div>
+              <div class="footer">
+                <p>Notificación automática de soporte - Ceviche de mi Tata</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  });
+}

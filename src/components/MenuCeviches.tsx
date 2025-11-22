@@ -107,6 +107,7 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
               subtitle="Ceviche Porteño Tradicional"
               price={finalPrice}
               quantity={getItemQuantity(c.ceviche.id)}
+              totalItems={getTotalItems()}
               onQuantityChange={handleQuantityChange}
             />
           );

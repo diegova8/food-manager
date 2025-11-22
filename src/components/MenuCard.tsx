@@ -1,5 +1,4 @@
 import React from 'react';
-import CevicheCounter from './CevicheCounter';
 import logo from '../assets/logo.png';
 import { formatCurrency } from '../utils';
 
@@ -11,8 +10,11 @@ interface MenuCardProps {
   subtitle: string;
   price: number;
   quantity: number;
+  totalItems: number;
   onQuantityChange: (id: string, quantity: number) => void;
 }
+
+const MAX_TOTAL_ITEMS = 100;
 
 export const MenuCard: React.FC<MenuCardProps> = ({
   id,
@@ -21,10 +23,15 @@ export const MenuCard: React.FC<MenuCardProps> = ({
   subtitle,
   price,
   quantity,
+  totalItems,
   onQuantityChange
 }) => {
+  const canIncrement = totalItems < MAX_TOTAL_ITEMS;
+
   const handleOrderNow = () => {
-    onQuantityChange(id, 1);
+    if (canIncrement) {
+      onQuantityChange(id, 1);
+    }
   };
 
   return (
@@ -34,7 +41,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
         <div className="flex gap-3 items-center">
           {/* Circular Image - Left */}
           <div className="flex-shrink-0">
-            <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-300 shadow-sm overflow-hidden">
+            <div className="w-16 h-16 rounded-full shadow-sm overflow-hidden">
               <img
                 src={image}
                 alt={name}
@@ -62,8 +69,9 @@ export const MenuCard: React.FC<MenuCardProps> = ({
             {quantity === 0 ? (
               <button
                 onClick={handleOrderNow}
+                disabled={!canIncrement}
                 aria-label={`Add ${name} to cart`}
-                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 flex items-center justify-center text-xl shadow-md"
+                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 flex items-center justify-center text-xl shadow-md disabled:cursor-not-allowed"
               >
                 +
               </button>
@@ -71,7 +79,8 @@ export const MenuCard: React.FC<MenuCardProps> = ({
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={() => onQuantityChange(id, quantity + 1)}
-                  className="w-8 h-8 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-center text-lg shadow-sm"
+                  disabled={!canIncrement}
+                  className="w-8 h-8 bg-teal-500 hover:bg-teal-600 disabled:bg-gray-300 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-center text-lg shadow-sm disabled:cursor-not-allowed"
                   aria-label="Aumentar cantidad"
                 >
                   +
@@ -97,7 +106,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       <div className="hidden md:block bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border-2 border-slate-100 hover:border-orange-300">
         {/* Circular Image Container */}
         <div className="flex justify-center mb-4">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-dashed border-slate-300 shadow-md overflow-hidden">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full shadow-md overflow-hidden">
             <img
               src={image}
               alt={name}
@@ -131,8 +140,9 @@ export const MenuCard: React.FC<MenuCardProps> = ({
         {quantity === 0 ? (
           <button
             onClick={handleOrderNow}
+            disabled={!canIncrement}
             aria-label={`Add ${name} to cart`}
-            className="w-full bg-orange-100 hover:bg-orange-200 text-orange-600 font-semibold py-3 px-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+            className="w-full bg-orange-100 hover:bg-orange-200 disabled:bg-gray-100 text-orange-600 disabled:text-gray-400 font-semibold py-3 px-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -151,11 +161,27 @@ export const MenuCard: React.FC<MenuCardProps> = ({
             ORDENAR AHORA
           </button>
         ) : (
-          <CevicheCounter
-            id={id}
-            name={name}
-            price={price}
-          />
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => onQuantityChange(id, quantity - 1)}
+              disabled={quantity === 0}
+              className="w-10 h-10 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center justify-center text-xl shadow-md disabled:cursor-not-allowed"
+              aria-label="Disminuir cantidad"
+            >
+              −
+            </button>
+            <div className="text-center font-bold text-slate-900 text-xl min-w-[32px]">
+              {quantity}
+            </div>
+            <button
+              onClick={() => onQuantityChange(id, quantity + 1)}
+              disabled={!canIncrement}
+              className="w-10 h-10 bg-teal-500 hover:bg-teal-600 disabled:bg-gray-300 text-white font-bold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-center text-xl shadow-md disabled:cursor-not-allowed"
+              aria-label="Aumentar cantidad"
+            >
+              +
+            </button>
+          </div>
         )}
       </div>
     </>

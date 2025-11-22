@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { decodeJWT, isUserAdmin } from '../utils/jwt';
 import logo from '../assets/logo.png';
+import ContactModal from './ContactModal';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -10,6 +11,29 @@ const Header = () => {
   const isAuthenticated = api.isAuthenticated();
   const isAdmin = isUserAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactDropdownOpen, setContactDropdownOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactType, setContactType] = useState<'suggestion' | 'bug'>('suggestion');
+  const contactDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contactDropdownRef.current && !contactDropdownRef.current.contains(event.target as Node)) {
+        setContactDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const openContactModal = (type: 'suggestion' | 'bug') => {
+    setContactType(type);
+    setContactModalOpen(true);
+    setContactDropdownOpen(false);
+    setMobileMenuOpen(false);
+  };
 
   // Get user info from token
   const getUserInfo = () => {
@@ -94,6 +118,41 @@ const Header = () => {
                   </Link>
                 )}
 
+                {/* Contact Dropdown */}
+                <div className="relative" ref={contactDropdownRef}>
+                  <button
+                    onClick={() => setContactDropdownOpen(!contactDropdownOpen)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    Contacto
+                  </button>
+                  {contactDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+                      <button
+                        onClick={() => openContactModal('suggestion')}
+                        className="w-full px-4 py-2 text-left text-slate-700 hover:bg-teal-50 hover:text-teal-700 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        Sugerencia
+                      </button>
+                      <button
+                        onClick={() => openContactModal('bug')}
+                        className="w-full px-4 py-2 text-left text-slate-700 hover:bg-red-50 hover:text-red-700 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Reportar Bug
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
@@ -103,6 +162,40 @@ const Header = () => {
               </>
             ) : (
               <>
+                {/* Contact Dropdown for guests */}
+                <div className="relative" ref={contactDropdownRef}>
+                  <button
+                    onClick={() => setContactDropdownOpen(!contactDropdownOpen)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    Contacto
+                  </button>
+                  {contactDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+                      <button
+                        onClick={() => openContactModal('suggestion')}
+                        className="w-full px-4 py-2 text-left text-slate-700 hover:bg-teal-50 hover:text-teal-700 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        Sugerencia
+                      </button>
+                      <button
+                        onClick={() => openContactModal('bug')}
+                        className="w-full px-4 py-2 text-left text-slate-700 hover:bg-red-50 hover:text-red-700 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Reportar Bug
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <Link
                   to="/login"
                   className="px-4 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors font-medium"
@@ -214,6 +307,29 @@ const Header = () => {
                   </Link>
                 )}
 
+                {/* Contact options */}
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <p className="px-4 py-2 text-xs text-gray-500 uppercase font-semibold">Contacto</p>
+                  <button
+                    onClick={() => openContactModal('suggestion')}
+                    className="w-full px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 text-teal-600 hover:bg-teal-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Sugerencia
+                  </button>
+                  <button
+                    onClick={() => openContactModal('bug')}
+                    className="w-full px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 text-red-600 hover:bg-red-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Reportar Bug
+                  </button>
+                </div>
+
                 {/* Logout button */}
                 <button
                   onClick={handleLogout}
@@ -263,11 +379,41 @@ const Header = () => {
                   </svg>
                   Registrarse
                 </Link>
+
+                {/* Contact options for guests */}
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <p className="px-4 py-2 text-xs text-gray-500 uppercase font-semibold">Contacto</p>
+                  <button
+                    onClick={() => openContactModal('suggestion')}
+                    className="w-full px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 text-teal-600 hover:bg-teal-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    Sugerencia
+                  </button>
+                  <button
+                    onClick={() => openContactModal('bug')}
+                    className="w-full px-4 py-3 rounded-lg transition-colors font-medium flex items-center gap-3 text-red-600 hover:bg-red-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Reportar Bug
+                  </button>
+                </div>
               </div>
             )}
           </nav>
         )}
       </div>
+
+      {/* Contact Modal */}
+      <ContactModal
+        isOpen={contactModalOpen}
+        onClose={() => setContactModalOpen(false)}
+        initialType={contactType}
+      />
     </header>
   );
 };

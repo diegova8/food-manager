@@ -141,8 +141,40 @@ const EmailVerificationSchema = new Schema<IEmailVerification>({
 // Create indexes
 EmailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
+// Support Ticket Model
+export interface ISupportTicket extends Document {
+  user?: mongoose.Types.ObjectId;
+  guestEmail?: string;
+  guestName?: string;
+  type: 'suggestion' | 'bug';
+  title: string;
+  description: string;
+  images?: string[];
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const SupportTicketSchema = new Schema<ISupportTicket>({
+  user: { type: Schema.Types.ObjectId, ref: 'User' },
+  guestEmail: { type: String },
+  guestName: { type: String },
+  type: { type: String, enum: ['suggestion', 'bug'], required: true },
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  images: [{ type: String }],
+  status: {
+    type: String,
+    enum: ['open', 'in_progress', 'resolved', 'closed'],
+    default: 'open'
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 // Prevent model recompilation in development
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export const Config = mongoose.models.Config || mongoose.model<IConfig>('Config', ConfigSchema);
 export const Order = mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
 export const EmailVerification = mongoose.models.EmailVerification || mongoose.model<IEmailVerification>('EmailVerification', EmailVerificationSchema);
+export const SupportTicket = mongoose.models.SupportTicket || mongoose.model<ISupportTicket>('SupportTicket', SupportTicketSchema);
