@@ -42,10 +42,16 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
       );
     }
 
-    // Generar token
+    // Generar token with full profile info
     const token = generateToken({
       userId: user._id.toString(),
       username: user.username,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      birthday: user.birthday?.toISOString().split('T')[0],
+      dietaryPreferences: user.dietaryPreferences,
       isAdmin: user.isAdmin
     });
 
@@ -58,6 +64,10 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
           username: user.username,
           email: user.email,
           name: user.name,
+          phone: user.phone,
+          address: user.address,
+          birthday: user.birthday,
+          dietaryPreferences: user.dietaryPreferences,
           isAdmin: user.isAdmin
         }
       },

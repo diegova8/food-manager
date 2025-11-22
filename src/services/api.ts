@@ -243,6 +243,98 @@ class ApiService {
     });
     return response;
   }
+
+  // Profile
+  async getProfile(): Promise<{
+    success: boolean;
+    data: {
+      id: string;
+      username: string;
+      email?: string;
+      name?: string;
+      phone?: string;
+      address?: string;
+      birthday?: string;
+      dietaryPreferences?: string;
+      isAdmin: boolean;
+      emailVerified: boolean;
+      createdAt: string;
+    };
+  }> {
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        id: string;
+        username: string;
+        email?: string;
+        name?: string;
+        phone?: string;
+        address?: string;
+        birthday?: string;
+        dietaryPreferences?: string;
+        isAdmin: boolean;
+        emailVerified: boolean;
+        createdAt: string;
+      };
+    }>('/auth/profile', {
+      method: 'GET',
+    });
+    return response;
+  }
+
+  async updateProfile(data: {
+    name?: string;
+    phone?: string;
+    address?: string;
+    birthday?: string;
+    dietaryPreferences?: string;
+  }): Promise<{
+    success: boolean;
+    data: {
+      token: string;
+      user: {
+        id: string;
+        username: string;
+        email?: string;
+        name?: string;
+        phone?: string;
+        address?: string;
+        birthday?: string;
+        dietaryPreferences?: string;
+        isAdmin: boolean;
+      };
+    };
+    message: string;
+  }> {
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        token: string;
+        user: {
+          id: string;
+          username: string;
+          email?: string;
+          name?: string;
+          phone?: string;
+          address?: string;
+          birthday?: string;
+          dietaryPreferences?: string;
+          isAdmin: boolean;
+        };
+      };
+      message: string;
+    }>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+
+    // Update token in localStorage with new user info
+    if (response.data?.token) {
+      this.setToken(response.data.token);
+    }
+
+    return response;
+  }
 }
 
 export const api = new ApiService();
