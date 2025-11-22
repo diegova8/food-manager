@@ -41,7 +41,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .sort({ createdAt: -1 })
       .limit(parseInt(limit as string))
       .skip(parseInt(offset as string))
-      .populate('user', 'name email phone')
+      .populate('user', 'firstName lastName email phone')
       .lean();
 
     // Get total count for pagination

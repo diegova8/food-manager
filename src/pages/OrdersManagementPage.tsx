@@ -86,7 +86,11 @@ function OrdersManagementPage() {
   };
 
   const getCustomerName = (order: Order) => {
-    return order.user?.name || order.guestInfo?.name || 'N/A';
+    if (order.user) {
+      const fullName = [order.user.firstName, order.user.lastName].filter(Boolean).join(' ');
+      return fullName || 'N/A';
+    }
+    return order.guestInfo?.name || 'N/A';
   };
 
   const getCustomerPhone = (order: Order) => {
