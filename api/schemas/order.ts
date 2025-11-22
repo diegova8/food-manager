@@ -21,6 +21,7 @@ export const createOrderSchema = z.object({
   deliveryMethod: z.enum(['pickup', 'uber-flash'], {
     message: 'Delivery method must be either "pickup" or "uber-flash"'
   }),
+  scheduledDate: z.string().min(1, 'Scheduled date is required'),
   notes: z.string().max(500, 'Notes are too long').optional(),
   paymentProof: z.string().url('Payment proof must be a valid URL')
 });

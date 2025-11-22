@@ -10,6 +10,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import ProfilePage from './pages/ProfilePage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -48,6 +50,8 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/orders" element={<MyOrdersPage />} />
+        <Route path="/profile/orders/:id" element={<OrderDetailPage />} />
         <Route
           path="/admin"
           element={

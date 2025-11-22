@@ -1,0 +1,63 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import connectDB from '../lib/mongodb.js';
+import { Order } from '../lib/models.js';
+import { verifyAuth } from '../lib/auth.js';
+import { compose, withCORS, withSecurityHeaders } from '../middleware/index.js';
+import { successResponse, errorResponse } from '../lib/responses.js';
+
+async function handler(req: VercelRequest, res: VercelResponse) {
+  // Only allow GET
+  if (req.method !== 'GET') {
+    return errorResponse(res, 'Method not allowed', 405);
+  }
+
+  try {
+    // Verify user authentication
+    let userId: string;
+    try {
+      const payload = verifyAuth(req);
+      userId = payload.userId;
+    } catch (error) {
+      return errorResponse(res, 'Unauthorized', 401);
+    }
+
+    await connectDB();
+
+    // Get query parameters for filtering
+    const { status, limit = '50', offset = '0' } = req.query;
+
+    // Build query - only get orders for this user
+    interface OrderQuery {
+      user: string;
+      status?: string;
+    }
+    const query: OrderQuery = { user: userId };
+    if (status && typeof status === 'string') {
+      query.status = status;
+    }
+
+    // Fetch orders
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit as string))
+      .skip(parseInt(offset as string))
+      .lean();
+
+    // Get total count for pagination
+    const totalCount = await Order.countDocuments(query);
+
+    return successResponse(res, {
+      orders,
+      totalCount,
+      limit: parseInt(limit as string),
+      offset: parseInt(offset as string)
+    });
+  } catch (error) {
+    return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
+  }
+}
+
+export default compose(
+  withCORS,
+  withSecurityHeaders
+)(handler);

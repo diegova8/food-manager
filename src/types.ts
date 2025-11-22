@@ -64,6 +64,7 @@ export interface Order {
   }>;
   total: number;
   deliveryMethod: 'pickup' | 'uber-flash';
+  scheduledDate: string;
   paymentProof: string;
   notes?: string;
   status: OrderStatus;

@@ -76,7 +76,7 @@ function CevicheCounter({ id, name, price }: CevicheCounterProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-center gap-2">
       <button
         onClick={handleDecrement}
         disabled={quantity === 0}

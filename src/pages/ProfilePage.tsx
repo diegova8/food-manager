@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import BirthdayPicker from '../components/BirthdayPicker';
 import { api } from '../services/api';
+import { formatDateDisplay } from '../utils';
 
 interface UserProfile {
   firstName: string;
@@ -289,16 +291,13 @@ const ProfilePage = () => {
                 Fecha de cumpleaños
               </label>
               {isEditing ? (
-                <input
-                  type="date"
-                  name="birthday"
+                <BirthdayPicker
                   value={editedProfile.birthday}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  onChange={(date) => setEditedProfile(prev => ({ ...prev, birthday: date }))}
                 />
               ) : (
                 <p className="px-4 py-3 bg-slate-50 rounded-lg text-slate-800">
-                  {profile.birthday ? new Date(profile.birthday).toLocaleDateString('es-ES', {
+                  {profile.birthday ? formatDateDisplay(profile.birthday, {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
@@ -333,7 +332,7 @@ const ProfilePage = () => {
           <div className="mt-8 pt-6 border-t border-slate-200">
             <button
               onClick={() => navigate('/menu')}
-              className="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

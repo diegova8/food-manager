@@ -4,6 +4,35 @@ export const formatCurrency = (amount: number): string => {
   return `₡${amount.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
+/**
+ * Parse a date string from the API (ISO format) and return a Date object
+ * that displays correctly in the local timezone without shifting days.
+ * This is needed because MongoDB stores dates in UTC, which can cause
+ * dates to appear one day earlier when displayed.
+ */
+export const parseDate = (dateString: string): Date => {
+  if (!dateString) return new Date();
+
+  // If it's an ISO string with time component, extract just the date part
+  // and create a date at noon local time to avoid timezone issues
+  const datePart = dateString.split('T')[0];
+  const [year, month, day] = datePart.split('-').map(Number);
+
+  // Create date at noon local time to avoid any timezone shifting
+  return new Date(year, month - 1, day, 12, 0, 0);
+};
+
+/**
+ * Format a date string from the API for display
+ */
+export const formatDateDisplay = (
+  dateString: string,
+  options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
+): string => {
+  const date = parseDate(dateString);
+  return date.toLocaleDateString('es-CR', options);
+};
+
 export const calculateMezclaJugoCostPerLiter = (prices: RawMaterialPrices): number => {
   // 500mL jugo limón + 500mL jugo naranja + 33g sal + 33g azúcar
   const costoJugoLimon = 500 * prices.jugoLimon;

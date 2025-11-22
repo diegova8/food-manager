@@ -89,6 +89,7 @@ export interface IOrder extends Document {
   items: IOrderItem[];
   total: number;
   deliveryMethod: 'pickup' | 'uber-flash';
+  scheduledDate: Date;
   paymentProof?: string; // URL to uploaded image
   notes?: string;
   status: 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
@@ -110,6 +111,7 @@ const OrderSchema = new Schema<IOrder>({
   }],
   total: { type: Number, required: true },
   deliveryMethod: { type: String, enum: ['pickup', 'uber-flash'], required: true },
+  scheduledDate: { type: Date, required: true },
   paymentProof: { type: String },
   notes: { type: String },
   status: {

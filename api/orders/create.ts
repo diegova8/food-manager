@@ -16,7 +16,7 @@ const handler: ValidationHandler<CreateOrderInput> = async (req: VercelRequest, 
   try {
     await connectDB();
 
-    const { items, total, personalInfo, deliveryMethod, notes, paymentProof } = validatedData;
+    const { items, total, personalInfo, deliveryMethod, scheduledDate, notes, paymentProof } = validatedData;
 
     // Check if user is authenticated
     let userId = null;
@@ -38,6 +38,7 @@ const handler: ValidationHandler<CreateOrderInput> = async (req: VercelRequest, 
       items,
       total,
       deliveryMethod,
+      scheduledDate: new Date(scheduledDate),
       paymentProof,
       notes,
       status: 'pending'

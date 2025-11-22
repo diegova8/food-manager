@@ -186,10 +186,11 @@ class ApiService {
     total: number;
     personalInfo: { name: string; phone: string; email?: string };
     deliveryMethod: string;
+    scheduledDate: string;
     notes?: string;
     paymentProof: string;
-  }): Promise<{ success: boolean; orderId: string; message: string }> {
-    const response = await this.fetch<{ success: boolean; orderId: string; message: string }>('/orders/create', {
+  }): Promise<{ success: boolean; data: { orderId: string; status: string }; message: string }> {
+    const response = await this.fetch<{ success: boolean; data: { orderId: string; status: string }; message: string }>('/orders/create', {
       method: 'POST',
       body: JSON.stringify(orderData),
     });
@@ -237,6 +238,36 @@ class ApiService {
       method: 'DELETE',
       body: JSON.stringify({ orderId }),
     });
+    return response;
+  }
+
+  async getMyOrders(params?: { status?: string; limit?: number; offset?: number }): Promise<{
+    success: boolean;
+    data: {
+      orders: Order[];
+      totalCount: number;
+    };
+  }> {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/orders/my-orders${queryString ? `?${queryString}` : ''}`;
+
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        orders: Order[];
+        totalCount: number;
+      };
+    }>(url);
+    return response;
+  }
+
+  async getOrderById(orderId: string): Promise<{ success: boolean; data: { order: Order } }> {
+    const response = await this.fetch<{ success: boolean; data: { order: Order } }>(`/orders/${orderId}`);
     return response;
   }
 

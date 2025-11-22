@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils';
 import Header from '../components/Header';
+import DatePicker from '../components/DatePicker';
 import logo from '../assets/logo.png';
 
 type DeliveryMethod = 'pickup' | 'uber-flash';
@@ -33,16 +34,18 @@ function CheckoutPage() {
     email: ''
   });
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
+  const [scheduledDate, setScheduledDate] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
+  const [orderCompleted, setOrderCompleted] = useState(false);
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not after order completion)
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !orderCompleted) {
       navigate('/menu');
     }
-  }, [items, navigate]);
+  }, [items, navigate, orderCompleted]);
 
   // Load user data if authenticated
   useEffect(() => {
@@ -105,6 +108,14 @@ function CheckoutPage() {
       }
     }
 
+    if (currentStep === 2) {
+      // Validate scheduled date
+      if (!scheduledDate) {
+        setError('Por favor selecciona una fecha para tu pedido');
+        return;
+      }
+    }
+
     if (currentStep === 3) {
       // Validate payment proof
       if (!paymentProof) {
@@ -151,15 +162,17 @@ function CheckoutPage() {
         total: getTotalPrice(),
         personalInfo,
         deliveryMethod,
+        scheduledDate,
         notes,
         paymentProof: paymentProofUrl
       };
 
-      await api.createOrder(orderData);
+      const result = await api.createOrder(orderData);
 
-      // Clear cart and navigate to success page
+      // Mark order as completed before clearing cart to prevent redirect
+      setOrderCompleted(true);
       clearCart();
-      navigate('/order-success');
+      navigate('/order-success', { state: { orderId: result.data.orderId } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al procesar el pedido');
       setLoading(false);
@@ -302,102 +315,141 @@ function CheckoutPage() {
     );
   };
 
-  const renderStep2 = () => (
-    <div className="space-y-4">
-      <div
-        onClick={() => setDeliveryMethod('pickup')}
-        className={`p-5 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
-          deliveryMethod === 'pickup'
-            ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md'
-            : 'border-slate-200 bg-white hover:border-orange-200 hover:shadow-sm'
-        }`}
-      >
-        <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${
-            deliveryMethod === 'pickup' ? 'bg-orange-100' : 'bg-slate-100'
-          }`}>
-            🏪
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className={`font-bold text-lg ${
-                deliveryMethod === 'pickup' ? 'text-orange-700' : 'text-slate-800'
-              }`}>
-                Pick Up
-              </span>
-              {deliveryMethod === 'pickup' && (
-                <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
-                  Seleccionado
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-slate-500 mt-1">
-              Recoge tu pedido en nuestra ubicación
-            </p>
-          </div>
-          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-            deliveryMethod === 'pickup'
-              ? 'border-orange-500 bg-orange-500'
-              : 'border-slate-300'
-          }`}>
-            {deliveryMethod === 'pickup' && (
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </div>
-        </div>
-      </div>
+  const renderStep2 = () => {
+    // Calculate recommended date (2 days from now)
+    const today = new Date();
+    const recommendedDate = new Date();
+    recommendedDate.setDate(today.getDate() + 2);
+    const recommendedDateStr = recommendedDate.toISOString().split('T')[0];
 
-      <div
-        onClick={() => setDeliveryMethod('uber-flash')}
-        className={`p-5 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
-          deliveryMethod === 'uber-flash'
-            ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md'
-            : 'border-slate-200 bg-white hover:border-orange-200 hover:shadow-sm'
-        }`}
-      >
-        <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${
-            deliveryMethod === 'uber-flash' ? 'bg-orange-100' : 'bg-slate-100'
-          }`}>
-            🚗
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className={`font-bold text-lg ${
-                deliveryMethod === 'uber-flash' ? 'text-orange-700' : 'text-slate-800'
-              }`}>
-                Uber Flash
-              </span>
-              {deliveryMethod === 'uber-flash' && (
-                <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
-                  Seleccionado
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-slate-500 mt-1">
-              Envía un Uber Flash para recoger tu pedido
-            </p>
-            <p className="text-xs text-slate-400 mt-1">
-              Te contactaremos por WhatsApp con la ubicación
-            </p>
-          </div>
-          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-            deliveryMethod === 'uber-flash'
-              ? 'border-orange-500 bg-orange-500'
-              : 'border-slate-300'
-          }`}>
-            {deliveryMethod === 'uber-flash' && (
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+    return (
+      <div className="space-y-5">
+        {/* Schedule Date - First */}
+        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl p-5 border border-teal-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-            )}
+            </div>
+            <div>
+              <h3 className="font-bold text-teal-800">¡Programa tu orden!</h3>
+              <p className="text-xs text-teal-600">Recomendamos al menos 2 días de anticipación</p>
+            </div>
+          </div>
+          <DatePicker
+            value={scheduledDate}
+            onChange={setScheduledDate}
+          />
+          {scheduledDate && scheduledDate < recommendedDateStr && (
+            <p className="text-xs text-amber-600 mt-3 flex items-center gap-1 bg-amber-50 rounded-lg px-3 py-2">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Pedidos con menos de 2 días de anticipación podrían no estar disponibles
+            </p>
+          )}
+        </div>
+
+        {/* Delivery Method Selection */}
+        <div className="space-y-4">
+          <p className="text-sm font-semibold text-slate-700">Método de entrega</p>
+          <div
+            onClick={() => setDeliveryMethod('pickup')}
+            className={`p-5 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
+              deliveryMethod === 'pickup'
+                ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md'
+                : 'border-slate-200 bg-white hover:border-orange-200 hover:shadow-sm'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${
+                deliveryMethod === 'pickup' ? 'bg-orange-100' : 'bg-slate-100'
+              }`}>
+                🏪
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className={`font-bold text-lg ${
+                    deliveryMethod === 'pickup' ? 'text-orange-700' : 'text-slate-800'
+                  }`}>
+                    Pick Up
+                  </span>
+                  {deliveryMethod === 'pickup' && (
+                    <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                      Seleccionado
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500 mt-1">
+                  Recoge tu pedido en nuestra ubicación
+                </p>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                deliveryMethod === 'pickup'
+                  ? 'border-orange-500 bg-orange-500'
+                  : 'border-slate-300'
+              }`}>
+                {deliveryMethod === 'pickup' && (
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setDeliveryMethod('uber-flash')}
+            className={`p-5 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
+              deliveryMethod === 'uber-flash'
+                ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md'
+                : 'border-slate-200 bg-white hover:border-orange-200 hover:shadow-sm'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${
+                deliveryMethod === 'uber-flash' ? 'bg-orange-100' : 'bg-slate-100'
+              }`}>
+                🚗
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className={`font-bold text-lg ${
+                    deliveryMethod === 'uber-flash' ? 'text-orange-700' : 'text-slate-800'
+                  }`}>
+                    Uber Flash
+                  </span>
+                  {deliveryMethod === 'uber-flash' && (
+                    <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                      Seleccionado
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500 mt-1">
+                  Envía un Uber Flash para recoger tu pedido
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Te contactaremos por WhatsApp con la ubicación
+                </p>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                deliveryMethod === 'uber-flash'
+                  ? 'border-orange-500 bg-orange-500'
+                  : 'border-slate-300'
+              }`}>
+                {deliveryMethod === 'uber-flash' && (
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderStep3 = () => (
     <div className="space-y-5">
