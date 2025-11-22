@@ -7,7 +7,8 @@ if (!process.env.RESEND_API_KEY) {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
-const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@cevichedemitata.app';
+const SALES_EMAIL = process.env.SALES_EMAIL || 'ventas@cevichedemitata.app';
 
 export async function sendVerificationEmail(
   to: string,
@@ -80,7 +81,7 @@ export async function sendVerificationEmail(
             <p><strong>Este enlace expirará en 24 horas.</strong></p>
             <p>Si no creaste esta cuenta, puedes ignorar este correo.</p>
             <div class="footer">
-              <p>© 2024 Ceviche de mi Tata. Todos los derechos reservados.</p>
+              <p>© ${new Date().getFullYear()} Ceviche de mi Tata. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
@@ -172,7 +173,7 @@ export async function sendOrderConfirmation(
             <p>Te contactaremos pronto por WhatsApp para coordinar la entrega de tu pedido.</p>
             <p>¡Gracias por tu preferencia!</p>
             <div class="footer">
-              <p>© 2024 Ceviche de mi Tata. Todos los derechos reservados.</p>
+              <p>© ${new Date().getFullYear()} Ceviche de mi Tata. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
@@ -192,7 +193,7 @@ export async function sendNewOrderNotification(
     notes?: string;
   }
 ): Promise<void> {
-  const adminEmail = process.env.ADMIN_EMAIL || 'dibugamer@gmail.com';
+  const adminEmail = process.env.SALES_EMAIL || SALES_EMAIL;
   const itemsList = orderDetails.items
     .map(item => `<li>${item.quantity}x ${item.cevicheType} - $${item.price}</li>`)
     .join('');
@@ -370,7 +371,7 @@ export async function sendPasswordResetEmail(
             </div>
             <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este correo de forma segura. Tu contraseña actual no ha sido modificada.</p>
             <div class="footer">
-              <p>© 2024 Ceviche de mi Tata. Todos los derechos reservados.</p>
+              <p>© ${new Date().getFullYear()} Ceviche de mi Tata. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
