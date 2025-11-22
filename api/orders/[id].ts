@@ -5,6 +5,37 @@ import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}
+
+interface OrderWithPopulatedUser {
+  _id: string;
+  user?: PopulatedUser | string;
+  guestInfo?: {
+    name: string;
+    phone: string;
+    email?: string;
+  };
+  items: Array<{
+    cevicheType: string;
+    quantity: number;
+    price: number;
+  }>;
+  total: number;
+  deliveryMethod: 'pickup' | 'uber-flash';
+  scheduledDate: Date;
+  paymentProof?: string;
+  notes?: string;
+  status: 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow GET
   if (req.method !== 'GET') {
@@ -34,7 +65,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Fetch order
     const order = await Order.findById(id)
       .populate('user', 'firstName lastName email phone')
-      .lean();
+      .lean() as OrderWithPopulatedUser | null;
 
     if (!order) {
       return errorResponse(res, 'Order not found', 404);
@@ -47,7 +78,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       if (typeof order.user === 'object' && order.user._id) {
         orderUserId = order.user._id.toString();
       } else {
-        orderUserId = order.user.toString();
+        orderUserId = (order.user as string).toString();
       }
     }
 
