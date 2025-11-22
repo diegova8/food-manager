@@ -9,6 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@cevichedemitata.app';
 const SALES_EMAIL = process.env.SALES_EMAIL || 'ventas@cevichedemitata.app';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'soporte@cevichedemitata.app';
 
 // Format currency in Costa Rican Colones
 const formatCurrency = (amount: number): string => {
@@ -767,7 +768,7 @@ export async function sendTicketNotificationToSupport(
 
   await resend.emails.send({
     from: FROM_EMAIL,
-    to: 'soporte@cevichedemitata.app',
+    to: SUPPORT_EMAIL,
     subject: `[${typeLabel.toUpperCase()}] #${ticketDetails.ticketId.slice(-8)} - ${ticketDetails.title}`,
     html: `
       <!DOCTYPE html>
