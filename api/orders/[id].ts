@@ -41,7 +41,17 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Check if user owns this order or is admin
-    const orderUserId = order.user?._id?.toString() || order.user?.toString();
+    // After populate with lean(), user can be an object with _id or just an ObjectId
+    let orderUserId: string | undefined;
+    if (order.user) {
+      if (typeof order.user === 'object' && order.user._id) {
+        orderUserId = order.user._id.toString();
+      } else {
+        orderUserId = order.user.toString();
+      }
+    }
+
+    // Non-admin users can only view their own orders
     if (!isAdmin && orderUserId !== userId) {
       return errorResponse(res, 'Unauthorized - You can only view your own orders', 403);
     }
