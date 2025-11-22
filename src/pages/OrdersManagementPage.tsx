@@ -333,7 +333,7 @@ function OrdersManagementPage() {
                     <div className="text-xs text-gray-500">{getCustomerPhone(order)}</div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                    {order.items.reduce((sum, item) => sum + item.quantity, 0)} ceviche{order.items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
                     {formatCurrency(order.total)}
