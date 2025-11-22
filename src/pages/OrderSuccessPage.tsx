@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
-import logo from '../assets/logo.png';
 
 function OrderSuccessPage() {
   const location = useLocation();
@@ -21,9 +20,6 @@ function OrderSuccessPage() {
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
             {/* Success Header */}
             <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-8 text-center">
-              <div className="w-20 h-20 mx-auto bg-white rounded-full p-1 shadow-lg mb-4">
-                <img src={logo} alt="Ceviche de mi Tata" className="w-full h-full rounded-full object-cover" />
-              </div>
               <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

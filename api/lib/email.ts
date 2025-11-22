@@ -52,15 +52,18 @@ const baseStyles = `
     text-align: center;
   }
   .header-icon {
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
     background-color: white;
     border-radius: 50%;
     margin: 0 auto 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  .header-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .header h1 {
     color: white;
@@ -126,14 +129,19 @@ const baseStyles = `
     letter-spacing: 0.5px;
   }
   .order-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #e2e8f0;
   }
   .order-item:last-child {
     border-bottom: none;
+  }
+  .order-item-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .order-item-table td {
+    vertical-align: middle;
+    padding: 0;
   }
   .item-qty {
     display: inline-block;
@@ -152,14 +160,20 @@ const baseStyles = `
   .item-price {
     color: #64748b;
     font-weight: 600;
+    text-align: right;
   }
   .total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding-top: 16px;
     margin-top: 16px;
     border-top: 2px solid #e2e8f0;
+  }
+  .total-row-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .total-row-table td {
+    vertical-align: middle;
+    padding: 0;
   }
   .total-label {
     font-size: 16px;
@@ -170,15 +184,22 @@ const baseStyles = `
     font-size: 24px;
     font-weight: 700;
     color: #ea580c;
+    text-align: right;
   }
   .info-row {
-    display: flex;
-    justify-content: space-between;
     padding: 10px 0;
     border-bottom: 1px solid #e2e8f0;
   }
   .info-row:last-child {
     border-bottom: none;
+  }
+  .info-row-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .info-row-table td {
+    vertical-align: middle;
+    padding: 0;
   }
   .info-label {
     color: #64748b;
@@ -188,6 +209,7 @@ const baseStyles = `
     color: #334155;
     font-weight: 600;
     font-size: 14px;
+    text-align: right;
   }
   .info-value-teal {
     color: #0d9488;
@@ -276,7 +298,7 @@ export async function sendVerificationEmail(
           <div class="wrapper">
             <div class="container">
               <div class="header">
-                <div class="header-icon">🦐</div>
+                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
                 <h1>Ceviche de mi Tata</h1>
                 <p>Verificación de cuenta</p>
               </div>
@@ -327,11 +349,17 @@ export async function sendOrderConfirmation(
   const itemsHtml = orderDetails.items
     .map(item => `
       <div class="order-item">
-        <div>
-          <span class="item-qty">${item.quantity}x</span>
-          <span class="item-name">${item.cevicheType}</span>
-        </div>
-        <span class="item-price">${formatCurrency(item.price * item.quantity)}</span>
+        <table class="order-item-table" role="presentation">
+          <tr>
+            <td>
+              <span class="item-qty">${item.quantity}x</span>
+              <span class="item-name">${item.cevicheType}</span>
+            </td>
+            <td style="text-align: right;">
+              <span class="item-price">${formatCurrency(item.price * item.quantity)}</span>
+            </td>
+          </tr>
+        </table>
       </div>
     `)
     .join('');
@@ -354,7 +382,7 @@ export async function sendOrderConfirmation(
           <div class="wrapper">
             <div class="container">
               <div class="header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                <div class="header-icon">✓</div>
+                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
                 <h1>¡Pedido Recibido!</h1>
                 <p>Pedido #${orderDetails.orderId.slice(-8)}</p>
               </div>
@@ -373,19 +401,31 @@ export async function sendOrderConfirmation(
                   <p class="card-title">🦐 Tu pedido (${totalItems} ${totalItems === 1 ? 'ceviche' : 'ceviches'})</p>
                   ${itemsHtml}
                   <div class="total-row">
-                    <span class="total-label">Total</span>
-                    <span class="total-amount">${formatCurrency(orderDetails.total)}</span>
+                    <table class="total-row-table" role="presentation">
+                      <tr>
+                        <td><span class="total-label">Total</span></td>
+                        <td style="text-align: right;"><span class="total-amount">${formatCurrency(orderDetails.total)}</span></td>
+                      </tr>
+                    </table>
                   </div>
                 </div>
 
                 <div class="card">
                   <div class="info-row">
-                    <span class="info-label">Método de entrega</span>
-                    <span class="info-value">${orderDetails.deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber Flash'}</span>
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Método de entrega</span></td>
+                        <td style="text-align: right;"><span class="info-value">${orderDetails.deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber Flash'}</span></td>
+                      </tr>
+                    </table>
                   </div>
                   <div class="info-row">
-                    <span class="info-label">Estado</span>
-                    <span class="badge badge-orange">Pendiente de confirmación</span>
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Estado</span></td>
+                        <td style="text-align: right;"><span class="badge badge-orange">Pendiente de confirmación</span></td>
+                      </tr>
+                    </table>
                   </div>
                 </div>
 
@@ -436,11 +476,17 @@ export async function sendNewOrderNotification(
   const itemsHtml = orderDetails.items
     .map(item => `
       <div class="order-item">
-        <div>
-          <span class="item-qty">${item.quantity}x</span>
-          <span class="item-name">${item.cevicheType}</span>
-        </div>
-        <span class="item-price">${formatCurrency(item.price * item.quantity)}</span>
+        <table class="order-item-table" role="presentation">
+          <tr>
+            <td>
+              <span class="item-qty">${item.quantity}x</span>
+              <span class="item-name">${item.cevicheType}</span>
+            </td>
+            <td style="text-align: right;">
+              <span class="item-price">${formatCurrency(item.price * item.quantity)}</span>
+            </td>
+          </tr>
+        </table>
       </div>
     `)
     .join('');
@@ -463,7 +509,7 @@ export async function sendNewOrderNotification(
           <div class="wrapper">
             <div class="container">
               <div class="header" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-                <div class="header-icon">🚨</div>
+                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
                 <h1>¡Nuevo Pedido!</h1>
                 <p>#${orderDetails.orderId.slice(-8)} • ${formatCurrency(orderDetails.total)}</p>
               </div>
@@ -471,21 +517,35 @@ export async function sendNewOrderNotification(
                 <div class="card card-orange">
                   <p class="card-title">👤 Información del cliente</p>
                   <div class="info-row">
-                    <span class="info-label">Nombre</span>
-                    <span class="info-value">${orderDetails.customerName}</span>
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Nombre</span></td>
+                        <td style="text-align: right;"><span class="info-value">${orderDetails.customerName}</span></td>
+                      </tr>
+                    </table>
                   </div>
                   <div class="info-row">
-                    <span class="info-label">Teléfono</span>
-                    <span class="info-value" style="color: #0d9488;">
-                      <a href="https://wa.me/${orderDetails.customerPhone.replace(/[^0-9]/g, '')}" style="color: #0d9488; text-decoration: none;">
-                        ${orderDetails.customerPhone} 📱
-                      </a>
-                    </span>
+                    <table class="info-row-table" role="presentation">
+                      <tr>
+                        <td><span class="info-label">Teléfono</span></td>
+                        <td style="text-align: right;">
+                          <span class="info-value" style="color: #0d9488;">
+                            <a href="https://wa.me/${orderDetails.customerPhone.replace(/[^0-9]/g, '')}" style="color: #0d9488; text-decoration: none;">
+                              ${orderDetails.customerPhone} 📱
+                            </a>
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
                   </div>
                   ${orderDetails.customerEmail ? `
                     <div class="info-row">
-                      <span class="info-label">Email</span>
-                      <span class="info-value">${orderDetails.customerEmail}</span>
+                      <table class="info-row-table" role="presentation">
+                        <tr>
+                          <td><span class="info-label">Email</span></td>
+                          <td style="text-align: right;"><span class="info-value">${orderDetails.customerEmail}</span></td>
+                        </tr>
+                      </table>
                     </div>
                   ` : ''}
                 </div>
@@ -504,8 +564,12 @@ export async function sendNewOrderNotification(
                   <p class="card-title">🦐 Pedido (${totalItems} ${totalItems === 1 ? 'ceviche' : 'ceviches'})</p>
                   ${itemsHtml}
                   <div class="total-row">
-                    <span class="total-label">Total a cobrar</span>
-                    <span class="total-amount">${formatCurrency(orderDetails.total)}</span>
+                    <table class="total-row-table" role="presentation">
+                      <tr>
+                        <td><span class="total-label">Total a cobrar</span></td>
+                        <td style="text-align: right;"><span class="total-amount">${formatCurrency(orderDetails.total)}</span></td>
+                      </tr>
+                    </table>
                   </div>
                 </div>
 
@@ -563,7 +627,7 @@ export async function sendPasswordResetEmail(
           <div class="wrapper">
             <div class="container">
               <div class="header">
-                <div class="header-icon">🔐</div>
+                <div class="header-icon"><img src="https://2hfrpwey2i6akma3.public.blob.vercel-storage.com/logo.png" alt="Ceviche de mi Tata" /></div>
                 <h1>Ceviche de mi Tata</h1>
                 <p>Restablecer contraseña</p>
               </div>
