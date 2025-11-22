@@ -12,19 +12,24 @@ import type { Handler, ValidationHandler, ValidationMiddleware } from './index.j
 
 /**
  * Sanitize an object by escaping HTML in all string values
+ * URLs are preserved without escaping to maintain valid links
  */
-function sanitizeObject(obj: any): any {
+function sanitizeObject(obj: any, key?: string): any {
   if (typeof obj === 'string') {
+    // Don't escape URLs - they need to remain valid
+    if (validator.isURL(obj, { require_protocol: true })) {
+      return obj;
+    }
     return validator.escape(obj);
   }
   if (Array.isArray(obj)) {
-    return obj.map(sanitizeObject);
+    return obj.map(item => sanitizeObject(item));
   }
   if (obj && typeof obj === 'object') {
     const sanitized: any = {};
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        sanitized[key] = sanitizeObject(obj[key]);
+    for (const k in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, k)) {
+        sanitized[k] = sanitizeObject(obj[k], k);
       }
     }
     return sanitized;
