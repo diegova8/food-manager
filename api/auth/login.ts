@@ -17,12 +17,13 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
 
     const { username, password } = validatedData;
 
-    // Buscar usuario por username o email (case-insensitive)
+    // Buscar usuario por username o email (case-insensitive, escape special regex chars)
     const usernameLower = username.toLowerCase();
+    const escapedUsername = usernameLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const user = await User.findOne({
       $or: [
-        { username: { $regex: new RegExp(`^${usernameLower}$`, 'i') } },
-        { email: { $regex: new RegExp(`^${usernameLower}$`, 'i') } }
+        { username: { $regex: new RegExp(`^${escapedUsername}$`, 'i') } },
+        { email: { $regex: new RegExp(`^${escapedUsername}$`, 'i') } }
       ]
     });
 
@@ -30,20 +31,20 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
       return errorResponse(res, 'Credenciales inválidas', 401);
     }
 
-    // Verificar password
-    const isValidPassword = await comparePassword(password, user.password);
-
-    if (!isValidPassword) {
-      return errorResponse(res, 'Credenciales inválidas', 401);
-    }
-
-    // Verificar email (solo para usuarios no admin con email)
+    // Verificar email ANTES del password (para mejor UX - usuario sabe que debe verificar)
     if (user.email && !user.isAdmin && !user.emailVerified) {
       return errorResponse(
         res,
         'Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
         403
       );
+    }
+
+    // Verificar password
+    const isValidPassword = await comparePassword(password, user.password);
+
+    if (!isValidPassword) {
+      return errorResponse(res, 'Credenciales inválidas', 401);
     }
 
     // Generar token with full profile info

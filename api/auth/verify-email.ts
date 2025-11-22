@@ -29,9 +29,10 @@ const handler: ValidationHandler<VerifyEmailInput> = async (req: VercelRequest, 
       return errorResponse(res, 'El token de verificación ha expirado', 400);
     }
 
-    // Find and update user (case-insensitive)
+    // Find and update user (case-insensitive, escape special regex chars)
+    const escapedEmail = verification.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const user = await User.findOne({
-      email: { $regex: new RegExp(`^${verification.email}$`, 'i') }
+      email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
     });
 
     if (!user) {

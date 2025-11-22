@@ -19,14 +19,15 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
 
     const { email, password, firstName, lastName, phone, address, birthday, dietaryPreferences } = validatedData;
 
-    // Normalize email to lowercase
+    // Normalize email to lowercase and escape special regex chars
     const emailLower = email.toLowerCase();
+    const escapedEmail = emailLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     // Check if user already exists (case-insensitive)
     const existingUser = await User.findOne({
       $or: [
-        { email: { $regex: new RegExp(`^${emailLower}$`, 'i') } },
-        { username: { $regex: new RegExp(`^${emailLower}$`, 'i') } }
+        { email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } },
+        { username: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } }
       ]
     });
 
