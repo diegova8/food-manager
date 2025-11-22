@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { useCart } from '../context/CartContext';
 import { api } from '../services/api';
-import { formatCurrency } from '../utils';
+import { formatCurrency, formatDateDisplay } from '../utils';
 import Header from '../components/Header';
 import DatePicker from '../components/DatePicker';
 import logo from '../assets/logo.png';
@@ -325,7 +325,7 @@ function CheckoutPage() {
     return (
       <div className="space-y-5">
         {/* Schedule Date - First */}
-        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl p-5 border border-teal-200">
+        <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl p-5 border border-teal-200 overflow-visible">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -476,6 +476,34 @@ function CheckoutPage() {
             </div>
           ))}
         </div>
+        {/* Delivery Info */}
+        <div className="border-t border-slate-200 mt-4 pt-4 space-y-2">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-slate-500 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Fecha programada
+            </span>
+            <span className="font-medium text-teal-700">
+              {scheduledDate ? formatDateDisplay(scheduledDate, { weekday: 'short', day: 'numeric', month: 'short' }) : '-'}
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-slate-500 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Entrega
+            </span>
+            <span className="font-medium text-slate-700">
+              {deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber Flash'}
+            </span>
+          </div>
+        </div>
+
+        {/* Total */}
         <div className="border-t border-slate-200 mt-4 pt-4 flex justify-between items-center">
           <span className="font-bold text-slate-800">Total</span>
           <span className="text-2xl font-bold text-orange-600">{formatCurrency(getTotalPrice())}</span>
@@ -588,9 +616,9 @@ function CheckoutPage() {
       <div className="px-4 py-6 md:py-10">
         <div className="max-w-lg mx-auto">
           {/* Header Card */}
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-100">
             {/* Top Section with Logo */}
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-8 text-center">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-8 text-center rounded-t-3xl">
               <div className="w-20 h-20 mx-auto bg-white rounded-full p-1 shadow-lg mb-4">
                 <img src={logo} alt="Ceviche de mi Tata" className="w-full h-full rounded-full object-cover" />
               </div>

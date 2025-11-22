@@ -50,9 +50,12 @@ const handler: ValidationHandler<CreateOrderInput> = async (req: VercelRequest, 
       if (personalInfo.email) {
         await sendOrderConfirmation(personalInfo.email, {
           orderId: order._id.toString(),
+          customerName: personalInfo.name,
           items,
           total,
-          deliveryMethod: deliveryMethod === 'pickup' ? 'Recoger en tienda' : 'Uber Flash'
+          deliveryMethod: deliveryMethod === 'pickup' ? 'Recoger en tienda' : 'Uber Flash',
+          scheduledDate,
+          notes
         });
       }
 
@@ -61,10 +64,13 @@ const handler: ValidationHandler<CreateOrderInput> = async (req: VercelRequest, 
         orderId: order._id.toString(),
         customerName: personalInfo.name,
         customerPhone: personalInfo.phone,
+        customerEmail: personalInfo.email,
         items,
         total,
         deliveryMethod: deliveryMethod === 'pickup' ? 'Recoger en tienda' : 'Uber Flash',
-        notes
+        scheduledDate,
+        notes,
+        paymentProofUrl: paymentProof
       });
     } catch (emailError) {
       console.error('Error sending emails:', emailError);
