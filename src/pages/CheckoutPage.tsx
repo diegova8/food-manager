@@ -82,10 +82,23 @@ function CheckoutPage() {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif']
     },
     maxFiles: 1,
-    onDrop: (acceptedFiles) => {
+    maxSize: 10 * 1024 * 1024, // 10MB max
+    onDrop: (acceptedFiles, rejectedFiles) => {
+      // Handle rejected files
+      if (rejectedFiles.length > 0) {
+        const rejection = rejectedFiles[0];
+        if (rejection.errors.some(e => e.code === 'file-too-large')) {
+          setError('La imagen debe ser menor a 10MB');
+        } else if (rejection.errors.some(e => e.code === 'file-invalid-type')) {
+          setError('Solo se permiten imágenes (PNG, JPG, JPEG, GIF)');
+        }
+        return;
+      }
+
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
         setPaymentProof(file);
+        setError(''); // Clear any previous errors
 
         // Create preview
         const reader = new FileReader();
