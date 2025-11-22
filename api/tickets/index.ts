@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { connectDB } from '../lib/mongodb.js';
+import connectDB from '../lib/mongodb.js';
 import { SupportTicket, User } from '../lib/models.js';
 import { compose, withCORS, withSecurityHeaders } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';

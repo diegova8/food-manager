@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { put } from '@vercel/blob';
-import { connectDB } from '../lib/mongodb.js';
+import connectDB from '../lib/mongodb.js';
 import { SupportTicket, User } from '../lib/models.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
