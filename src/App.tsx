@@ -12,6 +12,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import ProfilePage from './pages/ProfilePage';
 import MyOrdersPage from './pages/MyOrdersPage';
+import MyTicketsPage from './pages/MyTicketsPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -53,6 +54,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/orders" element={<MyOrdersPage />} />
         <Route path="/profile/orders/:id" element={<OrderDetailPage />} />
+        <Route path="/profile/tickets" element={<MyTicketsPage />} />
         <Route
           path="/admin"
           element={

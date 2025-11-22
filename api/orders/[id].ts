@@ -20,7 +20,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       userId = payload.userId;
       isAdmin = payload.isAdmin || false;
     } catch (error) {
-      return errorResponse(res, 'Unauthorized', 401);
+      return errorResponse(res, `Unauthorized: ${error}`, 401);
     }
 
     await connectDB();

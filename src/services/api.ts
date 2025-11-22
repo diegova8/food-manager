@@ -380,6 +380,99 @@ class ApiService {
 
     return response;
   }
+
+  // Tickets
+  async createTicket(data: {
+    type: 'suggestion' | 'bug';
+    title: string;
+    description: string;
+    images?: string[];
+    email?: string;
+    name?: string;
+  }): Promise<{
+    success: boolean;
+    data: {
+      ticketId: string;
+      type: string;
+      title: string;
+      status: string;
+    };
+    message: string;
+  }> {
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        ticketId: string;
+        type: string;
+        title: string;
+        status: string;
+      };
+      message: string;
+    }>('/tickets/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return response;
+  }
+
+  async getMyTickets(params?: {
+    status?: string;
+    type?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    success: boolean;
+    data: {
+      tickets: Array<{
+        id: string;
+        type: 'suggestion' | 'bug';
+        title: string;
+        description: string;
+        status: 'open' | 'in_progress' | 'resolved' | 'closed';
+        images?: string[];
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    };
+  }> {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.type) searchParams.set('type', params.type);
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+
+    const queryString = searchParams.toString();
+    const url = `/tickets/my-tickets${queryString ? `?${queryString}` : ''}`;
+
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        tickets: Array<{
+          id: string;
+          type: 'suggestion' | 'bug';
+          title: string;
+          description: string;
+          status: 'open' | 'in_progress' | 'resolved' | 'closed';
+          images?: string[];
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+        };
+      };
+    }>(url);
+    return response;
+  }
 }
 
 export const api = new ApiService();
