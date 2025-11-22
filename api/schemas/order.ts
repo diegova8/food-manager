@@ -32,5 +32,10 @@ export const updateOrderStatusSchema = z.object({
   })
 });
 
+export const deleteOrderSchema = z.object({
+  orderId: z.string().min(1, 'Order ID is required')
+});
+
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+export type DeleteOrderInput = z.infer<typeof deleteOrderSchema>;

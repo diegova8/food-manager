@@ -232,6 +232,14 @@ class ApiService {
     return response;
   }
 
+  async deleteOrder(orderId: string): Promise<{ success: boolean; data: { orderId: string }; message?: string }> {
+    const response = await this.fetch<{ success: boolean; data: { orderId: string }; message?: string }>('/orders/delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ orderId }),
+    });
+    return response;
+  }
+
   // Email
   async sendEmail(params: {
     email: string;
