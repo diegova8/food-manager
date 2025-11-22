@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { api } from '../services/api';
 import Header from '../components/Header';
 import logo from '../assets/logo.png';
 
@@ -16,6 +17,13 @@ function ResetPasswordPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (api.isAuthenticated()) {
+      navigate('/menu');
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (!token) {

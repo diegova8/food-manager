@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Header from '../components/Header';
 import logo from '../assets/logo.png';
 
 function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [message, setMessage] = useState('');
   const token = searchParams.get('token');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (api.isAuthenticated()) {
+      navigate('/menu');
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const verifyEmail = async () => {
