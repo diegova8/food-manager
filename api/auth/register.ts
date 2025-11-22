@@ -31,7 +31,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
     });
 
     if (existingUser) {
-      return errorResponse(res, 'A user with this email already exists', 400);
+      return errorResponse(res, 'Ya existe un usuario con este correo electrónico', 400);
     }
 
     // Hash password
@@ -83,7 +83,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
           lastName: user.lastName
         }
       },
-      'Registration successful. Please check your email to verify your account.',
+      'Registro exitoso. Por favor revisa tu correo electrónico para verificar tu cuenta.',
       201
     );
   } catch (error) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import Header from '../components/Header';
+import BirthdayPicker from '../components/BirthdayPicker';
 import logo from '../assets/logo.png';
 
 function RegisterPage() {
@@ -39,21 +40,71 @@ function RegisterPage() {
     setError('');
   };
 
+  // Password validation rules
+  const getPasswordValidation = (password: string) => {
+    return {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecial: /[^A-Za-z0-9]/.test(password),
+    };
+  };
+
+  const passwordValidation = getPasswordValidation(formData.password);
+  const isPasswordValid = Object.values(passwordValidation).every(Boolean);
+
   // Password strength calculator
   const getPasswordStrength = (password: string): { strength: number; label: string; color: string } => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (password.length >= 12) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    const validation = getPasswordValidation(password);
+    const passedRules = Object.values(validation).filter(Boolean).length;
 
-    if (strength <= 1) return { strength: 1, label: 'Débil', color: 'bg-red-500' };
-    if (strength <= 3) return { strength: 2, label: 'Media', color: 'bg-amber-500' };
+    if (passedRules <= 2) return { strength: 1, label: 'Débil', color: 'bg-red-500' };
+    if (passedRules <= 4) return { strength: 2, label: 'Media', color: 'bg-amber-500' };
     return { strength: 3, label: 'Fuerte', color: 'bg-green-500' };
   };
 
   const passwordStrength = formData.password ? getPasswordStrength(formData.password) : null;
+
+  // Email validation
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+
+  // Check if form is valid for submission
+  const isFormValid =
+    formData.email &&
+    isEmailValid &&
+    formData.password &&
+    isPasswordValid &&
+    formData.confirmPassword &&
+    formData.password === formData.confirmPassword &&
+    formData.firstName.length >= 2 &&
+    formData.lastName.length >= 2 &&
+    formData.phone.length >= 8;
+
+  // Translate error messages to Spanish
+  const translateError = (error: string): string => {
+    const translations: Record<string, string> = {
+      'Password must be at least 8 characters long': 'La contraseña debe tener al menos 8 caracteres',
+      'Password must contain at least one uppercase letter': 'La contraseña debe contener al menos una mayúscula',
+      'Password must contain at least one lowercase letter': 'La contraseña debe contener al menos una minúscula',
+      'Password must contain at least one number': 'La contraseña debe contener al menos un número',
+      'Password must contain at least one special character': 'La contraseña debe contener al menos un carácter especial (!@#$%...)',
+      'Invalid email format': 'Formato de email inválido',
+      'First name must be at least 2 characters': 'El nombre debe tener al menos 2 caracteres',
+      'Last name must be at least 2 characters': 'Los apellidos deben tener al menos 2 caracteres',
+      'Invalid phone number format': 'Formato de teléfono inválido',
+      'A user with this email already exists': 'Ya existe un usuario con este email',
+    };
+
+    // Check if error contains any known message
+    for (const [en, es] of Object.entries(translations)) {
+      if (error.includes(en)) {
+        return error.replace(en, es);
+      }
+    }
+
+    return error;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,8 +118,8 @@ function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres');
+    if (!isPasswordValid) {
+      setError('La contraseña no cumple con todos los requisitos');
       setLoading(false);
       return;
     }
@@ -89,7 +140,15 @@ function RegisterPage() {
         navigate('/login');
       }, 5000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al registrarse');
+      let errorMessage = 'Error al registrarse. Por favor intenta de nuevo.';
+
+      if (err instanceof Error) {
+        errorMessage = translateError(err.message);
+      } else if (typeof err === 'string') {
+        errorMessage = translateError(err);
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -235,23 +294,40 @@ function RegisterPage() {
                             )}
                           </button>
                         </div>
-                        {/* Password Strength Indicator */}
-                        {passwordStrength && formData.password && (
-                          <div className="mt-2">
-                            <div className="flex items-center gap-2 mb-1">
+                        {/* Password Requirements */}
+                        {formData.password && (
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center gap-2 mb-2">
                               <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full transition-all ${passwordStrength.color}`}
-                                  style={{ width: `${(passwordStrength.strength / 3) * 100}%` }}
+                                  className={`h-full transition-all ${passwordStrength?.color}`}
+                                  style={{ width: `${((passwordStrength?.strength || 0) / 3) * 100}%` }}
                                 ></div>
                               </div>
                               <span className={`text-xs font-medium ${
-                                passwordStrength.strength === 1 ? 'text-red-600' :
-                                passwordStrength.strength === 2 ? 'text-amber-600' :
+                                passwordStrength?.strength === 1 ? 'text-red-600' :
+                                passwordStrength?.strength === 2 ? 'text-amber-600' :
                                 'text-green-600'
                               }`}>
-                                {passwordStrength.label}
+                                {passwordStrength?.label}
                               </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1 text-xs">
+                              <div className={`flex items-center gap-1 ${passwordValidation.minLength ? 'text-green-600' : 'text-slate-400'}`}>
+                                {passwordValidation.minLength ? '✓' : '○'} 8+ caracteres
+                              </div>
+                              <div className={`flex items-center gap-1 ${passwordValidation.hasUppercase ? 'text-green-600' : 'text-slate-400'}`}>
+                                {passwordValidation.hasUppercase ? '✓' : '○'} Una mayúscula
+                              </div>
+                              <div className={`flex items-center gap-1 ${passwordValidation.hasLowercase ? 'text-green-600' : 'text-slate-400'}`}>
+                                {passwordValidation.hasLowercase ? '✓' : '○'} Una minúscula
+                              </div>
+                              <div className={`flex items-center gap-1 ${passwordValidation.hasNumber ? 'text-green-600' : 'text-slate-400'}`}>
+                                {passwordValidation.hasNumber ? '✓' : '○'} Un número
+                              </div>
+                              <div className={`flex items-center gap-1 col-span-2 ${passwordValidation.hasSpecial ? 'text-green-600' : 'text-slate-400'}`}>
+                                {passwordValidation.hasSpecial ? '✓' : '○'} Un carácter especial (!@#$%...)
+                              </div>
                             </div>
                           </div>
                         )}
@@ -428,24 +504,13 @@ function RegisterPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Birthday */}
                       <div>
-                        <label htmlFor="birthday" className="block text-sm font-semibold text-slate-700 mb-2">
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
                           Fecha de Nacimiento <span className="text-slate-400 font-normal">(Opcional)</span>
                         </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                          <input
-                            type="date"
-                            id="birthday"
-                            name="birthday"
-                            value={formData.birthday}
-                            onChange={handleChange}
-                            className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                          />
-                        </div>
+                        <BirthdayPicker
+                          value={formData.birthday}
+                          onChange={(date) => setFormData({ ...formData, birthday: date })}
+                        />
                         <p className="text-xs text-slate-500 mt-1.5 ml-1">
                           Para enviarte promociones en tu cumpleaños
                         </p>
@@ -483,7 +548,7 @@ function RegisterPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={loading || !formData.email || !formData.password || !formData.firstName || !formData.lastName || !formData.phone || formData.password !== formData.confirmPassword}
+                  disabled={loading || !isFormValid}
                   className="w-full px-6 py-4 bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {loading ? (

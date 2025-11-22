@@ -26,7 +26,7 @@ const handler: ValidationHandler<ForgotPasswordInput> = async (req: VercelReques
 
     // Don't reveal if email exists (security best practice)
     if (!user) {
-      return successResponse(res, null, 'If an account with that email exists, a password reset link has been sent.');
+      return successResponse(res, null, 'Si existe una cuenta con ese correo electrónico, se ha enviado un enlace para restablecer la contraseña.');
     }
 
     // Generate reset token (32 random bytes)

@@ -20,13 +20,13 @@ const handler: ValidationHandler<VerifyEmailInput> = async (req: VercelRequest, 
     const verification = await EmailVerification.findOne({ token });
 
     if (!verification) {
-      return errorResponse(res, 'Invalid or expired verification token', 400);
+      return errorResponse(res, 'Token de verificación inválido o expirado', 400);
     }
 
     // Check if token has expired
     if (new Date() > verification.expiresAt) {
       await EmailVerification.deleteOne({ token });
-      return errorResponse(res, 'Verification token has expired', 400);
+      return errorResponse(res, 'El token de verificación ha expirado', 400);
     }
 
     // Find and update user (case-insensitive)
@@ -35,13 +35,13 @@ const handler: ValidationHandler<VerifyEmailInput> = async (req: VercelRequest, 
     });
 
     if (!user) {
-      return errorResponse(res, 'User not found', 404);
+      return errorResponse(res, 'Usuario no encontrado', 404);
     }
 
     if (user.emailVerified) {
       // Already verified, clean up token
       await EmailVerification.deleteOne({ token });
-      return successResponse(res, null, 'Email already verified');
+      return successResponse(res, null, 'El correo electrónico ya ha sido verificado');
     }
 
     // Mark email as verified
@@ -51,7 +51,7 @@ const handler: ValidationHandler<VerifyEmailInput> = async (req: VercelRequest, 
     // Delete verification token
     await EmailVerification.deleteOne({ token });
 
-    return successResponse(res, null, 'Email verified successfully! You can now log in.');
+    return successResponse(res, null, '¡Correo electrónico verificado exitosamente! Ya puedes iniciar sesión.');
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }

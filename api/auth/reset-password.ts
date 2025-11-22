@@ -24,7 +24,7 @@ const handler: ValidationHandler<ResetPasswordInput> = async (req: VercelRequest
     });
 
     if (!user) {
-      return errorResponse(res, 'Invalid or expired reset token', 400);
+      return errorResponse(res, 'Token de restablecimiento inválido o expirado', 400);
     }
 
     // Hash the new password
@@ -36,7 +36,7 @@ const handler: ValidationHandler<ResetPasswordInput> = async (req: VercelRequest
     user.passwordResetExpiry = undefined;
     await user.save();
 
-    return successResponse(res, null, 'Password reset successful. You can now log in with your new password.');
+    return successResponse(res, null, 'Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.');
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }

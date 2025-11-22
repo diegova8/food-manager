@@ -10,7 +10,10 @@ interface BirthdayPickerProps {
 
 function BirthdayPicker({ value, onChange }: BirthdayPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedDate = value ? new Date(value + 'T00:00:00') : undefined;
   const today = startOfDay(new Date());
@@ -18,10 +21,34 @@ function BirthdayPicker({ value, onChange }: BirthdayPickerProps) {
   // Default to showing a reasonable birth year (30 years ago)
   const defaultMonth = selectedDate || subYears(today, 30);
 
+  // Calculate dropdown position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const dropdownHeight = 450; // Approximate height of the calendar
+
+      // Position below if there's space, otherwise above
+      const top = spaceBelow >= dropdownHeight
+        ? rect.bottom + 8
+        : rect.top - dropdownHeight - 8;
+
+      setDropdownPosition({
+        top: Math.max(8, top),
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  }, [isOpen]);
+
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isOutsideContainer = containerRef.current && !containerRef.current.contains(target);
+      const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(target);
+
+      if (isOutsideContainer && isOutsideDropdown) {
         setIsOpen(false);
       }
     };
@@ -29,6 +56,15 @@ function BirthdayPicker({ value, onChange }: BirthdayPickerProps) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close on scroll
+  useEffect(() => {
+    if (isOpen) {
+      const handleScroll = () => setIsOpen(false);
+      window.addEventListener('scroll', handleScroll, true);
+      return () => window.removeEventListener('scroll', handleScroll, true);
+    }
+  }, [isOpen]);
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
@@ -46,6 +82,7 @@ function BirthdayPicker({ value, onChange }: BirthdayPickerProps) {
     <div ref={containerRef} className="relative">
       {/* Input Button */}
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-4 py-3 bg-white border-2 rounded-lg text-left transition-all duration-200 flex items-center justify-between ${
@@ -93,7 +130,16 @@ function BirthdayPicker({ value, onChange }: BirthdayPickerProps) {
 
       {/* Calendar Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          ref={dropdownRef}
+          className="fixed z-[9999] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+            maxWidth: '100vw'
+          }}
+        >
           {/* Calendar Header */}
           <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3">
             <p className="text-orange-100 text-xs font-medium">Fecha de cumpleaños</p>

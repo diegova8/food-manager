@@ -27,21 +27,21 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
     });
 
     if (!user) {
-      return errorResponse(res, 'Invalid credentials', 401);
+      return errorResponse(res, 'Credenciales inválidas', 401);
     }
 
     // Verificar password
     const isValidPassword = await comparePassword(password, user.password);
 
     if (!isValidPassword) {
-      return errorResponse(res, 'Invalid credentials', 401);
+      return errorResponse(res, 'Credenciales inválidas', 401);
     }
 
     // Verificar email (solo para usuarios no admin con email)
     if (user.email && !user.isAdmin && !user.emailVerified) {
       return errorResponse(
         res,
-        'Please verify your email before logging in. Check your inbox for the verification link.',
+        'Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
         403
       );
     }
@@ -77,7 +77,7 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
           isAdmin: user.isAdmin
         }
       },
-      'Login successful'
+      'Inicio de sesión exitoso'
     );
   } catch (error) {
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
