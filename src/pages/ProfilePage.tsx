@@ -4,7 +4,8 @@ import Header from '../components/Header';
 import { api } from '../services/api';
 
 interface UserProfile {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   address: string;
@@ -21,7 +22,8 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState('');
 
   const [profile, setProfile] = useState<UserProfile>({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     address: '',
@@ -46,7 +48,8 @@ const ProfilePage = () => {
         const userData = response.data;
 
         const profileData = {
-          name: userData.name || '',
+          firstName: userData.firstName || '',
+          lastName: userData.lastName || '',
           email: userData.email || '',
           phone: userData.phone || '',
           address: userData.address || '',
@@ -82,7 +85,8 @@ const ProfilePage = () => {
 
     try {
       await api.updateProfile({
-        name: editedProfile.name,
+        firstName: editedProfile.firstName,
+        lastName: editedProfile.lastName,
         phone: editedProfile.phone,
         address: editedProfile.address,
         birthday: editedProfile.birthday || undefined,
@@ -181,25 +185,49 @@ const ProfilePage = () => {
 
           {/* Profile Form */}
           <div className={`space-y-6 ${loadingProfile ? 'hidden' : ''}`}>
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Nombre completo
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="name"
-                  value={editedProfile.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                  placeholder="Tu nombre"
-                />
-              ) : (
-                <p className="px-4 py-3 bg-slate-50 rounded-lg text-slate-800">
-                  {profile.name || <span className="text-slate-400 italic">No especificado</span>}
-                </p>
-              )}
+            {/* Name Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* First Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Nombre
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={editedProfile.firstName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    placeholder="Tu nombre"
+                  />
+                ) : (
+                  <p className="px-4 py-3 bg-slate-50 rounded-lg text-slate-800">
+                    {profile.firstName || <span className="text-slate-400 italic">No especificado</span>}
+                  </p>
+                )}
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Apellidos
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={editedProfile.lastName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    placeholder="Tus apellidos"
+                  />
+                ) : (
+                  <p className="px-4 py-3 bg-slate-50 rounded-lg text-slate-800">
+                    {profile.lastName || <span className="text-slate-400 italic">No especificado</span>}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Email */}

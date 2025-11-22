@@ -5,7 +5,8 @@ export interface IUser extends Document {
   username: string;
   password: string;
   email?: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   phone?: string;
   address?: string;
   birthday?: Date;
@@ -21,7 +22,8 @@ const UserSchema = new Schema<IUser>({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   email: { type: String, unique: true, sparse: true }, // sparse allows null for admin users
-  name: { type: String },
+  firstName: { type: String },
+  lastName: { type: String },
   phone: { type: String },
   address: { type: String },
   birthday: { type: Date },

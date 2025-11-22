@@ -29,7 +29,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         id: user._id.toString(),
         username: user.username,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         phone: user.phone,
         address: user.address,
         birthday: user.birthday,
@@ -42,11 +43,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // PUT - Update user profile
     if (req.method === 'PUT') {
-      const { name, phone, address, birthday, dietaryPreferences } = req.body;
+      const { firstName, lastName, phone, address, birthday, dietaryPreferences } = req.body;
 
       // Validate inputs (basic validation)
-      if (name && typeof name !== 'string') {
-        return errorResponse(res, 'Invalid name', 400);
+      if (firstName && typeof firstName !== 'string') {
+        return errorResponse(res, 'Invalid first name', 400);
+      }
+      if (lastName && typeof lastName !== 'string') {
+        return errorResponse(res, 'Invalid last name', 400);
       }
       if (phone && typeof phone !== 'string') {
         return errorResponse(res, 'Invalid phone', 400);
@@ -66,7 +70,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Update fields if provided
-      if (name !== undefined) user.name = name;
+      if (firstName !== undefined) user.firstName = firstName;
+      if (lastName !== undefined) user.lastName = lastName;
       if (phone !== undefined) user.phone = phone;
       if (address !== undefined) user.address = address;
       if (birthday !== undefined) user.birthday = birthday ? new Date(birthday) : undefined;
@@ -78,7 +83,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const token = generateToken({
         userId: user._id.toString(),
         username: user.username,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         phone: user.phone,
         address: user.address,
@@ -93,7 +99,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           id: user._id.toString(),
           username: user.username,
           email: user.email,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           phone: user.phone,
           address: user.address,
           birthday: user.birthday,

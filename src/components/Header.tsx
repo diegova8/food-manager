@@ -56,7 +56,7 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-gray-600">
-                  Hola, <span className="font-semibold text-gray-800">{userInfo?.name || userInfo?.username}</span>
+                  Hola, <span className="font-semibold text-gray-800">{userInfo?.firstName || userInfo?.username}</span>
                 </span>
 
                 <Link
@@ -133,7 +133,7 @@ const Header = () => {
               <div className="flex flex-col gap-2">
                 {/* User greeting */}
                 <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-100 mb-2">
-                  Hola, <span className="font-semibold text-gray-800">{userInfo?.name || userInfo?.username}</span>
+                  Hola, <span className="font-semibold text-gray-800">{userInfo?.firstName || userInfo?.username}</span>
                 </div>
 
                 {/* Menu link */}

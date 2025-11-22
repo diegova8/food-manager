@@ -12,7 +12,8 @@ export const registerSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters').max(50, 'First name is too long'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50, 'Last name is too long'),
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
   address: z.string().max(500, 'Address is too long').optional(),
   birthday: z.string().optional(),

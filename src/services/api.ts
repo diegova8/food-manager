@@ -85,13 +85,14 @@ class ApiService {
   async register(data: {
     email: string;
     password: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     phone: string;
     address?: string;
     birthday?: string;
     dietaryPreferences?: string;
-  }): Promise<{ success: boolean; message: string; user: { id: string; email: string; name: string } }> {
-    const response = await this.fetch<{ success: boolean; message: string; user: { id: string; email: string; name: string } }>('/auth/register', {
+  }): Promise<{ success: boolean; message: string; user: { id: string; email: string; firstName: string; lastName: string } }> {
+    const response = await this.fetch<{ success: boolean; message: string; user: { id: string; email: string; firstName: string; lastName: string } }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -251,7 +252,8 @@ class ApiService {
       id: string;
       username: string;
       email?: string;
-      name?: string;
+      firstName?: string;
+      lastName?: string;
       phone?: string;
       address?: string;
       birthday?: string;
@@ -267,7 +269,8 @@ class ApiService {
         id: string;
         username: string;
         email?: string;
-        name?: string;
+        firstName?: string;
+        lastName?: string;
         phone?: string;
         address?: string;
         birthday?: string;
@@ -283,7 +286,8 @@ class ApiService {
   }
 
   async updateProfile(data: {
-    name?: string;
+    firstName?: string;
+    lastName?: string;
     phone?: string;
     address?: string;
     birthday?: string;
@@ -296,7 +300,8 @@ class ApiService {
         id: string;
         username: string;
         email?: string;
-        name?: string;
+        firstName?: string;
+        lastName?: string;
         phone?: string;
         address?: string;
         birthday?: string;
@@ -314,7 +319,8 @@ class ApiService {
           id: string;
           username: string;
           email?: string;
-          name?: string;
+          firstName?: string;
+          lastName?: string;
           phone?: string;
           address?: string;
           birthday?: string;

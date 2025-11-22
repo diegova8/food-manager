@@ -17,7 +17,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
   try {
     await connectDB();
 
-    const { email, password, name, phone, address, birthday, dietaryPreferences } = validatedData;
+    const { email, password, firstName, lastName, phone, address, birthday, dietaryPreferences } = validatedData;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -36,7 +36,8 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
       username: email, // Use email as username for customer accounts
       email,
       password: hashedPassword,
-      name,
+      firstName,
+      lastName,
       phone,
       address,
       birthday: birthday ? new Date(birthday) : undefined,
@@ -58,8 +59,9 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
     });
 
     // Send verification email
+    const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Usuario';
     try {
-      await sendVerificationEmail(email, name, verificationToken);
+      await sendVerificationEmail(email, fullName, verificationToken);
     } catch (emailError) {
       console.error('Error sending verification email:', emailError);
       // Don't fail registration if email fails, user can request new verification
@@ -71,7 +73,8 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
         user: {
           id: user._id.toString(),
           email: user.email,
-          name: user.name
+          firstName: user.firstName,
+          lastName: user.lastName
         }
       },
       'Registration successful. Please check your email to verify your account.',
