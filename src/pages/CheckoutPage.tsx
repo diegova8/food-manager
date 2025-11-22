@@ -45,22 +45,28 @@ function CheckoutPage() {
 
   // Load user data if authenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        try {
-          const isValid = await api.verifyToken();
-          if (isValid) {
-            setIsAuthenticated(true);
-            // TODO: Fetch user data from token
-            // For now, we'll need to decode the token or make an API call
-          }
-        } catch (error) {
-          console.error('Auth check failed:', error);
-        }
+    const loadUserData = async () => {
+      if (!api.isAuthenticated()) {
+        return;
+      }
+
+      try {
+        setIsAuthenticated(true);
+        const response = await api.getProfile();
+        const userData = response.data;
+
+        // Pre-fill form with user's profile data
+        const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ');
+        setPersonalInfo({
+          name: fullName || '',
+          phone: userData.phone || '',
+          email: userData.email || ''
+        });
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
       }
     };
-    checkAuth();
+    loadUserData();
   }, []);
 
   // Dropzone for payment proof
