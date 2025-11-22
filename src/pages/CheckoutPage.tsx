@@ -77,9 +77,25 @@ function CheckoutPage() {
   }, []);
 
   // Dropzone for payment proof
+  // Allowed MIME types for images (excluding ico and other non-photo formats)
+  const allowedMimeTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/gif',
+    'image/webp',
+    'image/heic',
+    'image/heif'
+  ];
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
+      'image/png': ['.png'],
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/gif': ['.gif'],
+      'image/webp': ['.webp'],
+      'image/heic': ['.heic'],
+      'image/heif': ['.heif']
     },
     maxFiles: 1,
     maxSize: 10 * 1024 * 1024, // 10MB max
@@ -90,13 +106,20 @@ function CheckoutPage() {
         if (rejection.errors.some(e => e.code === 'file-too-large')) {
           setError('La imagen debe ser menor a 10MB');
         } else if (rejection.errors.some(e => e.code === 'file-invalid-type')) {
-          setError('Solo se permiten imágenes (PNG, JPG, JPEG, GIF)');
+          setError('Solo se permiten imágenes (PNG, JPG, GIF, WEBP, HEIC)');
         }
         return;
       }
 
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
+
+        // Double-check file type
+        if (!allowedMimeTypes.includes(file.type)) {
+          setError('Solo se permiten imágenes (PNG, JPG, GIF, WEBP, HEIC)');
+          return;
+        }
+
         setPaymentProof(file);
         setError(''); // Clear any previous errors
 

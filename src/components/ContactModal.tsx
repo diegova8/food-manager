@@ -21,6 +21,17 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
 
   const isAuthenticated = api.isAuthenticated();
 
+  // Allowed image types (no ico or other non-photo formats)
+  const allowedImageTypes = [
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/gif',
+    'image/webp',
+    'image/heic',
+    'image/heif'
+  ];
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -37,7 +48,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
     const filesToProcess = Array.from(files).slice(0, availableSlots);
 
     filesToProcess.forEach(file => {
-      if (!file.type.startsWith('image/')) {
+      // Check if it's a valid image type
+      if (!allowedImageTypes.includes(file.type)) {
+        setError('Solo se permiten imágenes (PNG, JPG, GIF, WEBP, HEIC)');
         return;
       }
 
@@ -50,6 +63,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
       reader.onload = (event) => {
         if (event.target?.result) {
           setImages(prev => [...prev, event.target!.result as string]);
+          setError(''); // Clear error on success
         }
       };
       reader.readAsDataURL(file);
@@ -296,7 +310,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.gif,.webp,.heic,.heif"
                 multiple
                 onChange={handleImageUpload}
                 className="hidden"

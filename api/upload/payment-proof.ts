@@ -17,11 +17,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       return errorResponse(res, 'Missing filename or data', 400);
     }
 
-    // Validate file type (must be an image)
-    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    // Validate file type (must be an image - no ico or other non-photo formats)
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
     const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
     if (!validExtensions.includes(ext)) {
-      return errorResponse(res, 'Invalid file type. Only images are allowed', 400);
+      return errorResponse(res, 'Invalid file type. Only images (PNG, JPG, GIF, WEBP, HEIC) are allowed', 400);
     }
 
     // Convert base64 to buffer
@@ -44,10 +44,21 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const timestamp = Date.now();
     const uniqueFilename = `payment-proof-${timestamp}${ext}`;
 
+    // Map extension to content type
+    const contentTypeMap: Record<string, string> = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.heic': 'image/heic',
+      '.heif': 'image/heif'
+    };
+
     // Upload to Vercel Blob
     const blob = await put(uniqueFilename, buffer, {
       access: 'public',
-      contentType: `image/${ext.substring(1)}`,
+      contentType: contentTypeMap[ext] || 'image/jpeg',
     });
 
     return successResponse(res, { url: blob.url }, 'Image uploaded successfully');
