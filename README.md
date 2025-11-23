@@ -9,16 +9,21 @@
 ## 🌟 Características Principales
 
 ### Para Clientes
+- 🏠 **Homepage Atractiva**: Página de inicio con acceso rápido al menú
 - 🍽️ **Menú Visual Interactivo**: Navegación intuitiva con imágenes y descripciones
-- 🛒 **Carrito de Compras**: Gestión completa de pedidos con persistencia
+- 🛒 **Carrito de Compras**: Gestión completa de pedidos
 - 📱 **Sistema de Checkout**: Proceso de pago simple con confirmación por imagen
 - 📧 **Notificaciones por Email**: Confirmaciones automáticas de pedidos
-- 👤 **Registro de Usuarios**: Seguimiento de historial de pedidos
+- 👤 **Perfil de Usuario**: Historial de pedidos y gestión de cuenta
+- 🎓 **Tutorial Interactivo**: Guía de bienvenida para nuevos usuarios
+- 🎫 **Sistema de Tickets**: Reportar problemas y sugerencias
 
 ### Para Administradores
 - 📊 **Panel de Administración**: Control total de precios y configuración
+- 👥 **Gestión de Usuarios**: Tabla con búsqueda, filtros y paginación
 - 💰 **Matriz de Costos**: Gestión dinámica de precios de materia prima
 - 📦 **Gestión de Pedidos**: Seguimiento y actualización de estados
+- 🎫 **Gestión de Tickets**: Atención a reportes y sugerencias
 - 🧮 **Calculadora de Costos**: Análisis de márgenes y ganancias
 - 🔐 **Autenticación Segura**: JWT + bcrypt para seguridad
 
@@ -115,6 +120,7 @@ La aplicación estará disponible en:
 
 | Ruta | Descripción | Acceso |
 |------|-------------|--------|
+| `/` | Homepage con opciones principales | Público |
 | `/menu` | Menú público de ceviches | Público |
 | `/checkout` | Proceso de compra | Público |
 | `/register` | Registro de nuevos usuarios | Público |
@@ -122,8 +128,11 @@ La aplicación estará disponible en:
 | `/verify-email` | Verificación de email | Público |
 | `/forgot-password` | Recuperación de contraseña | Público |
 | `/reset-password` | Restablecer contraseña | Público |
-| `/admin` | Panel de administración | Requiere autenticación de admin |
-| `/admin/orders` | Gestión de pedidos | Requiere autenticación de admin |
+| `/profile` | Perfil del usuario | Requiere autenticación |
+| `/profile/orders` | Historial de pedidos | Requiere autenticación |
+| `/profile/tickets` | Mis tickets de soporte | Requiere autenticación |
+| `/admin` | Panel de administración | Requiere admin |
+| `/admin/tickets` | Gestión de tickets | Requiere admin |
 
 ## 🛠️ Scripts Disponibles
 
@@ -183,16 +192,24 @@ food-manager/
 │   │   ├── CevicheCounter.tsx
 │   │   └── ProtectedRoute.tsx
 │   ├── pages/                    # Páginas de la aplicación
+│   │   ├── HomePage.tsx
+│   │   ├── MenuPage.tsx
 │   │   ├── AdminPage.tsx
 │   │   ├── CheckoutPage.tsx
 │   │   ├── LoginPage.tsx
 │   │   ├── RegisterPage.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── MyOrdersPage.tsx
+│   │   ├── MyTicketsPage.tsx
+│   │   ├── UsersManagementPage.tsx
 │   │   ├── OrdersManagementPage.tsx
+│   │   ├── TicketsManagementPage.tsx
 │   │   ├── VerifyEmailPage.tsx
 │   │   ├── ForgotPasswordPage.tsx
 │   │   └── ResetPasswordPage.tsx
 │   ├── context/                  # React Context
-│   │   └── CartContext.tsx
+│   │   ├── CartContext.tsx
+│   │   └── TutorialContext.tsx
 │   ├── services/                 # Servicios API
 │   │   └── api.ts
 │   ├── utils/                    # Utilidades
@@ -226,7 +243,9 @@ Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para más detalles sobre la arq
 - **[API Documentation](docs/API.md)** - Documentación de endpoints y uso
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Guía de deployment en Vercel
 - **[Architecture](docs/ARCHITECTURE.md)** - Arquitectura del sistema
-- **[Improvement Roadmap](docs/IMPROVEMENT_ROADMAP.md)** - Roadmap de mejoras futuras
+- **[Improvement Roadmap](docs/IMPROVEMENT_ROADMAP.md)** - Roadmap de mejoras y progreso
+- **[Security Analysis](docs/SECURITY_ANALYSIS.md)** - Análisis de seguridad y vulnerabilidades
+- **[World-Class Recommendations](docs/WORLD_CLASS_RECOMMENDATIONS.md)** - Guía para app de clase mundial
 
 ## 🔒 Seguridad
 
