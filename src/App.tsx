@@ -16,10 +16,20 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import MyTicketsPage from './pages/MyTicketsPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import WelcomeGuide from './components/WelcomeGuide';
+import { TutorialProvider, useTutorial } from './context/TutorialContext';
+
+function GlobalTutorial() {
+  const { showTutorial, closeTutorial } = useTutorial();
+
+  if (!showTutorial) return null;
+
+  return <WelcomeGuide onComplete={closeTutorial} />;
+}
 
 function App() {
   return (
-    <>
+    <TutorialProvider>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -43,6 +53,7 @@ function App() {
         }}
       />
       <Router>
+        <GlobalTutorial />
         <Routes>
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -77,7 +88,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
-    </>
+    </TutorialProvider>
   );
 }
 

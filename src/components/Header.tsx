@@ -2,12 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { decodeJWT, isUserAdmin } from '../utils/jwt';
+import { useTutorial } from '../context/TutorialContext';
 import logo from '../assets/logo.png';
 import ContactModal from './ContactModal';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { openTutorial } = useTutorial();
   const isAuthenticated = api.isAuthenticated();
   const isAdmin = isUserAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,7 +59,7 @@ const Header = () => {
 
   const handleShowTutorial = () => {
     closeMobileMenu();
-    navigate('/menu?tutorial=true');
+    openTutorial();
   };
 
   const isActivePath = (path: string) => {

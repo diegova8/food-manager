@@ -1,38 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 import MenuCeviches from '../components/MenuCeviches';
 import Header from '../components/Header';
-import WelcomeGuide from '../components/WelcomeGuide';
 import type { CevicheCost, RawMaterialPrices } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
 import { api } from '../services/api';
 import defaultConfig from '../config/defaultPrices.json';
 
-const WELCOME_GUIDE_KEY = 'ceviche-welcome-guide-seen';
-
 function MenuPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
   const [prices, setPrices] = useState<RawMaterialPrices>(defaultConfig.rawMaterials);
   const [markup, setMarkup] = useState<number>(defaultConfig.markup);
   const [customPrices, setCustomPrices] = useState<{ [key: string]: number }>(defaultConfig.customPrices);
-
-  // Check if first-time visitor or tutorial param
-  useEffect(() => {
-    const showTutorial = searchParams.get('tutorial') === 'true';
-    const hasSeenGuide = localStorage.getItem(WELCOME_GUIDE_KEY);
-
-    if (showTutorial) {
-      setShowWelcomeGuide(true);
-      // Clean up URL
-      searchParams.delete('tutorial');
-      setSearchParams(searchParams, { replace: true });
-    } else if (!hasSeenGuide) {
-      setShowWelcomeGuide(true);
-    }
-  }, [searchParams, setSearchParams]);
 
   // Cargar configuración desde la API
   useEffect(() => {
@@ -68,12 +46,6 @@ function MenuPage() {
     });
   }, [prices, markup]);
 
-  const handleWelcomeGuideComplete = () => {
-    localStorage.setItem(WELCOME_GUIDE_KEY, 'true');
-    setShowWelcomeGuide(false);
-    navigate('/');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
@@ -99,11 +71,6 @@ function MenuPage() {
           <MenuCeviches cevicheCosts={cevicheCosts} customPrices={customPrices} />
         </div>
       </div>
-
-      {/* Welcome Guide for first-time visitors */}
-      {showWelcomeGuide && (
-        <WelcomeGuide onComplete={handleWelcomeGuideComplete} />
-      )}
     </div>
   );
 }
