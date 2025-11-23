@@ -473,6 +473,74 @@ class ApiService {
     }>(url);
     return response;
   }
+
+  // Users (Admin)
+  async getUsers(params?: {
+    search?: string;
+    emailVerified?: boolean;
+    isAdmin?: boolean;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    success: boolean;
+    data: {
+      users: Array<{
+        _id: string;
+        username: string;
+        email?: string;
+        firstName?: string;
+        lastName?: string;
+        phone?: string;
+        address?: string;
+        birthday?: string;
+        dietaryPreferences?: string;
+        emailVerified: boolean;
+        isAdmin: boolean;
+        createdAt: string;
+      }>;
+      totalCount: number;
+      limit: number;
+      offset: number;
+    };
+  }> {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.emailVerified !== undefined) queryParams.append('emailVerified', params.emailVerified.toString());
+    if (params?.isAdmin !== undefined) queryParams.append('isAdmin', params.isAdmin.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+
+    const queryString = queryParams.toString();
+    const url = `/users${queryString ? `?${queryString}` : ''}`;
+
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        users: Array<{
+          _id: string;
+          username: string;
+          email?: string;
+          firstName?: string;
+          lastName?: string;
+          phone?: string;
+          address?: string;
+          birthday?: string;
+          dietaryPreferences?: string;
+          emailVerified: boolean;
+          isAdmin: boolean;
+          createdAt: string;
+        }>;
+        totalCount: number;
+        limit: number;
+        offset: number;
+      };
+    }>(url);
+    return response;
+  }
 }
 
 export const api = new ApiService();

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import HomePage from './pages/HomePage';
 import MenuPage from './pages/MenuPage';
 import AdminPage from './pages/AdminPage';
 import TicketsManagementPage from './pages/TicketsManagementPage';
@@ -71,9 +72,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/menu" replace />} />
-        {/* Catch-all route for 404 - redirect to menu */}
-        <Route path="*" element={<Navigate to="/menu" replace />} />
+        <Route path="/" element={<HomePage />} />
+        {/* Catch-all route for 404 - redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </>

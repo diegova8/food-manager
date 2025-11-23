@@ -55,6 +55,11 @@ const Header = () => {
     setMobileMenuOpen(false);
   };
 
+  const handleShowTutorial = () => {
+    closeMobileMenu();
+    navigate('/menu?tutorial=true');
+  };
+
   const isActivePath = (path: string) => {
     return location.pathname === path;
   };
@@ -64,7 +69,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo/Brand */}
-          <Link to="/menu" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img
               src={logo}
               alt="Ceviche de mi Tata"
@@ -118,6 +123,17 @@ const Header = () => {
                   </Link>
                 )}
 
+                {/* Tutorial Button */}
+                <button
+                  onClick={handleShowTutorial}
+                  className="p-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg hover:from-amber-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg hover:scale-105"
+                  title="Ver tutorial"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+
                 {/* Contact Dropdown */}
                 <div className="relative" ref={contactDropdownRef}>
                   <button
@@ -162,6 +178,17 @@ const Header = () => {
               </>
             ) : (
               <>
+                {/* Tutorial Button for guests */}
+                <button
+                  onClick={handleShowTutorial}
+                  className="p-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg hover:from-amber-500 hover:to-orange-600 transition-all shadow-md hover:shadow-lg hover:scale-105"
+                  title="Ver tutorial"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+
                 {/* Contact Dropdown for guests */}
                 <div className="relative" ref={contactDropdownRef}>
                   <button
@@ -215,15 +242,15 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors shadow-md"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
@@ -307,6 +334,17 @@ const Header = () => {
                   </Link>
                 )}
 
+                {/* Tutorial link */}
+                <button
+                  onClick={handleShowTutorial}
+                  className="w-full px-4 py-3 rounded-lg transition-all font-medium flex items-center gap-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Ver Tutorial
+                </button>
+
                 {/* Contact options */}
                 <div className="border-t border-gray-100 mt-2 pt-2">
                   <p className="px-4 py-2 text-xs text-gray-500 uppercase font-semibold">Contacto</p>
@@ -379,6 +417,17 @@ const Header = () => {
                   </svg>
                   Registrarse
                 </Link>
+
+                {/* Tutorial link for guests */}
+                <button
+                  onClick={handleShowTutorial}
+                  className="w-full px-4 py-3 rounded-lg transition-all font-medium flex items-center gap-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Ver Tutorial
+                </button>
 
                 {/* Contact options for guests */}
                 <div className="border-t border-gray-100 mt-2 pt-2">

@@ -5,13 +5,14 @@ import MatrizCostos from '../components/MatrizCostos';
 import CatalogoCeviches from '../components/CatalogoCeviches';
 import CalculadoraPedidos from '../components/CalculadoraPedidos';
 import OrdersManagementPage from './OrdersManagementPage';
+import UsersManagementPage from './UsersManagementPage';
 import Header from '../components/Header';
 import type { RawMaterialPrices, CevicheCost } from '../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
 import { api } from '../services/api';
 import defaultConfig from '../config/defaultPrices.json';
 
-type AdminTab = 'orders' | 'prices';
+type AdminTab = 'orders' | 'users' | 'prices';
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('orders');
@@ -144,6 +145,15 @@ function AdminPage() {
       )
     },
     {
+      id: 'users' as AdminTab,
+      label: 'Usuarios',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      )
+    },
+    {
       id: 'prices' as AdminTab,
       label: 'Precios',
       icon: (
@@ -218,6 +228,8 @@ function AdminPage() {
         {/* Tab Content */}
         {activeTab === 'orders' ? (
           <OrdersManagementPage />
+        ) : activeTab === 'users' ? (
+          <UsersManagementPage />
         ) : (
           <div className="space-y-8">
             {/* Action Buttons */}
