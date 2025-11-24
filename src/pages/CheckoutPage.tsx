@@ -632,15 +632,23 @@ function CheckoutPage() {
 
       {/* Notes */}
       <div>
-        <label htmlFor="notes" className="block text-sm font-semibold text-slate-700 mb-2">
-          Notas <span className="text-slate-400 font-normal">(opcional)</span>
-        </label>
+        <div className="flex justify-between items-center mb-2">
+          <label htmlFor="notes" className="block text-sm font-semibold text-slate-700">
+            Notas <span className="text-slate-400 font-normal">(opcional)</span>
+          </label>
+          <span className={`text-xs ${notes.length > 500 ? 'text-red-600 font-medium' : 'text-slate-400'}`}>
+            {notes.length}/500
+          </span>
+        </div>
         <textarea
           id="notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          maxLength={500}
           rows={3}
-          className="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-orange-400 focus:bg-white transition-all duration-200 text-slate-900 placeholder-slate-400 resize-none"
+          className={`w-full px-4 py-3.5 bg-slate-50 border-2 rounded-xl focus:outline-none focus:bg-white transition-all duration-200 text-slate-900 placeholder-slate-400 resize-none ${
+            notes.length > 500 ? 'border-red-300 focus:border-red-400' : 'border-slate-200 focus:border-orange-400'
+          }`}
           placeholder="Ej: Sin cebolla, sin culantro, alergia a..."
         />
       </div>
