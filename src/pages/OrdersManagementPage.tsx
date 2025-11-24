@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { api } from '../services/api';
 import { formatCurrency, formatDateDisplay } from '../utils';
 import type { Order } from '../types';
+import { BulkDeleteModal } from '../components/BulkDeleteModal';
 
 function OrdersManagementPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -13,6 +14,9 @@ function OrdersManagementPage() {
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -59,6 +63,51 @@ function OrdersManagementPage() {
     } finally {
       setDeleting(false);
     }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === orders.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(orders.map(o => o._id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    setIsBulkDeleting(true);
+    try {
+      const response = await api.bulkDeleteOrders(Array.from(selectedIds));
+      toast.success(`${response.data.deletedCount} pedidos eliminados`);
+      setSelectedIds(new Set());
+      setShowBulkDeleteModal(false);
+      await loadOrders();
+    } catch (error) {
+      console.error('Error bulk deleting orders:', error);
+      toast.error('Error al eliminar los pedidos');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const getSelectedItems = () => {
+    return orders
+      .filter(o => selectedIds.has(o._id))
+      .map(o => ({
+        id: o._id,
+        label: `#${o._id.slice(-8)} - ${getCustomerName(o)} - ${formatCurrency(o.total)}`
+      }));
   };
 
   const getStatusConfig = (status: string) => {
@@ -310,15 +359,28 @@ function OrdersManagementPage() {
             <h2 className="text-2xl font-bold text-slate-800">Gestión de Pedidos</h2>
             <p className="text-slate-500 text-sm mt-1">{orders.length} pedidos en total</p>
           </div>
-          <button
-            onClick={loadOrders}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Actualizar
-          </button>
+          <div className="flex items-center gap-3">
+            {selectedIds.size > 0 && (
+              <button
+                onClick={() => setShowBulkDeleteModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Eliminar ({selectedIds.size})
+              </button>
+            )}
+            <button
+              onClick={loadOrders}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Actualizar
+            </button>
+          </div>
         </div>
 
         {/* Filter Pills */}
@@ -350,6 +412,14 @@ function OrdersManagementPage() {
           <table className="min-w-full">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100">
+                <th className="px-4 py-4 w-12">
+                  <input
+                    type="checkbox"
+                    checked={orders.length > 0 && selectedIds.size === orders.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                  />
+                </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Cliente</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Items</th>
@@ -364,7 +434,7 @@ function OrdersManagementPage() {
             <tbody className="divide-y divide-slate-100">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-12 text-center">
+                  <td colSpan={10} className="px-6 py-12 text-center">
                     <div className="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
                       <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -378,8 +448,17 @@ function OrdersManagementPage() {
               ) : (
                 orders.map((order) => {
                   const statusConfig = getStatusConfig(order.status);
+                  const isSelected = selectedIds.has(order._id);
                   return (
-                    <tr key={order._id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={order._id} className={`transition-colors ${isSelected ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(order._id)}
+                          className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <span className="font-mono text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
                           #{order._id.slice(-8)}
@@ -509,6 +588,16 @@ function OrdersManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk Delete Modal */}
+      <BulkDeleteModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        onConfirm={handleBulkDelete}
+        isDeleting={isBulkDeleting}
+        itemType="pedidos"
+        items={getSelectedItems()}
+      />
     </div>
   );
 }

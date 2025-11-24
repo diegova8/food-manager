@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
+import BulkDeleteModal from '../components/BulkDeleteModal';
 
 interface User {
   _id: string;
@@ -27,6 +28,11 @@ function UsersManagementPage() {
   const [isAdminFilter, setIsAdminFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Bulk delete
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -90,6 +96,48 @@ function UsersManagementPage() {
           d={sortOrder === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
       </svg>
     );
+  };
+
+  // Bulk delete handlers
+  const toggleSelectAll = () => {
+    if (selectedIds.size === users.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(users.map(u => u._id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await api.bulkDeleteUsers(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      setShowDeleteModal(false);
+      loadUsers();
+    } catch (error) {
+      console.error('Error deleting users:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const getSelectedItems = () => {
+    return users
+      .filter(u => selectedIds.has(u._id))
+      .map(u => ({
+        id: u._id,
+        label: `${u.firstName || ''} ${u.lastName || ''} (${u.email || u.username})`.trim()
+      }));
   };
 
   return (
@@ -159,11 +207,25 @@ function UsersManagementPage() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats & Actions */}
       <div className="flex items-center justify-between">
         <p className="text-slate-600">
           <span className="font-semibold text-slate-800">{totalCount}</span> usuarios encontrados
+          {selectedIds.size > 0 && (
+            <span className="ml-2 text-purple-600">({selectedIds.size} seleccionados)</span>
+          )}
         </p>
+        {selectedIds.size > 0 && (
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Eliminar ({selectedIds.size})
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -172,6 +234,14 @@ function UsersManagementPage() {
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
+                <th className="px-4 py-4 w-12">
+                  <input
+                    type="checkbox"
+                    checked={users.length > 0 && selectedIds.size === users.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                  />
+                </th>
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-slate-700 cursor-pointer hover:bg-slate-100"
                   onClick={() => handleSort('firstName')}
@@ -204,7 +274,7 @@ function UsersManagementPage() {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <svg className="animate-spin h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -216,13 +286,21 @@ function UsersManagementPage() {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                     No se encontraron usuarios
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user._id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={user._id} className={`hover:bg-slate-50 transition-colors ${selectedIds.has(user._id) ? 'bg-purple-50' : ''}`}>
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(user._id)}
+                        onChange={() => toggleSelect(user._id)}
+                        className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-medium text-slate-800">
@@ -332,6 +410,16 @@ function UsersManagementPage() {
           </div>
         )}
       </div>
+
+      {/* Bulk Delete Modal */}
+      <BulkDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleBulkDelete}
+        isDeleting={isDeleting}
+        itemType="usuarios"
+        items={getSelectedItems()}
+      />
     </div>
   );
 }

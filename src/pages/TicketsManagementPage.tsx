@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Header from '../components/Header';
 import { isUserAdmin } from '../utils/jwt';
+import { api } from '../services/api';
+import { BulkDeleteModal } from '../components/BulkDeleteModal';
 
 interface Ticket {
   id: string;
@@ -39,6 +42,9 @@ const TicketsManagementPage = () => {
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   useEffect(() => {
     if (!isUserAdmin()) {
@@ -103,6 +109,51 @@ const TicketsManagementPage = () => {
     } finally {
       setUpdatingStatus(false);
     }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === tickets.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(tickets.map(t => t.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    setIsBulkDeleting(true);
+    try {
+      const response = await api.bulkDeleteTickets(Array.from(selectedIds));
+      toast.success(`${response.data.deletedCount} tickets eliminados`);
+      setSelectedIds(new Set());
+      setShowBulkDeleteModal(false);
+      await fetchTickets();
+    } catch (error) {
+      console.error('Error bulk deleting tickets:', error);
+      toast.error('Error al eliminar los tickets');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const getSelectedItems = () => {
+    return tickets
+      .filter(t => selectedIds.has(t.id))
+      .map(t => ({
+        id: t.id,
+        label: `#${t.id.slice(-8)} - ${t.title}`
+      }));
   };
 
   const getStatusBadge = (status: string) => {
@@ -218,10 +269,21 @@ const TicketsManagementPage = () => {
                 <option value="bug">Bug</option>
               </select>
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-4">
               <span className="text-sm text-slate-500">
                 {pagination.total} ticket{pagination.total !== 1 ? 's' : ''} encontrado{pagination.total !== 1 ? 's' : ''}
               </span>
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={() => setShowBulkDeleteModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Eliminar ({selectedIds.size})
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -246,6 +308,14 @@ const TicketsManagementPage = () => {
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
+                      <th className="px-4 py-3 w-12">
+                        <input
+                          type="checkbox"
+                          checked={tickets.length > 0 && selectedIds.size === tickets.length}
+                          onChange={toggleSelectAll}
+                          className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                        />
+                      </th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-slate-600">Ticket</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-slate-600">Usuario</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-slate-600">Tipo</th>
@@ -255,8 +325,18 @@ const TicketsManagementPage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {tickets.map((ticket) => (
-                      <tr key={ticket.id} className="hover:bg-slate-50">
+                    {tickets.map((ticket) => {
+                      const isSelected = selectedIds.has(ticket.id);
+                      return (
+                      <tr key={ticket.id} className={`transition-colors ${isSelected ? 'bg-orange-50' : 'hover:bg-slate-50'}`}>
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelect(ticket.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                          />
+                        </td>
                         <td className="px-4 py-3">
                           <div className="font-medium text-slate-900 truncate max-w-xs">{ticket.title}</div>
                           <div className="text-xs text-slate-500">#{ticket.id.slice(-8)}</div>
@@ -277,7 +357,8 @@ const TicketsManagementPage = () => {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -408,6 +489,16 @@ const TicketsManagementPage = () => {
             </div>
           </div>
         )}
+
+        {/* Bulk Delete Modal */}
+        <BulkDeleteModal
+          isOpen={showBulkDeleteModal}
+          onClose={() => setShowBulkDeleteModal(false)}
+          onConfirm={handleBulkDelete}
+          isDeleting={isBulkDeleting}
+          itemType="tickets"
+          items={getSelectedItems()}
+        />
       </div>
     </div>
   );

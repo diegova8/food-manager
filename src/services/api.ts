@@ -226,6 +226,28 @@ class ApiService {
     return response;
   }
 
+  // Bulk delete methods
+  async bulkDeleteUsers(userIds: string[]): Promise<{ success: boolean; data: { deletedCount: number }; message?: string }> {
+    return this.fetch('/users/bulk-delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ userIds }),
+    });
+  }
+
+  async bulkDeleteOrders(orderIds: string[]): Promise<{ success: boolean; data: { deletedCount: number }; message?: string }> {
+    return this.fetch('/orders/bulk-delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ orderIds }),
+    });
+  }
+
+  async bulkDeleteTickets(ticketIds: string[]): Promise<{ success: boolean; data: { deletedCount: number }; message?: string }> {
+    return this.fetch('/tickets/bulk-delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ ticketIds }),
+    });
+  }
+
   async getMyOrders(params?: { status?: string; limit?: number; offset?: number }): Promise<{
     success: boolean;
     data: {
