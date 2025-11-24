@@ -13,7 +13,7 @@ function HomePage() {
           <img
             src={logo}
             alt="Ceviche de mi Tata"
-            className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover border-4 border-white shadow-xl"
+            className="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border-4 border-white shadow-xl"
           />
         </div>
                   <div className="text-center mb-10">
