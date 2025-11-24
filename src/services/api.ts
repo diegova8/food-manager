@@ -149,35 +149,20 @@ class ApiService {
     return response.data;
   }
 
-  // File Upload
+  // File Upload - Uses Vercel Blob client upload for large files
   async uploadPaymentProof(file: File): Promise<{ url: string }> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+    const { upload } = await import('@vercel/blob/client');
 
-      reader.onloadend = async () => {
-        try {
-          const base64Data = reader.result as string;
+    const timestamp = Date.now();
+    const ext = file.name.substring(file.name.lastIndexOf('.'));
+    const filename = `payment-proof-${timestamp}${ext}`;
 
-          const response = await this.fetch<{ success: boolean; data: { url: string } }>('/upload/payment-proof', {
-            method: 'POST',
-            body: JSON.stringify({
-              filename: file.name,
-              data: base64Data
-            }),
-          });
-
-          resolve({ url: response.data.url });
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      reader.onerror = () => {
-        reject(new Error('Failed to read file'));
-      };
-
-      reader.readAsDataURL(file);
+    const blob = await upload(filename, file, {
+      access: 'public',
+      handleUploadUrl: `${API_BASE_URL}/upload/client-token`,
     });
+
+    return { url: blob.url };
   }
 
   // Orders

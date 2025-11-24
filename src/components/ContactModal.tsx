@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { upload } from '@vercel/blob/client';
 import { api } from '../services/api';
 
 interface ContactModalProps {
@@ -13,8 +14,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<{ url: string; preview: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,7 +34,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
     'image/heif'
   ];
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
@@ -47,31 +49,46 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
 
     const filesToProcess = Array.from(files).slice(0, availableSlots);
 
-    filesToProcess.forEach(file => {
-      // Check if it's a valid image type
+    // Validate all files first
+    for (const file of filesToProcess) {
       if (!allowedImageTypes.includes(file.type)) {
         setError('Solo se permiten imágenes (PNG, JPG, GIF, WEBP, HEIC)');
         return;
       }
-
       if (file.size > 5 * 1024 * 1024) {
         setError('Cada imagen debe ser menor a 5MB');
         return;
       }
+    }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImages(prev => [...prev, event.target!.result as string]);
-          setError(''); // Clear error on success
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    setIsUploading(true);
+    setError('');
 
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    try {
+      for (const file of filesToProcess) {
+        // Create preview URL
+        const preview = URL.createObjectURL(file);
+
+        // Upload directly to Vercel Blob
+        const timestamp = Date.now();
+        const ext = file.name.substring(file.name.lastIndexOf('.'));
+        const filename = `ticket-${timestamp}${ext}`;
+
+        const blob = await upload(filename, file, {
+          access: 'public',
+          handleUploadUrl: '/api/upload/client-token',
+        });
+
+        setImages(prev => [...prev, { url: blob.url, preview }]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al subir imagen');
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -89,7 +106,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
         type,
         title,
         description,
-        images
+        images: images.map(img => img.url) // Send only URLs
       };
 
       if (!isAuthenticated) {
@@ -278,14 +295,15 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
                   {images.map((img, index) => (
                     <div key={index} className="relative">
                       <img
-                        src={img}
+                        src={img.preview}
                         alt={`Preview ${index + 1}`}
                         className="w-16 h-16 object-cover rounded-lg border-2 border-slate-200"
                       />
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                        disabled={isUploading}
+                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 disabled:opacity-50"
                       >
                         ×
                       </button>
@@ -298,12 +316,25 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-orange-400 hover:text-orange-600 transition-all flex items-center justify-center gap-2"
+                  disabled={isUploading}
+                  className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-orange-400 hover:text-orange-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Agregar imagen
+                  {isUploading ? (
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Agregar imagen
+                    </>
+                  )}
                 </button>
               )}
 
@@ -326,7 +357,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
               className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (

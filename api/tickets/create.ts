@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { put } from '@vercel/blob';
 import connectDB from '../lib/mongodb.js';
 import { SupportTicket, User } from '../lib/models.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
@@ -64,33 +63,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       userName = name;
     }
 
-    // Upload images if provided
+    // Validate image URLs (already uploaded via client upload)
     const imageUrls: string[] = [];
     if (images && Array.isArray(images)) {
       for (let i = 0; i < Math.min(images.length, 5); i++) {
-        const imageData = images[i];
-        if (imageData && typeof imageData === 'string') {
-          try {
-            const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
-            const buffer = Buffer.from(base64Data, 'base64');
-
-            // Check size (max 5MB per image)
-            if (buffer.length > 5 * 1024 * 1024) {
-              continue;
-            }
-
-            const timestamp = Date.now();
-            const filename = `ticket-${timestamp}-${i}.png`;
-
-            const blob = await put(filename, buffer, {
-              access: 'public',
-              contentType: 'image/png',
-            });
-
-            imageUrls.push(blob.url);
-          } catch {
-            // Skip invalid images
-          }
+        const imageUrl = images[i];
+        // Only accept valid Vercel Blob URLs
+        if (imageUrl && typeof imageUrl === 'string' && imageUrl.includes('.blob.vercel-storage.com/')) {
+          imageUrls.push(imageUrl);
         }
       }
     }
