@@ -118,7 +118,7 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 pb-32">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         {renderMenuSection(singleIngredient, 'Ceviches de 1 sabor')}
         {renderMenuSection(twoIngredients, 'Ceviches de 2 sabores')}
         {renderMenuSection(threeIngredients, 'Ceviches de 3 sabores')}
