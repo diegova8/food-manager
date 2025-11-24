@@ -175,9 +175,15 @@ function RegisterPage() {
               <p className="font-semibold text-orange-600 mb-6 bg-orange-50 rounded-lg px-4 py-3 border-2 border-orange-200">
                 {formData.email}
               </p>
-              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-6">
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-6 space-y-2">
                 <p className="text-sm text-amber-800 font-medium">
                   Por favor, revisa tu bandeja de entrada y haz clic en el enlace de verificación para activar tu cuenta.
+                </p>
+                <p className="text-xs text-amber-700 flex items-center gap-1">
+                  <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Si no lo encuentras, revisa tu carpeta de spam o correo no deseado.
                 </p>
               </div>
               <button
