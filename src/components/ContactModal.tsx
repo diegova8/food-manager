@@ -14,7 +14,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
   const [description, setDescription] = useState('');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [images, setImages] = useState<{ url: string; preview: string }[]>([]);
+  const [images, setImages] = useState<{ url: string; preview: string; loading: boolean }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -66,8 +66,10 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
 
     try {
       for (const file of filesToProcess) {
-        // Create preview URL
+        // Create preview URL and add image immediately with loading state
         const preview = URL.createObjectURL(file);
+
+        setImages(prev => [...prev, { url: '', preview, loading: true }]);
 
         // Upload directly to Vercel Blob
         const timestamp = Date.now();
@@ -79,9 +81,14 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
           handleUploadUrl: '/api/upload/client-token',
         });
 
-        setImages(prev => [...prev, { url: blob.url, preview }]);
+        // Update the image with the actual URL and remove loading state
+        setImages(prev => prev.map(img =>
+          img.preview === preview ? { ...img, url: blob.url, loading: false } : img
+        ));
       }
     } catch (err) {
+      // Remove any images that failed to upload
+      setImages(prev => prev.filter(img => !img.loading));
       setError(err instanceof Error ? err.message : 'Error al subir imagen');
     } finally {
       setIsUploading(false);
@@ -297,16 +304,25 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
                       <img
                         src={img.preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-16 h-16 object-cover rounded-lg border-2 border-slate-200"
+                        className={`w-16 h-16 object-cover rounded-lg border-2 border-slate-200 ${img.loading ? 'opacity-50' : ''}`}
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        disabled={isUploading}
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 disabled:opacity-50"
-                      >
-                        ×
-                      </button>
+                      {img.loading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <svg className="w-6 h-6 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        </div>
+                      )}
+                      {!img.loading && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -357,7 +373,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, ini
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting || isUploading}
+              disabled={isSubmitting || isUploading || images.some(img => img.loading)}
               className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
