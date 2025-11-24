@@ -313,19 +313,19 @@ function RegisterPage() {
                               </span>
                             </div>
                             <div className="grid grid-cols-2 gap-1 text-xs">
-                              <div className={`flex items-center gap-1 ${passwordValidation.minLength ? 'text-green-600' : 'text-slate-400'}`}>
+                              <div className={`flex items-center gap-1 ${passwordValidation.minLength ? 'text-green-600' : 'text-orange-600 font-medium'}`}>
                                 {passwordValidation.minLength ? '✓' : '○'} 8+ caracteres
                               </div>
-                              <div className={`flex items-center gap-1 ${passwordValidation.hasUppercase ? 'text-green-600' : 'text-slate-400'}`}>
+                              <div className={`flex items-center gap-1 ${passwordValidation.hasUppercase ? 'text-green-600' : 'text-orange-600 font-medium'}`}>
                                 {passwordValidation.hasUppercase ? '✓' : '○'} Una mayúscula
                               </div>
-                              <div className={`flex items-center gap-1 ${passwordValidation.hasLowercase ? 'text-green-600' : 'text-slate-400'}`}>
+                              <div className={`flex items-center gap-1 ${passwordValidation.hasLowercase ? 'text-green-600' : 'text-orange-600 font-medium'}`}>
                                 {passwordValidation.hasLowercase ? '✓' : '○'} Una minúscula
                               </div>
-                              <div className={`flex items-center gap-1 ${passwordValidation.hasNumber ? 'text-green-600' : 'text-slate-400'}`}>
+                              <div className={`flex items-center gap-1 ${passwordValidation.hasNumber ? 'text-green-600' : 'text-orange-600 font-medium'}`}>
                                 {passwordValidation.hasNumber ? '✓' : '○'} Un número
                               </div>
-                              <div className={`flex items-center gap-1 col-span-2 ${passwordValidation.hasSpecial ? 'text-green-600' : 'text-slate-400'}`}>
+                              <div className={`flex items-center gap-1 col-span-2 ${passwordValidation.hasSpecial ? 'text-green-600' : 'text-orange-600 font-medium'}`}>
                                 {passwordValidation.hasSpecial ? '✓' : '○'} Un carácter especial (!@#$%...)
                               </div>
                             </div>
