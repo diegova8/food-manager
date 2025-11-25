@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
 import BulkDeleteModal from '../components/BulkDeleteModal';
+import UserDetailsModal from '../components/UserDetailsModal';
 
 interface User {
   _id: string;
@@ -33,6 +34,10 @@ function UsersManagementPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // User details modal
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -138,6 +143,11 @@ function UsersManagementPage() {
         id: u._id,
         label: `${u.firstName || ''} ${u.lastName || ''} (${u.email || u.username})`.trim()
       }));
+  };
+
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+    setShowUserModal(true);
   };
 
   return (
@@ -292,8 +302,12 @@ function UsersManagementPage() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user._id} className={`hover:bg-slate-50 transition-colors ${selectedIds.has(user._id) ? 'bg-purple-50' : ''}`}>
-                    <td className="px-4 py-4">
+                  <tr
+                    key={user._id}
+                    className={`hover:bg-slate-50 transition-colors cursor-pointer ${selectedIds.has(user._id) ? 'bg-purple-50' : ''}`}
+                    onClick={() => handleUserClick(user)}
+                  >
+                    <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedIds.has(user._id)}
@@ -419,6 +433,13 @@ function UsersManagementPage() {
         isDeleting={isDeleting}
         itemType="usuarios"
         items={getSelectedItems()}
+      />
+
+      {/* User Details Modal */}
+      <UserDetailsModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        user={selectedUser}
       />
     </div>
   );
