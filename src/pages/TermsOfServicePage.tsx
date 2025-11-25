@@ -68,7 +68,6 @@ function TermsOfServicePage() {
                 <li>El pago debe realizarse mediante transferencia bancaria (SINPE Móvil)</li>
                 <li>Debe cargar el comprobante de pago para confirmar el pedido</li>
                 <li>Los pedidos se procesarán después de verificar el pago</li>
-                <li>Todos los precios incluyen impuestos aplicables</li>
               </ul>
 
               <h3 className="text-xl font-semibold text-slate-700 mb-3">4.3 Confirmación</h3>
@@ -81,21 +80,31 @@ function TermsOfServicePage() {
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-slate-800 mb-4">5. Entrega</h2>
 
-              <h3 className="text-xl font-semibold text-slate-700 mb-3">5.1 Tiempos de Entrega</h3>
+              <h3 className="text-xl font-semibold text-slate-700 mb-3">5.1 Servicio de Entrega</h3>
               <p className="text-slate-600 mb-3">
-                Los tiempos de entrega son estimados y pueden variar debido a:
+                La entrega de pedidos se realiza a través de <strong>plataformas de delivery externas</strong> como Uber Eats.
+                Nosotros <strong>NO contamos con servicio de entrega a domicilio propio</strong>.
               </p>
               <ul className="list-disc pl-6 text-slate-600 mb-4 space-y-2">
-                <li>Volumen de pedidos</li>
-                <li>Condiciones climáticas</li>
-                <li>Tráfico</li>
-                <li>Distancia</li>
+                <li>El usuario es responsable de solicitar el servicio de delivery a través de la plataforma externa</li>
+                <li>Los costos de entrega son definidos y cobrados por la plataforma de delivery, no por nosotros</li>
+                <li>Los tiempos de entrega dependen completamente del servicio externo contratado</li>
+                <li>No somos responsables por demoras, problemas o incidentes durante el servicio de delivery externo</li>
               </ul>
 
-              <h3 className="text-xl font-semibold text-slate-700 mb-3">5.2 Responsabilidad de Entrega</h3>
-              <p className="text-slate-600">
-                Una vez entregado el pedido, no somos responsables por la calidad del producto después de la entrega.
-                El producto debe consumirse dentro del tiempo recomendado.
+              <h3 className="text-xl font-semibold text-slate-700 mb-3">5.2 Recomendaciones de Consumo</h3>
+              <p className="text-slate-600 mb-3">
+                Para garantizar la mejor experiencia y calidad del producto:
+              </p>
+              <ul className="list-disc pl-6 text-slate-600 space-y-2">
+                <li>Se recomienda consumir el ceviche <strong>dentro de las 2-3 horas</strong> posteriores a la entrega</li>
+                <li>Mantener refrigerado si no se consume inmediatamente</li>
+                <li>Verifique el estado del producto al recibirlo - si nota algo inusual, contáctenos de inmediato</li>
+                <li>Por tratarse de producto fresco y perecedero, la calidad óptima es inmediata al recibir el pedido</li>
+              </ul>
+              <p className="text-slate-600 mt-3 text-sm italic">
+                Nota: Una vez recibido el pedido en buen estado, no podemos garantizar la calidad del producto si no se siguen
+                las recomendaciones de almacenamiento y consumo oportuno.
               </p>
             </section>
 
@@ -122,7 +131,8 @@ function TermsOfServicePage() {
 
               <h3 className="text-xl font-semibold text-slate-700 mb-3">6.3 Reembolsos</h3>
               <p className="text-slate-600">
-                Los reembolsos se procesarán a la cuenta bancaria original dentro de 5-10 días hábiles.
+                Los reembolsos aprobados se procesarán mediante transferencia SINPE a la cuenta original
+                dentro de <strong>1-2 días hábiles</strong> después de la aprobación.
               </p>
             </section>
 

@@ -63,7 +63,6 @@ function PrivacyPolicyPage() {
                 <li><strong>Ejecución de Contrato:</strong> Para procesar y entregar sus pedidos</li>
                 <li><strong>Consentimiento:</strong> Para comunicaciones de marketing (puede retirarse en cualquier momento)</li>
                 <li><strong>Interés Legítimo:</strong> Para mejorar nuestro servicio y prevenir fraude</li>
-                <li><strong>Obligación Legal:</strong> Para cumplir con requisitos legales y fiscales</li>
               </ul>
             </section>
 
