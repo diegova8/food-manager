@@ -56,12 +56,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // PUT - Actualizar configuración (requiere autenticación)
+    // PUT - Actualizar configuración (requiere autenticación de admin)
     if (req.method === 'PUT') {
+      let payload;
       try {
-        verifyAuth(req);
+        payload = verifyAuth(req);
       } catch (error) {
         return errorResponse(res, 'Unauthorized', 401);
+      }
+
+      // Verificar que el usuario sea administrador
+      if (!payload.isAdmin) {
+        return errorResponse(res, 'Admin access required', 403);
       }
 
       const { rawMaterials, markup, customPrices } = req.body;
