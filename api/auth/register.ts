@@ -17,7 +17,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
   try {
     await connectDB();
 
-    const { email, password, firstName, lastName, phone, address, birthday, dietaryPreferences } = validatedData;
+    const { email, password, firstName, lastName, phone, address, birthday, dietaryPreferences, marketingConsent } = validatedData;
 
     // Normalize email to lowercase and escape special regex chars
     const emailLower = email.toLowerCase();
@@ -49,6 +49,7 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
       address,
       birthday: birthday ? new Date(birthday) : undefined,
       dietaryPreferences,
+      marketingConsent: marketingConsent || false,
       emailVerified: false,
       isAdmin: false
     });

@@ -13,6 +13,7 @@ export interface IUser extends Document {
   dietaryPreferences?: string;
   emailVerified: boolean;
   isAdmin: boolean;
+  marketingConsent: boolean;
   passwordResetToken?: string;
   passwordResetExpiry?: Date;
   createdAt: Date;
@@ -30,6 +31,7 @@ const UserSchema = new Schema<IUser>({
   dietaryPreferences: { type: String },
   emailVerified: { type: Boolean, default: false },
   isAdmin: { type: Boolean, default: false },
+  marketingConsent: { type: Boolean, default: false },
   passwordResetToken: { type: String },
   passwordResetExpiry: { type: Date },
   createdAt: { type: Date, default: Date.now }

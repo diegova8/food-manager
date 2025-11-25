@@ -17,7 +17,8 @@ export const registerSchema = z.object({
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'),
   address: z.string().max(500, 'Address is too long').optional(),
   birthday: z.string().optional(),
-  dietaryPreferences: z.string().max(500, 'Dietary preferences too long').optional()
+  dietaryPreferences: z.string().max(500, 'Dietary preferences too long').optional(),
+  marketingConsent: z.boolean().optional()
 });
 
 export const loginSchema = z.object({

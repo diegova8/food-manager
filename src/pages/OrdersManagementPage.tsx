@@ -284,7 +284,7 @@ function OrdersManagementPage() {
                   </svg>
                   Notas
                 </h3>
-                <p className="text-amber-700">{selectedOrder.notes}</p>
+                <p className="text-amber-700 whitespace-pre-wrap">{selectedOrder.notes}</p>
               </div>
             )}
 

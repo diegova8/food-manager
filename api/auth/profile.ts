@@ -35,6 +35,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         address: user.address,
         birthday: user.birthday,
         dietaryPreferences: user.dietaryPreferences,
+        marketingConsent: user.marketingConsent,
         isAdmin: user.isAdmin,
         emailVerified: user.emailVerified,
         createdAt: user.createdAt
@@ -43,7 +44,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // PUT - Update user profile
     if (req.method === 'PUT') {
-      const { firstName, lastName, phone, address, birthday, dietaryPreferences } = req.body;
+      const { firstName, lastName, phone, address, birthday, dietaryPreferences, marketingConsent } = req.body;
 
       // Validate inputs (basic validation)
       if (firstName && typeof firstName !== 'string') {
@@ -61,6 +62,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       if (dietaryPreferences && typeof dietaryPreferences !== 'string') {
         return errorResponse(res, 'Invalid dietary preferences', 400);
       }
+      if (marketingConsent !== undefined && typeof marketingConsent !== 'boolean') {
+        return errorResponse(res, 'Invalid marketing consent', 400);
+      }
 
       // Find and update user
       const user = await User.findById(authPayload.userId);
@@ -76,6 +80,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       if (address !== undefined) user.address = address;
       if (birthday !== undefined) user.birthday = birthday ? new Date(birthday) : undefined;
       if (dietaryPreferences !== undefined) user.dietaryPreferences = dietaryPreferences;
+      if (marketingConsent !== undefined) user.marketingConsent = marketingConsent;
 
       await user.save();
 
@@ -105,6 +110,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           address: user.address,
           birthday: user.birthday,
           dietaryPreferences: user.dietaryPreferences,
+          marketingConsent: user.marketingConsent,
           isAdmin: user.isAdmin
         }
       }, 'Profile updated successfully');

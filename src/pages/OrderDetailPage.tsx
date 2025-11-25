@@ -241,7 +241,7 @@ function OrderDetailPage() {
                 </svg>
                 Notas
               </h2>
-              <p className="text-amber-700">{order.notes}</p>
+              <p className="text-amber-700 whitespace-pre-wrap">{order.notes}</p>
             </div>
           )}
 

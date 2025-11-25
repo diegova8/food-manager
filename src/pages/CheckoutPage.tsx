@@ -26,6 +26,7 @@ function CheckoutPage() {
   // Check if user is authenticated
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(api.isAuthenticated());
+  const [dietaryPreferences, setDietaryPreferences] = useState<string>('');
 
   // Form data
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -71,6 +72,11 @@ function CheckoutPage() {
           phone: userData.phone || '',
           email: userData.email || ''
         });
+
+        // Save dietary preferences to append to order notes
+        if (userData.dietaryPreferences) {
+          setDietaryPreferences(userData.dietaryPreferences);
+        }
       } catch (error) {
         console.error('Failed to load user profile:', error);
       } finally {
@@ -192,7 +198,15 @@ function CheckoutPage() {
       // Step 1: Upload payment proof image to cloud storage
       const { url: paymentProofUrl } = await api.uploadPaymentProof(paymentProof);
 
-      // Step 2: Create order with the image URL
+      // Step 2: Prepare notes with dietary preferences
+      const notesSection = notes ? `Notas:\n${notes}` : '';
+      const preferencesSection = dietaryPreferences ? `Preferencias Alimentarias:\n${dietaryPreferences}` : '';
+
+      const finalNotes = [notesSection, preferencesSection]
+        .filter(section => section) // Remove empty sections
+        .join('\n\n'); // Join with double line break
+
+      // Step 3: Create order with the image URL
       const orderData = {
         items: items.map(item => ({
           cevicheType: item.name,
@@ -203,7 +217,7 @@ function CheckoutPage() {
         personalInfo,
         deliveryMethod,
         scheduledDate,
-        notes,
+        notes: finalNotes,
         paymentProof: paymentProofUrl
       };
 

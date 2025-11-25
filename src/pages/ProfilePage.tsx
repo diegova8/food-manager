@@ -13,6 +13,7 @@ interface UserProfile {
   address: string;
   birthday: string;
   dietaryPreferences: string;
+  marketingConsent: boolean;
 }
 
 const ProfilePage = () => {
@@ -31,6 +32,7 @@ const ProfilePage = () => {
     address: '',
     birthday: '',
     dietaryPreferences: '',
+    marketingConsent: false,
   });
 
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
@@ -57,6 +59,7 @@ const ProfilePage = () => {
           address: userData.address || '',
           birthday: userData.birthday ? userData.birthday.split('T')[0] : '',
           dietaryPreferences: userData.dietaryPreferences || '',
+          marketingConsent: userData.marketingConsent || false,
         };
 
         setProfile(profileData);
@@ -73,10 +76,12 @@ const ProfilePage = () => {
   }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+
     setEditedProfile(prev => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -93,6 +98,7 @@ const ProfilePage = () => {
         address: editedProfile.address,
         birthday: editedProfile.birthday || undefined,
         dietaryPreferences: editedProfile.dietaryPreferences,
+        marketingConsent: editedProfile.marketingConsent,
       });
 
       setProfile(editedProfile);
@@ -325,6 +331,26 @@ const ProfilePage = () => {
                   {profile.dietaryPreferences || <span className="text-slate-400 italic">No especificado</span>}
                 </p>
               )}
+            </div>
+
+            {/* Marketing Consent */}
+            <div className="bg-orange-50 border-2 border-orange-100 rounded-lg p-4">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  name="marketingConsent"
+                  checked={isEditing ? editedProfile.marketingConsent : profile.marketingConsent}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="mt-1 h-5 w-5 rounded border-orange-300 text-orange-600 focus:ring-orange-500 focus:ring-offset-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <span className="flex-1">
+                  <span className="block text-sm font-medium text-slate-700">Acepto recibir ofertas y promociones</span>
+                  <span className="block text-xs text-slate-500 mt-1">
+                    Enviaremos ocasionalmente ofertas especiales y novedades. Puedes cambiar esta preferencia en cualquier momento.
+                  </span>
+                </span>
+              </label>
             </div>
           </div>
 

@@ -24,7 +24,8 @@ function RegisterPage() {
     phone: '',
     address: '',
     birthday: '',
-    dietaryPreferences: ''
+    dietaryPreferences: '',
+    marketingConsent: false
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -143,6 +144,10 @@ function RegisterPage() {
         errorMessage = translateError(err.message);
       } else if (typeof err === 'string') {
         errorMessage = translateError(err);
+      } else if (err && typeof err === 'object') {
+        // Handle error objects with error or message properties
+        const errObj = err as { error?: string; message?: string };
+        errorMessage = translateError(errObj.error || errObj.message || JSON.stringify(err));
       }
 
       setError(errorMessage);
@@ -549,6 +554,25 @@ function RegisterPage() {
                     <p className="text-sm text-red-700 font-medium">{error}</p>
                   </div>
                 )}
+
+                {/* Marketing Consent */}
+                <div className="bg-orange-50 border-2 border-orange-100 rounded-xl p-4">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      name="marketingConsent"
+                      checked={formData.marketingConsent}
+                      onChange={(e) => setFormData({ ...formData, marketingConsent: e.target.checked })}
+                      className="mt-1 h-5 w-5 rounded border-orange-300 text-orange-600 focus:ring-orange-500 focus:ring-offset-0 cursor-pointer"
+                    />
+                    <span className="flex-1 text-sm text-slate-700">
+                      <span className="font-medium">Acepto recibir ofertas y promociones</span>
+                      <span className="block text-xs text-slate-500 mt-1">
+                        Enviaremos ocasionalmente ofertas especiales y novedades. Puedes cancelar tu suscripción en cualquier momento.
+                      </span>
+                    </span>
+                  </label>
+                </div>
 
                 {/* Submit Button */}
                 <button
