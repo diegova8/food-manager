@@ -37,9 +37,7 @@ const UserSchema = new Schema<IUser>({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Create indexes for User schema
-UserSchema.index({ username: 1 }); // For login lookups
-UserSchema.index({ email: 1 }); // For email-based login and password reset
+// Note: username and email indexes are already created by the 'unique: true' option above
 
 // Config Model
 export interface IConfig extends Document {
