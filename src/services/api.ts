@@ -304,6 +304,7 @@ class ApiService {
       address?: string;
       birthday?: string;
       dietaryPreferences?: string;
+      marketingConsent?: boolean;
       isAdmin: boolean;
       emailVerified: boolean;
       createdAt: string;
@@ -321,6 +322,7 @@ class ApiService {
         address?: string;
         birthday?: string;
         dietaryPreferences?: string;
+        marketingConsent?: boolean;
         isAdmin: boolean;
         emailVerified: boolean;
         createdAt: string;
@@ -338,6 +340,7 @@ class ApiService {
     address?: string;
     birthday?: string;
     dietaryPreferences?: string;
+    marketingConsent?: boolean;
   }): Promise<{
     success: boolean;
     data: {
@@ -352,6 +355,7 @@ class ApiService {
         address?: string;
         birthday?: string;
         dietaryPreferences?: string;
+        marketingConsent?: boolean;
         isAdmin: boolean;
       };
     };
@@ -371,6 +375,7 @@ class ApiService {
           address?: string;
           birthday?: string;
           dietaryPreferences?: string;
+          marketingConsent?: boolean;
           isAdmin: boolean;
         };
       };
