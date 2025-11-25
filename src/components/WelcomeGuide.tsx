@@ -38,11 +38,11 @@ const WelcomeGuide: React.FC<WelcomeGuideProps> = ({ onComplete }) => {
               className="w-full h-full object-cover rounded-2xl shadow-lg"
             />
             <div className="absolute -bottom-2 -right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-              300Gr de Proteina
+              Envase
             </div>
           </div>
           <p className="text-slate-600">
-            Cada ceviche es una porción de <span className="font-bold text-orange-600">Entero</span>
+            Todas nuestros ceviches tienen sólo una presentación de <span className="font-bold text-orange-600">300gr</span> de proteína, aparte del caldo y los olores.
           </p>
           <p className="text-slate-500 text-sm mt-1">
             Ideal para 1-2 personas

@@ -16,11 +16,6 @@ function HomePage() {
             className="h-32 w-32 md:h-40 md:w-40 rounded-full object-cover border-4 border-white shadow-xl"
           />
         </div>
-                  <div className="text-center mb-10">
-            <h1 className="text-lg md:text-xl text-slate-600">
-              El mejor ceviche.
-            </h1>
-          </div>
       </header>
 
       {/* Main Content */}
@@ -37,7 +32,7 @@ function HomePage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
 
-              <div className="relative z-10 flex items-center gap-4">
+              <div className="relative z-10 flex items-center gap-3">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                   <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
