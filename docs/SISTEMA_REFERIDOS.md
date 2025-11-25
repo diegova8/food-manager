@@ -750,5 +750,5 @@ REFERRAL_LINK_EXPIRY_DAYS = 7
 
 ---
 
-*Documento actualizado: Noviembre 2024*
+*Documento actualizado: Noviembre 2025
 *Versión: 2.0*

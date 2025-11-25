@@ -42,7 +42,7 @@ const WelcomeGuide: React.FC<WelcomeGuideProps> = ({ onComplete }) => {
             </div>
           </div>
           <p className="text-slate-600">
-            Todas nuestros ceviches tienen sólo una presentación de <span className="font-bold text-orange-600">300gr</span> de proteína, aparte del caldo y los olores.
+            Todos nuestros ceviches tienen sólo una presentación de <span className="font-bold text-orange-600">300gr</span> de proteína, aparte del caldo y los olores.
           </p>
           <p className="text-slate-500 text-sm mt-1">
             Ideal para 1-2 personas
