@@ -162,6 +162,18 @@ function HomePage() {
             </svg>
           </a>
         </div>
+
+        {/* Legal Links */}
+        <div className="flex justify-center gap-4 text-sm">
+          <Link to="/privacy" className="text-slate-600 hover:text-orange-600 transition-colors">
+            Política de Privacidad
+          </Link>
+          <span className="text-slate-300">|</span>
+          <Link to="/terms" className="text-slate-600 hover:text-orange-600 transition-colors">
+            Términos de Servicio
+          </Link>
+        </div>
+
         <p className="text-slate-500 text-sm">
           © {new Date().getFullYear()} Ceviche de mi Tata
         </p>

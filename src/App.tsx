@@ -15,6 +15,8 @@ import ProfilePage from './pages/ProfilePage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import MyTicketsPage from './pages/MyTicketsPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import WelcomeGuide from './components/WelcomeGuide';
 import { TutorialProvider, useTutorial } from './context/TutorialContext';
@@ -67,6 +69,8 @@ function App() {
         <Route path="/profile/orders" element={<MyOrdersPage />} />
         <Route path="/profile/orders/:id" element={<OrderDetailPage />} />
         <Route path="/profile/tickets" element={<MyTicketsPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
         <Route
           path="/admin"
           element={
