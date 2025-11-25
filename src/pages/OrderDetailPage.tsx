@@ -270,7 +270,9 @@ function OrderDetailPage() {
             Si tienes alguna pregunta sobre tu pedido, contáctanos por WhatsApp.
           </p>
           <a
-            href="https://wa.me/50660008080"
+            href={`https://wa.me/50660008080?text=${encodeURIComponent(
+              `Hola! acabo de hacer un pedido, el numero de orden es #${order._id.slice(-8)}`
+            )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium hover:from-green-600 hover:to-green-700 transition-all shadow-md"
