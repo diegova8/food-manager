@@ -10,17 +10,23 @@ export function initSentry() {
   const dsn = process.env.SENTRY_DSN;
 
   if (!dsn) {
-    console.log('Sentry not initialized: No DSN provided');
+    console.log('Sentry Backend: No DSN provided, skipping initialization');
     return;
   }
+
+  console.log('Sentry Backend: Initializing with DSN:', dsn.substring(0, 30) + '...');
 
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV || 'development',
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    // Importante: Para serverless, enviar eventos inmediatamente
+    debug: process.env.NODE_ENV !== 'production',
 
     // Configuración específica para serverless
     beforeSend(event, hint) {
+      console.log('Sentry Backend: Sending event to Sentry:', event.message || event.exception);
+
       // Filtrar errores que no son útiles
       const error = hint.originalException;
 
@@ -36,15 +42,21 @@ export function initSentry() {
   });
 
   isInitialized = true;
+  console.log('Sentry Backend: Initialized successfully');
 }
 
+// Auto-inicializar cuando se importa el módulo
+initSentry();
+
 // Capturar error con contexto de request
-export function captureError(
+export async function captureError(
   error: Error | string,
   req?: VercelRequest,
   context?: Record<string, unknown>
 ) {
   initSentry();
+
+  console.log('Sentry Backend: Capturing error:', error);
 
   // Agregar contexto del request
   if (req) {
@@ -70,6 +82,11 @@ export function captureError(
   } else {
     Sentry.captureException(error);
   }
+
+  // CRÍTICO para serverless: Esperar a que Sentry envíe el evento
+  // antes de que la función termine
+  await Sentry.flush(2000); // Esperar máximo 2 segundos
+  console.log('Sentry Backend: Event flushed');
 }
 
 // Capturar mensaje

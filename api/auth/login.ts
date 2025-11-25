@@ -83,7 +83,7 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
     );
   } catch (error) {
     // Capturar error en Sentry
-    captureError(
+    await captureError(
       error instanceof Error ? error : new Error(String(error)),
       req,
       { endpoint: 'login', username: validatedData.username }
