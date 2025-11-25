@@ -35,6 +35,10 @@ const UserSchema = new Schema<IUser>({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Create indexes for User schema
+UserSchema.index({ username: 1 }); // For login lookups
+UserSchema.index({ email: 1 }); // For email-based login and password reset
+
 // Config Model
 export interface IConfig extends Document {
   rawMaterials: {
@@ -123,6 +127,11 @@ const OrderSchema = new Schema<IOrder>({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Create indexes for Order schema
+OrderSchema.index({ user: 1 }); // For fetching user's order history
+OrderSchema.index({ status: 1 }); // For filtering orders by status in admin panel
+OrderSchema.index({ createdAt: -1 }); // For sorting orders by date
+
 // Email Verification Model
 export interface IEmailVerification extends Document {
   email: string;
@@ -171,6 +180,11 @@ const SupportTicketSchema = new Schema<ISupportTicket>({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// Create indexes for SupportTicket schema
+SupportTicketSchema.index({ user: 1 }); // For fetching user's tickets
+SupportTicketSchema.index({ status: 1 }); // For filtering tickets by status
+SupportTicketSchema.index({ createdAt: -1 }); // For sorting tickets by date
 
 // Prevent model recompilation in development
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

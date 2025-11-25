@@ -5,6 +5,18 @@ import type { Handler } from './index.js';
  * Rate limiting middleware to prevent brute force attacks
  *
  * Limits the number of requests from a single IP within a time window
+ *
+ * ⚠️ IMPORTANT SERVERLESS LIMITATION:
+ * This implementation uses in-memory storage which does NOT work effectively
+ * in Vercel's serverless environment. Each serverless function instance has
+ * its own memory, so rate limits are NOT shared across instances.
+ *
+ * For production-grade rate limiting in serverless:
+ * - Use Redis (Upstash recommended for Vercel): https://upstash.com/
+ * - Or use Vercel's built-in Edge Config + KV
+ *
+ * Current implementation provides basic protection for MVP but can be bypassed
+ * by distributing requests across multiple serverless instances.
  */
 
 export interface RateLimitConfig {
@@ -12,8 +24,7 @@ export interface RateLimitConfig {
   maxRequests: number;   // Max requests allowed in the window
 }
 
-// In-memory store for request counts
-// Note: In production with multiple serverless instances, consider using Redis
+// In-memory store for request counts (NOT shared across serverless instances)
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
 
 // Cleanup old entries every 10 minutes
