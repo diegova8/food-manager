@@ -5,6 +5,7 @@ import { comparePassword, generateToken } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { loginSchema, type LoginInput } from '../schemas/auth.js';
+import { captureError } from '../lib/sentry.js';
 
 const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: VercelResponse, validatedData: LoginInput) => {
   // Only allow POST
@@ -81,6 +82,12 @@ const handler: ValidationHandler<LoginInput> = async (req: VercelRequest, res: V
       'Inicio de sesión exitoso'
     );
   } catch (error) {
+    // Capturar error en Sentry
+    captureError(
+      error instanceof Error ? error : new Error(String(error)),
+      req,
+      { endpoint: 'login', username: validatedData.username }
+    );
     return errorResponse(res, error instanceof Error ? error : 'Internal server error', 500);
   }
 };
