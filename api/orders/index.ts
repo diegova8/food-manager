@@ -47,9 +47,16 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Get total count for pagination
     const totalCount = await Order.countDocuments(query);
 
+    // Get total amount of ALL orders (ignoring filters)
+    const totalAmountResult = await Order.aggregate([
+      { $group: { _id: null, total: { $sum: '$total' } } }
+    ]);
+    const totalAmount = totalAmountResult.length > 0 ? totalAmountResult[0].total : 0;
+
     return successResponse(res, {
       orders,
       totalCount,
+      totalAmount,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string)
     });

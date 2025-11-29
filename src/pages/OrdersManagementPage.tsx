@@ -7,6 +7,7 @@ import { BulkDeleteModal } from '../components/BulkDeleteModal';
 
 function OrdersManagementPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -28,6 +29,7 @@ function OrdersManagementPage() {
       const params = filterStatus ? { status: filterStatus } : {};
       const response = await api.getOrders(params);
       setOrders(response.data.orders);
+      setTotalAmount(response.data.totalAmount || 0);
     } catch (error) {
       console.error('Error loading orders:', error);
       toast.error('Error al cargar los pedidos');
@@ -357,7 +359,9 @@ function OrdersManagementPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Gestión de Pedidos</h2>
-            <p className="text-slate-500 text-sm mt-1">{orders.length} pedidos en total</p>
+            <p className="text-slate-500 text-sm mt-1">
+              {orders.length} pedidos en total • Total general: <span className="font-bold text-orange-600">{formatCurrency(totalAmount)}</span>
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {selectedIds.size > 0 && (
