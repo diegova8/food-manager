@@ -187,6 +187,7 @@ class ApiService {
     data: {
       orders: Order[];
       totalCount: number;
+      totalAmount: number;
       limit: number;
       offset: number;
     };
@@ -201,6 +202,7 @@ class ApiService {
       data: {
         orders: Order[];
         totalCount: number;
+        totalAmount: number;
         limit: number;
         offset: number;
       };
