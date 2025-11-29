@@ -30,14 +30,10 @@ export function withSecurityHeaders(handler: Handler) {
     // Control referrer information
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-    // Content Security Policy
-    // Note: Adjust this based on your actual needs
+    // Content Security Policy (strict for API routes that only return JSON)
     const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Note: unsafe-* should be removed in production
-      "style-src 'self' 'unsafe-inline'",
+      "default-src 'none'",
       "img-src 'self' data: https:",
-      "font-src 'self' data:",
       "connect-src 'self' https://api.resend.com",
       "frame-ancestors 'none'"
     ].join('; ');
