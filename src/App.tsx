@@ -21,6 +21,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import WelcomeGuide from './components/WelcomeGuide';
 import { TutorialProvider, useTutorial } from './context/TutorialContext';
 
+// New Admin Layout and Pages
+import { AdminLayout } from './components/layout/AdminLayout';
+import { DashboardPage, OrdersPage, UsersPage, TicketsPage, PricingPage, SettingsPage, ActivityLogsPage } from './pages/admin';
+
 function GlobalTutorial() {
   const { showTutorial, closeTutorial } = useTutorial();
 
@@ -71,8 +75,10 @@ function App() {
         <Route path="/profile/tickets" element={<MyTicketsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
+
+        {/* Legacy Admin Routes (keeping for backwards compatibility) */}
         <Route
-          path="/admin"
+          path="/admin-legacy"
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminPage />
@@ -80,13 +86,32 @@ function App() {
           }
         />
         <Route
-          path="/admin/tickets"
+          path="/admin-legacy/tickets"
           element={
             <ProtectedRoute adminOnly={true}>
               <TicketsManagementPage />
             </ProtectedRoute>
           }
         />
+
+        {/* New Admin Routes with Sidebar Layout */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="tickets" element={<TicketsPage />} />
+          <Route path="pricing" element={<PricingPage />} />
+          <Route path="activity" element={<ActivityLogsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+
         <Route path="/" element={<HomePage />} />
         {/* Catch-all route for 404 - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />

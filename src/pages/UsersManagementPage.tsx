@@ -17,7 +17,11 @@ interface User {
 
 const ITEMS_PER_PAGE = 15;
 
-function UsersManagementPage() {
+interface UsersManagementPageProps {
+  embedded?: boolean;
+}
+
+function UsersManagementPage({ embedded: _embedded = false }: UsersManagementPageProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);

@@ -5,7 +5,11 @@ import { formatCurrency, formatDateDisplay } from '../utils';
 import type { Order } from '../types';
 import { BulkDeleteModal } from '../components/BulkDeleteModal';
 
-function OrdersManagementPage() {
+interface OrdersManagementPageProps {
+  embedded?: boolean;
+}
+
+function OrdersManagementPage({ embedded: _embedded = false }: OrdersManagementPageProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(true);

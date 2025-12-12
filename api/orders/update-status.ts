@@ -5,6 +5,7 @@ import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateOrderStatusSchema, type UpdateOrderStatusInput } from '../schemas/order.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 const handler: ValidationHandler<UpdateOrderStatusInput> = async (req: VercelRequest, res: VercelResponse, validatedData: UpdateOrderStatusInput) => {
   // Only allow PUT
@@ -14,11 +15,13 @@ const handler: ValidationHandler<UpdateOrderStatusInput> = async (req: VercelReq
 
   try {
     // Verify admin authentication
+    let adminId: string;
     try {
       const payload = verifyAuth(req);
       if (!payload.isAdmin) {
         return errorResponse(res, 'Unauthorized - Admin access required', 403);
       }
+      adminId = payload.userId;
     } catch (error) {
       return errorResponse(res, 'Unauthorized', 401);
     }
@@ -34,9 +37,13 @@ const handler: ValidationHandler<UpdateOrderStatusInput> = async (req: VercelReq
       return errorResponse(res, 'Order not found', 404);
     }
 
+    const oldStatus = order.status;
     order.status = status;
     order.updatedAt = new Date();
     await order.save();
+
+    // Log activity (non-blocking)
+    ActivityLogger.orderStatusChanged(adminId, orderId, oldStatus, status, req);
 
     return successResponse(res, { order }, 'Order status updated successfully');
   } catch (error) {

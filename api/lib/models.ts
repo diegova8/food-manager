@@ -186,9 +186,50 @@ SupportTicketSchema.index({ user: 1 }); // For fetching user's tickets
 SupportTicketSchema.index({ status: 1 }); // For filtering tickets by status
 SupportTicketSchema.index({ createdAt: -1 }); // For sorting tickets by date
 
+// Activity Log Model
+export interface IActivityLog extends Document {
+  user: mongoose.Types.ObjectId;
+  action: 'create' | 'update' | 'delete' | 'status_change' | 'login' | 'logout' | 'bulk_delete' | 'export';
+  entityType: 'order' | 'user' | 'ticket' | 'config' | 'auth';
+  entityId?: string;
+  description: string;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: Date;
+}
+
+const ActivityLogSchema = new Schema<IActivityLog>({
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  action: {
+    type: String,
+    enum: ['create', 'update', 'delete', 'status_change', 'login', 'logout', 'bulk_delete', 'export'],
+    required: true
+  },
+  entityType: {
+    type: String,
+    enum: ['order', 'user', 'ticket', 'config', 'auth'],
+    required: true
+  },
+  entityId: { type: String },
+  description: { type: String, required: true },
+  metadata: { type: Schema.Types.Mixed },
+  ipAddress: { type: String },
+  userAgent: { type: String },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Create indexes for ActivityLog schema
+ActivityLogSchema.index({ user: 1 }); // For fetching user's activity
+ActivityLogSchema.index({ action: 1 }); // For filtering by action type
+ActivityLogSchema.index({ entityType: 1 }); // For filtering by entity type
+ActivityLogSchema.index({ createdAt: -1 }); // For sorting by date
+ActivityLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }); // Auto-delete after 90 days
+
 // Prevent model recompilation in development
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export const Config = mongoose.models.Config || mongoose.model<IConfig>('Config', ConfigSchema);
 export const Order = mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
 export const EmailVerification = mongoose.models.EmailVerification || mongoose.model<IEmailVerification>('EmailVerification', EmailVerificationSchema);
 export const SupportTicket = mongoose.models.SupportTicket || mongoose.model<ISupportTicket>('SupportTicket', SupportTicketSchema);
+export const ActivityLog = mongoose.models.ActivityLog || mongoose.model<IActivityLog>('ActivityLog', ActivityLogSchema);

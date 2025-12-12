@@ -3,6 +3,7 @@ import connectDB from '../lib/mongodb.js';
 import { SupportTicket, User } from '../lib/models.js';
 import { compose, withCORS, withSecurityHeaders } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -58,9 +59,13 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       return errorResponse(res, 'Ticket not found', 404);
     }
 
+    const oldStatus = ticket.status;
     ticket.status = status;
     ticket.updatedAt = new Date();
     await ticket.save();
+
+    // Log activity (non-blocking)
+    ActivityLogger.ticketStatusChanged(decoded.userId, ticketId, oldStatus, status, req);
 
     return successResponse(res, {
       id: ticket._id.toString(),

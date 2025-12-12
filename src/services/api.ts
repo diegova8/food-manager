@@ -488,6 +488,84 @@ class ApiService {
     return response;
   }
 
+  // Tickets (Admin)
+  async getTickets(params?: {
+    status?: string;
+    type?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    success: boolean;
+    data: {
+      tickets: Array<{
+        id: string;
+        type: 'suggestion' | 'bug';
+        title: string;
+        description: string;
+        status: 'open' | 'in_progress' | 'resolved' | 'closed';
+        images?: string[];
+        user?: {
+          id: string;
+          username: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+        } | null;
+        guestEmail?: string;
+        guestName?: string;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    };
+  }> {
+    const queryParams = new URLSearchParams();
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/tickets${queryString ? `?${queryString}` : ''}`;
+
+    const response = await this.fetch<{
+      success: boolean;
+      data: {
+        tickets: Array<{
+          id: string;
+          type: 'suggestion' | 'bug';
+          title: string;
+          description: string;
+          status: 'open' | 'in_progress' | 'resolved' | 'closed';
+          images?: string[];
+          user?: {
+            id: string;
+            username: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+          } | null;
+          guestEmail?: string;
+          guestName?: string;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+        };
+      };
+    }>(url);
+    return response;
+  }
+
   // Users (Admin)
   async getUsers(params?: {
     search?: string;

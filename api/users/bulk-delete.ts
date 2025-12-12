@@ -4,6 +4,7 @@ import { User } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'DELETE') {
@@ -36,6 +37,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Delete users
     const result = await User.deleteMany({ _id: { $in: userIds } });
+
+    // Log activity (non-blocking)
+    ActivityLogger.usersBulkDeleted(payload.userId, result.deletedCount || 0, req);
 
     return successResponse(res, {
       deletedCount: result.deletedCount,

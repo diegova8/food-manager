@@ -4,6 +4,7 @@ import { SupportTicket } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'DELETE') {
@@ -31,6 +32,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Delete tickets
     const result = await SupportTicket.deleteMany({ _id: { $in: ticketIds } });
+
+    // Log activity (non-blocking)
+    ActivityLogger.ticketsBulkDeleted(payload.userId, result.deletedCount || 0, req);
 
     return successResponse(res, {
       deletedCount: result.deletedCount,
