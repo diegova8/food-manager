@@ -291,9 +291,9 @@ export function UsersPage() {
                   <tbody className="divide-y divide-slate-100">
                     {users.map((user) => {
                       const isSelected = selectedIds.has(user._id);
-                      const fullName = user.firstName && user.lastName
-                        ? `${user.firstName} ${user.lastName}`
-                        : user.username;
+                      const fullName = [user.firstName, user.lastName]
+                        .filter(Boolean)
+                        .join(' ') || user.username;
 
                       return (
                         <tr

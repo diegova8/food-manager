@@ -6,3 +6,6 @@ export { TicketsPage } from './TicketsPage';
 export { PricingPage } from './PricingPage';
 export { SettingsPage } from './SettingsPage';
 export { ActivityLogsPage } from './ActivityLogsPage';
+export { ProductsPage } from './ProductsPage';
+export { CategoriesPage } from './CategoriesPage';
+export { RawMaterialsPage } from './RawMaterialsPage';

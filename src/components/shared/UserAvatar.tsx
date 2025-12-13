@@ -29,11 +29,13 @@ const colors = [
 
 function getInitials(name?: string, email?: string): string {
   if (name) {
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2 && parts[0] && parts[1]) {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    if (parts[0]) {
+      return parts[0].substring(0, 2).toUpperCase();
+    }
   }
   if (email) {
     return email.substring(0, 2).toUpperCase();

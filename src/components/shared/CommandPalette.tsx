@@ -52,6 +52,45 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       shortcut: 'g o',
     },
     {
+      id: 'nav-products',
+      title: 'Productos',
+      subtitle: 'Gestionar catálogo de productos',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      ),
+      action: () => navigate('/admin/products'),
+      category: 'navigation',
+      shortcut: 'g r',
+    },
+    {
+      id: 'nav-categories',
+      title: 'Categorías',
+      subtitle: 'Organizar productos en categorías',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+      action: () => navigate('/admin/categories'),
+      category: 'navigation',
+      shortcut: 'g c',
+    },
+    {
+      id: 'nav-raw-materials',
+      title: 'Materias Primas',
+      subtitle: 'Gestionar ingredientes y precios',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+      ),
+      action: () => navigate('/admin/raw-materials'),
+      category: 'navigation',
+      shortcut: 'g m',
+    },
+    {
       id: 'nav-users',
       title: 'Usuarios',
       subtitle: 'Gestionar usuarios registrados',

@@ -1,50 +1,57 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import MenuCeviches from '../components/MenuCeviches';
 import Header from '../components/Header';
-import type { CevicheCost, RawMaterialPrices } from '../types';
-import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../utils';
 import { api } from '../services/api';
-import defaultConfig from '../config/defaultPrices.json';
+
+interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  category: { _id: string; name: string; slug: string };
+  pricingType: 'ingredient-based' | 'fixed';
+  ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+  imageUrl?: string;
+  isActive: boolean;
+  isAvailable: boolean;
+  displayOrder: number;
+  tags?: string[];
+  costoProd: number;
+  precioVenta: number;
+  servings?: number;
+  comboDescription?: string;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  displayOrder: number;
+  isActive: boolean;
+}
 
 function MenuPage() {
   const [loading, setLoading] = useState(true);
-  const [prices, setPrices] = useState<RawMaterialPrices>(defaultConfig.rawMaterials);
-  const [markup, setMarkup] = useState<number>(defaultConfig.markup);
-  const [customPrices, setCustomPrices] = useState<{ [key: string]: number }>(defaultConfig.customPrices);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Cargar configuración desde la API
+  // Cargar productos desde la API
   useEffect(() => {
-    async function loadConfig() {
+    async function loadProducts() {
       try {
-        const config = await api.getConfig();
-        setPrices(config.rawMaterials);
-        setMarkup(config.markup);
-        setCustomPrices(config.customPrices);
-      } catch (error) {
-        console.error('Error loading config:', error);
-        // Usar valores por defecto si falla
+        const response = await api.getProducts();
+        setProducts(response.data.products);
+        setCategories(response.data.categories);
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('Error al cargar el menú. Por favor, intenta de nuevo.');
       } finally {
         setLoading(false);
       }
     }
-    loadConfig();
+    loadProducts();
   }, []);
-
-  const cevicheCosts = useMemo<CevicheCost[]>(() => {
-    const ceviches = getCevichesList();
-    const mezclaJugoCostPerLiter = calculateMezclaJugoCostPerLiter(prices);
-
-    return ceviches.map(ceviche => {
-      const costoProd = calculateCevicheCost(ceviche, prices, mezclaJugoCostPerLiter);
-      const precioVenta = costoProd * markup;
-
-      return {
-        ceviche,
-        costoProd,
-        precioVenta
-      };
-    });
-  }, [prices, markup]);
 
   if (loading) {
     return (
@@ -63,12 +70,33 @@ function MenuPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 mx-auto bg-white rounded-3xl shadow-lg flex items-center justify-center mb-6">
+            <svg className="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <p className="text-slate-600 font-medium text-lg">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       <Header />
       <div className="py-8 px-4">
         <div className="max-w-7xl mx-auto">
-          <MenuCeviches cevicheCosts={cevicheCosts} customPrices={customPrices} />
+          <MenuCeviches products={products} categories={categories} />
         </div>
       </div>
     </div>

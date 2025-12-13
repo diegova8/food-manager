@@ -226,6 +226,155 @@ ActivityLogSchema.index({ entityType: 1 }); // For filtering by entity type
 ActivityLogSchema.index({ createdAt: -1 }); // For sorting by date
 ActivityLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }); // Auto-delete after 90 days
 
+// Category Model
+export interface ICategory extends Document {
+  name: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const CategorySchema = new Schema<ICategory>({
+  name: { type: String, required: true, unique: true },
+  slug: { type: String, required: true, unique: true },
+  description: { type: String },
+  imageUrl: { type: String },
+  displayOrder: { type: Number, default: 0 },
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+CategorySchema.index({ displayOrder: 1 });
+CategorySchema.index({ isActive: 1 });
+
+// Product Model
+export type PricingType = 'ingredient-based' | 'fixed';
+
+export interface IProductIngredient {
+  rawMaterialId: string;
+  quantity: number;
+}
+
+export interface IProductIncludedItem {
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+}
+
+export interface IProduct extends Document {
+  name: string;
+  slug: string;
+  description?: string;
+  category: mongoose.Types.ObjectId;
+  pricingType: PricingType;
+
+  // For ingredient-based pricing (ceviches)
+  ingredients?: IProductIngredient[];
+  olores?: number;
+  mezclaJugo?: number;
+
+  // For fixed pricing (combos)
+  fixedPrice?: number;
+  servings?: number;
+  comboDescription?: string;
+  includedItems?: IProductIncludedItem[];
+
+  imageUrl?: string;
+  isActive: boolean;
+  isAvailable: boolean;
+  displayOrder: number;
+  tags?: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ProductSchema = new Schema<IProduct>({
+  name: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
+  description: { type: String },
+  category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+  pricingType: {
+    type: String,
+    enum: ['ingredient-based', 'fixed'],
+    required: true
+  },
+
+  // Ingredient-based pricing fields
+  ingredients: [{
+    rawMaterialId: { type: String, required: true },
+    quantity: { type: Number, required: true }
+  }],
+  olores: { type: Number },
+  mezclaJugo: { type: Number },
+
+  // Fixed pricing fields
+  fixedPrice: { type: Number },
+  servings: { type: Number },
+  comboDescription: { type: String },
+  includedItems: [{
+    productId: { type: Schema.Types.ObjectId, ref: 'Product' },
+    quantity: { type: Number, required: true }
+  }],
+
+  // Common fields
+  imageUrl: { type: String },
+  isActive: { type: Boolean, default: true },
+  isAvailable: { type: Boolean, default: true },
+  displayOrder: { type: Number, default: 0 },
+  tags: [{ type: String }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ isActive: 1, isAvailable: 1 });
+ProductSchema.index({ displayOrder: 1 });
+ProductSchema.index({ tags: 1 });
+
+// Raw Material Model
+export type UnitType = 'g' | 'ml' | 'unit';
+
+export interface IRawMaterial extends Document {
+  name: string;
+  slug: string;
+  icon?: string;
+  imageUrl?: string;
+  price: number;
+  unit: UnitType;
+  description?: string;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const RawMaterialSchema = new Schema<IRawMaterial>({
+  name: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
+  icon: { type: String },
+  imageUrl: { type: String },
+  price: { type: Number, required: true, min: 0 },
+  unit: {
+    type: String,
+    enum: ['g', 'ml', 'unit'],
+    required: true,
+    default: 'g'
+  },
+  description: { type: String },
+  isActive: { type: Boolean, default: true },
+  displayOrder: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+RawMaterialSchema.index({ slug: 1 });
+RawMaterialSchema.index({ isActive: 1 });
+RawMaterialSchema.index({ displayOrder: 1 });
+
 // Prevent model recompilation in development
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export const Config = mongoose.models.Config || mongoose.model<IConfig>('Config', ConfigSchema);
@@ -233,3 +382,6 @@ export const Order = mongoose.models.Order || mongoose.model<IOrder>('Order', Or
 export const EmailVerification = mongoose.models.EmailVerification || mongoose.model<IEmailVerification>('EmailVerification', EmailVerificationSchema);
 export const SupportTicket = mongoose.models.SupportTicket || mongoose.model<ISupportTicket>('SupportTicket', SupportTicketSchema);
 export const ActivityLog = mongoose.models.ActivityLog || mongoose.model<IActivityLog>('ActivityLog', ActivityLogSchema);
+export const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+export const Product = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
+export const RawMaterial = mongoose.models.RawMaterial || mongoose.model<IRawMaterial>('RawMaterial', RawMaterialSchema);

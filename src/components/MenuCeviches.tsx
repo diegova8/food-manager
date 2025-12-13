@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { CevicheCost } from '../types';
-import { formatCurrency, categorizeByIngredientCount } from '../utils';
+import { formatCurrency } from '../utils';
 import { useCart } from '../context/CartContext';
 import { MenuCard } from './MenuCard';
 
@@ -10,31 +9,54 @@ import camaronImg from '../assets/ceviches/camaron.png';
 import pulpoImg from '../assets/ceviches/pulpo.png';
 import camaronPulpoImg from '../assets/ceviches/camaron-pulpo.png';
 import pulpoPianguaImg from '../assets/ceviches/pulpo-piangua.png';
-import pescadoImg from '../assets/ceviches/pescado.png'
-import cevichePlaceholder from '../assets/logo.png'
+import pescadoImg from '../assets/ceviches/pescado.png';
+import cevichePlaceholder from '../assets/logo.png';
 
-interface MenuCevichesProps {
-  cevicheCosts: CevicheCost[];
-  customPrices: { [key: string]: number };
+interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  category: { _id: string; name: string; slug: string };
+  pricingType: 'ingredient-based' | 'fixed';
+  ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+  imageUrl?: string;
+  isActive: boolean;
+  isAvailable: boolean;
+  displayOrder: number;
+  tags?: string[];
+  costoProd: number;
+  precioVenta: number;
+  servings?: number;
+  comboDescription?: string;
 }
 
-const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices }) => {
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
+interface MenuCevichesProps {
+  products: Product[];
+  categories: Category[];
+}
+
+const MenuCeviches: React.FC<MenuCevichesProps> = ({ products, categories }) => {
   const navigate = useNavigate();
   const { addItem, removeItem, getTotalItems, getTotalPrice, getItemQuantity } = useCart();
 
-  const getFinalPrice = (ceviche: CevicheCost): number => {
-    return customPrices[ceviche.ceviche.id] || ceviche.precioVenta;
-  };
-
   const handleCheckout = () => {
     if (getTotalItems() === 0) {
-      alert('Tu carrito está vacío. Agrega algunos ceviches para continuar.');
+      alert('Tu carrito está vacío. Agrega algunos productos para continuar.');
       return;
     }
     navigate('/checkout');
   };
 
-  const getPlaceholderImage = (cevicheId: string): string => {
+  const getPlaceholderImage = (slug: string): string => {
     const imageMap: Record<string, string> = {
       'pescado': pescadoImg,
       'camaron': camaronImg,
@@ -52,13 +74,12 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
       'camaron-pulpo-piangua': cevichePlaceholder,
       'pescado-camaron-pulpo-piangua': cevichePlaceholder,
     };
-    return imageMap[cevicheId] || '';
+    return imageMap[slug] || cevichePlaceholder;
   };
 
-  const calculateDefaultRating = (ceviche: CevicheCost): number => {
-    const ingredients = ceviche.ceviche.ingredients;
-    const ingredientCount = Object.values(ingredients).filter(v => v && v > 0).length;
-
+  const calculateRating = (product: Product): number => {
+    if (product.pricingType === 'fixed') return 5; // Combos get 5 stars
+    const ingredientCount = product.ingredients?.length || 1;
     if (ingredientCount >= 4) return 5;
     if (ingredientCount === 3) return 5;
     if (ingredientCount === 2) return 4;
@@ -66,68 +87,180 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
   };
 
   const handleQuantityChange = (id: string, quantity: number) => {
-    const ceviche = cevicheCosts.find(c => c.ceviche.id === id);
-    if (!ceviche) return;
-
-    const finalPrice = getFinalPrice(ceviche);
+    const product = products.find(p => p.slug === id);
+    if (!product) return;
 
     if (quantity === 0) {
       removeItem(id);
     } else {
       const currentQuantity = getItemQuantity(id);
       if (quantity > currentQuantity) {
-        addItem(id, ceviche.ceviche.name, finalPrice);
+        addItem(id, product.name, product.precioVenta);
       } else {
         removeItem(id);
       }
     }
   };
 
-  // Agrupar ceviches por número de ingredientes
-  const { single: singleIngredient, double: twoIngredients, triple: threeIngredients, quadruple: fourIngredients } = categorizeByIngredientCount(cevicheCosts);
+  // Group products by category
+  const productsByCategory = useMemo(() => {
+    const grouped = new Map<string, Product[]>();
 
-  const renderMenuSection = (ceviches: CevicheCost[], title: string) => (
-    <div className="mb-12">
-      <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
-        {title}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-        {ceviches.map((c) => {
-          const finalPrice = getFinalPrice(c);
-          const image = c.image || getPlaceholderImage(c.ceviche.id);
-          const rating = c.rating || calculateDefaultRating(c);
+    // Sort categories by displayOrder
+    const sortedCategories = [...categories].sort((a, b) => a.displayOrder - b.displayOrder);
 
-          return (
-            <MenuCard
-              key={c.ceviche.id}
-              id={c.ceviche.id}
-              name={c.ceviche.name}
-              image={image}
-              rating={rating}
-              subtitle="Ceviche Porteño Tradicional"
-              price={finalPrice}
-              quantity={getItemQuantity(c.ceviche.id)}
-              totalItems={getTotalItems()}
-              onQuantityChange={handleQuantityChange}
-            />
-          );
-        })}
+    // Initialize with empty arrays for each category
+    sortedCategories.forEach(cat => {
+      grouped.set(cat._id, []);
+    });
+
+    // Group products - filter only available ones
+    products
+      .filter(p => p.isAvailable)
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .forEach(product => {
+        const categoryId = product.category._id;
+        const existing = grouped.get(categoryId) || [];
+        grouped.set(categoryId, [...existing, product]);
+      });
+
+    return grouped;
+  }, [products, categories]);
+
+  // For ceviches category, group by ingredient count
+  const groupCevichesByIngredients = (ceviches: Product[]) => {
+    const groups = {
+      single: [] as Product[],
+      double: [] as Product[],
+      triple: [] as Product[],
+      quadruple: [] as Product[],
+    };
+
+    ceviches.forEach(product => {
+      const count = product.ingredients?.length || 1;
+      if (count === 1) groups.single.push(product);
+      else if (count === 2) groups.double.push(product);
+      else if (count === 3) groups.triple.push(product);
+      else groups.quadruple.push(product);
+    });
+
+    return groups;
+  };
+
+  const renderProductCard = (product: Product) => {
+    const image = product.imageUrl || getPlaceholderImage(product.slug);
+    const rating = calculateRating(product);
+    const subtitle = product.pricingType === 'fixed'
+      ? (product.servings ? `Para ${product.servings} personas` : 'Combo Especial')
+      : 'Ceviche Porteño Tradicional';
+
+    return (
+      <MenuCard
+        key={product.slug}
+        id={product.slug}
+        name={product.name}
+        image={image}
+        rating={rating}
+        subtitle={subtitle}
+        price={product.precioVenta}
+        quantity={getItemQuantity(product.slug)}
+        totalItems={getTotalItems()}
+        onQuantityChange={handleQuantityChange}
+      />
+    );
+  };
+
+  const renderCevichesCategory = (ceviches: Product[]) => {
+    const { single, double, triple, quadruple } = groupCevichesByIngredients(ceviches);
+
+    return (
+      <>
+        {single.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
+              Ceviches de 1 sabor
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {single.map(renderProductCard)}
+            </div>
+          </div>
+        )}
+        {double.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
+              Ceviches de 2 sabores
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {double.map(renderProductCard)}
+            </div>
+          </div>
+        )}
+        {triple.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
+              Ceviches de 3 sabores
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {triple.map(renderProductCard)}
+            </div>
+          </div>
+        )}
+        {quadruple.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
+              Ceviche Mixto Full
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+              {quadruple.map(renderProductCard)}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const renderCombosCategory = (combos: Product[], categoryName: string) => {
+    if (combos.length === 0) return null;
+
+    return (
+      <div className="mb-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-orange-300">
+          {categoryName}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+          {combos.map(renderProductCard)}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  // Sort categories by displayOrder
+  const sortedCategories = [...categories].sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 pb-32">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        {renderMenuSection(singleIngredient, 'Ceviches de 1 sabor')}
-        {renderMenuSection(twoIngredients, 'Ceviches de 2 sabores')}
-        {renderMenuSection(threeIngredients, 'Ceviches de 3 sabores')}
-        {renderMenuSection(fourIngredients, 'Ceviche Mixto Full')}
+        {sortedCategories.map(category => {
+          const categoryProducts = productsByCategory.get(category._id) || [];
+          if (categoryProducts.length === 0) return null;
+
+          // Special rendering for ceviches category (group by ingredient count)
+          if (category.slug === 'ceviches') {
+            return <React.Fragment key={category._id}>{renderCevichesCategory(categoryProducts)}</React.Fragment>;
+          }
+
+          // Regular category rendering (combos, etc.)
+          return (
+            <React.Fragment key={category._id}>
+              {renderCombosCategory(categoryProducts, category.name)}
+            </React.Fragment>
+          );
+        })}
 
         <div className="mt-8 text-center text-sm text-slate-600">
           <p>Precios en colones costarricenses (₡)</p>
           <p className="mt-2 text-xs">
-            Máximo 100 ceviches por pedido online. Para pedidos mayores, contáctanos directamente.
+            Máximo 100 productos por pedido online. Para pedidos mayores, contáctanos directamente.
           </p>
         </div>
       </div>
@@ -138,9 +271,9 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
           <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <div>
-                <span className="text-slate-600 text-sm block">Total de ceviches</span>
+                <span className="text-slate-600 text-sm block">Total de productos</span>
                 <span className="text-slate-900 font-semibold text-lg">
-                  {getTotalItems()} {getTotalItems() === 1 ? 'ceviche' : 'ceviches'}
+                  {getTotalItems()} {getTotalItems() === 1 ? 'producto' : 'productos'}
                 </span>
               </div>
               <div>
@@ -173,7 +306,7 @@ const MenuCeviches: React.FC<MenuCevichesProps> = ({ cevicheCosts, customPrices 
           </div>
           {getTotalItems() >= 90 && (
             <p className="text-xs text-amber-600 mt-2 text-center">
-              ⚠️ Estás cerca del límite de 100 ceviches
+              ⚠️ Estás cerca del límite de 100 productos
             </p>
           )}
         </div>

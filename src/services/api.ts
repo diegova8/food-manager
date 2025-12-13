@@ -566,6 +566,363 @@ class ApiService {
     return response;
   }
 
+  // Categories
+  async getCategories(includeInactive = false): Promise<{
+    success: boolean;
+    data: {
+      categories: Array<{
+        _id: string;
+        name: string;
+        slug: string;
+        description?: string;
+        displayOrder: number;
+        isActive: boolean;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+    };
+  }> {
+    const url = `/categories${includeInactive ? '?includeInactive=true' : ''}`;
+    return this.fetch(url);
+  }
+
+  async createCategory(data: {
+    name: string;
+    slug: string;
+    description?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+  }): Promise<{ success: boolean; data: { category: unknown }; message: string }> {
+    return this.fetch('/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(id: string, data: {
+    name?: string;
+    slug?: string;
+    description?: string;
+    displayOrder?: number;
+    isActive?: boolean;
+  }): Promise<{ success: boolean; data: { category: unknown }; message: string }> {
+    return this.fetch(`/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(id: string): Promise<{ success: boolean; message: string }> {
+    return this.fetch(`/categories/${id}`, { method: 'DELETE' });
+  }
+
+  // Products
+  async getProducts(category?: string): Promise<{
+    success: boolean;
+    data: {
+      products: Array<{
+        _id: string;
+        name: string;
+        slug: string;
+        description?: string;
+        category: { _id: string; name: string; slug: string };
+        pricingType: 'ingredient-based' | 'fixed';
+        ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+        olores?: number;
+        mezclaJugo?: number;
+        fixedPrice?: number;
+        servings?: number;
+        comboDescription?: string;
+        includedItems?: Array<{ productId: { _id: string; name: string; slug: string }; quantity: number }>;
+        imageUrl?: string;
+        isActive: boolean;
+        isAvailable: boolean;
+        displayOrder: number;
+        tags?: string[];
+        costoProd: number;
+        precioVenta: number;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      categories: Array<{
+        _id: string;
+        name: string;
+        slug: string;
+        displayOrder: number;
+        isActive: boolean;
+      }>;
+    };
+  }> {
+    const url = `/products${category ? `?category=${category}` : ''}`;
+    return this.fetch(url);
+  }
+
+  async getProductsAdmin(params?: {
+    category?: string;
+    pricingType?: string;
+    isActive?: boolean;
+    search?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<{
+    success: boolean;
+    data: {
+      products: Array<{
+        _id: string;
+        name: string;
+        slug: string;
+        description?: string;
+        category: { _id: string; name: string; slug: string };
+        pricingType: 'ingredient-based' | 'fixed';
+        ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+        olores?: number;
+        mezclaJugo?: number;
+        fixedPrice?: number;
+        servings?: number;
+        comboDescription?: string;
+        includedItems?: Array<{ productId: { _id: string; name: string; slug: string }; quantity: number }>;
+        imageUrl?: string;
+        isActive: boolean;
+        isAvailable: boolean;
+        displayOrder: number;
+        tags?: string[];
+        costoProd: number;
+        precioVenta: number;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      categories: Array<{
+        _id: string;
+        name: string;
+        slug: string;
+        displayOrder: number;
+        isActive: boolean;
+      }>;
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    };
+  }> {
+    const searchParams = new URLSearchParams();
+    if (params?.category) searchParams.set('category', params.category);
+    if (params?.pricingType) searchParams.set('pricingType', params.pricingType);
+    if (params?.isActive !== undefined) searchParams.set('isActive', params.isActive.toString());
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
+    if (params?.sortOrder) searchParams.set('sortOrder', params.sortOrder);
+
+    const queryString = searchParams.toString();
+    const url = `/products/admin${queryString ? `?${queryString}` : ''}`;
+    return this.fetch(url);
+  }
+
+  async getProduct(id: string): Promise<{
+    success: boolean;
+    data: {
+      product: {
+        _id: string;
+        name: string;
+        slug: string;
+        description?: string;
+        category: { _id: string; name: string; slug: string };
+        pricingType: 'ingredient-based' | 'fixed';
+        ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+        olores?: number;
+        mezclaJugo?: number;
+        fixedPrice?: number;
+        servings?: number;
+        comboDescription?: string;
+        includedItems?: Array<{ productId: { _id: string; name: string; slug: string }; quantity: number }>;
+        imageUrl?: string;
+        isActive: boolean;
+        isAvailable: boolean;
+        displayOrder: number;
+        tags?: string[];
+        costoProd: number;
+        precioVenta: number;
+        createdAt: string;
+        updatedAt: string;
+      };
+    };
+  }> {
+    return this.fetch(`/products/${id}`);
+  }
+
+  async createProduct(data: {
+    name: string;
+    slug: string;
+    description?: string;
+    category: string;
+    pricingType: 'ingredient-based' | 'fixed';
+    ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+    olores?: number;
+    mezclaJugo?: number;
+    fixedPrice?: number;
+    servings?: number;
+    comboDescription?: string;
+    includedItems?: Array<{ productId: string; quantity: number }>;
+    imageUrl?: string;
+    isActive?: boolean;
+    isAvailable?: boolean;
+    displayOrder?: number;
+    tags?: string[];
+  }): Promise<{ success: boolean; data: { product: unknown }; message: string }> {
+    return this.fetch('/products/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProduct(id: string, data: {
+    name?: string;
+    slug?: string;
+    description?: string;
+    category?: string;
+    pricingType?: 'ingredient-based' | 'fixed';
+    ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
+    olores?: number;
+    mezclaJugo?: number;
+    fixedPrice?: number;
+    servings?: number;
+    comboDescription?: string;
+    includedItems?: Array<{ productId: string; quantity: number }>;
+    imageUrl?: string;
+    isActive?: boolean;
+    isAvailable?: boolean;
+    displayOrder?: number;
+    tags?: string[];
+  }): Promise<{ success: boolean; data: { product: unknown }; message: string }> {
+    return this.fetch(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProduct(id: string): Promise<{ success: boolean; message: string }> {
+    return this.fetch(`/products/${id}`, { method: 'DELETE' });
+  }
+
+  async migrateProducts(): Promise<{
+    success: boolean;
+    data: {
+      message: string;
+      results: {
+        categoriesCreated: number;
+        productsCreated: number;
+        productsSkipped: number;
+        errors: string[];
+      };
+    };
+  }> {
+    return this.fetch('/products/migrate', { method: 'POST' });
+  }
+
+  // Raw Materials
+  async getRawMaterials(includeInactive = false): Promise<{
+    success: boolean;
+    data: {
+      rawMaterials: Array<{
+        _id: string;
+        name: string;
+        slug: string;
+        icon?: string;
+        imageUrl?: string;
+        price: number;
+        unit: 'g' | 'ml' | 'unit';
+        description?: string;
+        isActive: boolean;
+        displayOrder: number;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+    };
+  }> {
+    const url = `/raw-materials${includeInactive ? '?includeInactive=true' : ''}`;
+    return this.fetch(url);
+  }
+
+  async getRawMaterial(id: string): Promise<{
+    success: boolean;
+    data: {
+      rawMaterial: {
+        _id: string;
+        name: string;
+        slug: string;
+        icon?: string;
+        imageUrl?: string;
+        price: number;
+        unit: 'g' | 'ml' | 'unit';
+        description?: string;
+        isActive: boolean;
+        displayOrder: number;
+        createdAt: string;
+        updatedAt: string;
+      };
+    };
+  }> {
+    return this.fetch(`/raw-materials/${id}`);
+  }
+
+  async createRawMaterial(data: {
+    name: string;
+    slug: string;
+    icon?: string;
+    imageUrl?: string;
+    price: number;
+    unit: 'g' | 'ml' | 'unit';
+    description?: string;
+    isActive?: boolean;
+    displayOrder?: number;
+  }): Promise<{ success: boolean; data: { rawMaterial: unknown }; message: string }> {
+    return this.fetch('/raw-materials', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRawMaterial(id: string, data: {
+    name?: string;
+    slug?: string;
+    icon?: string;
+    imageUrl?: string;
+    price?: number;
+    unit?: 'g' | 'ml' | 'unit';
+    description?: string;
+    isActive?: boolean;
+    displayOrder?: number;
+  }): Promise<{ success: boolean; data: { rawMaterial: unknown }; message: string }> {
+    return this.fetch(`/raw-materials/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRawMaterial(id: string): Promise<{ success: boolean; data: { deleted: boolean }; message: string }> {
+    return this.fetch(`/raw-materials/${id}`, { method: 'DELETE' });
+  }
+
+  async migrateRawMaterials(): Promise<{
+    success: boolean;
+    data: {
+      message: string;
+      results: {
+        created: number;
+        skipped: number;
+        updated: number;
+        errors: string[];
+      };
+    };
+  }> {
+    return this.fetch('/raw-materials/migrate', { method: 'POST' });
+  }
+
   // Users (Admin)
   async getUsers(params?: {
     search?: string;

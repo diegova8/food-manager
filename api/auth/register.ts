@@ -38,15 +38,29 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
     // Hash password
     const hashedPassword = await hashPassword(password);
 
+    // Sanitize string fields
+    const sanitizeString = (str?: string) => str?.trim().replace(/\s+/g, ' ') || undefined;
+    const sanitizeName = (str?: string) => {
+      const cleaned = sanitizeString(str);
+      if (!cleaned) return undefined;
+      // Capitalize first letter of each word
+      return cleaned.replace(/\b\w/g, (c) => c.toUpperCase());
+    };
+
+    const sanitizedFirstName = sanitizeName(firstName);
+    const sanitizedLastName = sanitizeName(lastName);
+    const sanitizedPhone = sanitizeString(phone);
+    const sanitizedAddress = sanitizeString(address);
+
     // Create user with lowercase email
     const user = await User.create({
       username: emailLower, // Use email as username for customer accounts
       email: emailLower,
       password: hashedPassword,
-      firstName,
-      lastName,
-      phone,
-      address,
+      firstName: sanitizedFirstName,
+      lastName: sanitizedLastName,
+      phone: sanitizedPhone,
+      address: sanitizedAddress,
       birthday: birthday ? new Date(birthday) : undefined,
       dietaryPreferences,
       marketingConsent: marketingConsent || false,

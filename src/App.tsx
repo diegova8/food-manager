@@ -23,7 +23,7 @@ import { TutorialProvider, useTutorial } from './context/TutorialContext';
 
 // New Admin Layout and Pages
 import { AdminLayout } from './components/layout/AdminLayout';
-import { DashboardPage, OrdersPage, UsersPage, TicketsPage, PricingPage, SettingsPage, ActivityLogsPage } from './pages/admin';
+import { DashboardPage, OrdersPage, UsersPage, TicketsPage, PricingPage, SettingsPage, ActivityLogsPage, ProductsPage, CategoriesPage, RawMaterialsPage } from './pages/admin';
 
 function GlobalTutorial() {
   const { showTutorial, closeTutorial } = useTutorial();
@@ -105,6 +105,9 @@ function App() {
         >
           <Route index element={<DashboardPage />} />
           <Route path="orders" element={<OrdersPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="raw-materials" element={<RawMaterialsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="tickets" element={<TicketsPage />} />
           <Route path="pricing" element={<PricingPage />} />
