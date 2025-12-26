@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { RawMaterial, Config } from '../lib/models.js';
+import { RawMaterial, Config, type IConfig } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
@@ -49,7 +49,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     // Get existing prices from Config if available
-    const config = await Config.findOne().lean();
+    const config = await Config.findOne().lean<IConfig>();
     const existingPrices = config?.rawMaterials || {};
 
     for (const material of DEFAULT_RAW_MATERIALS) {

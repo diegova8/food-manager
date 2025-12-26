@@ -63,7 +63,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       const validation = updateRawMaterialSchema.safeParse(req.body);
       if (!validation.success) {
-        const errorMessage = validation.error.errors?.[0]?.message || 'Datos inválidos';
+        const errorMessage = validation.error.issues[0]?.message || 'Datos inválidos';
         return errorResponse(res, errorMessage, 400);
       }
 

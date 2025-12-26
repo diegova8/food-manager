@@ -39,7 +39,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       const validation = updateCategorySchema.safeParse(req.body);
       if (!validation.success) {
-        return errorResponse(res, validation.error.errors[0].message, 400);
+        return errorResponse(res, validation.error.issues[0]?.message || "Datos inválidos", 400);
       }
 
       const updateData = validation.data;

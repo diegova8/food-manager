@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Product, Category, RawMaterial, Config } from '../lib/models.js';
+import { Product, Category, RawMaterial, Config, type IRawMaterial, type IConfig } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
@@ -11,11 +11,11 @@ async function calculateProductCost(
   ingredients: Array<{ rawMaterialId: string; quantity: number }>
 ): Promise<number> {
   // Get all raw materials
-  const rawMaterialDocs = await RawMaterial.find({ isActive: true }).lean();
+  const rawMaterialDocs = await RawMaterial.find({ isActive: true }).lean<IRawMaterial[]>();
   const priceMap: Record<string, number> = {};
 
   for (const rm of rawMaterialDocs) {
-    priceMap[rm._id.toString()] = rm.price;
+    priceMap[String(rm._id)] = rm.price;
     priceMap[rm.slug] = rm.price;
   }
 
@@ -41,7 +41,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     const validation = createProductSchema.safeParse(req.body);
     if (!validation.success) {
-      return errorResponse(res, validation.error.errors[0].message, 400);
+      return errorResponse(res, validation.error.issues[0]?.message || "Datos inválidos", 400);
     }
 
     await connectDB();
@@ -81,7 +81,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       costoProd = Math.round(costoProd);
 
       // Get markup from config
-      const config = await Config.findOne().lean();
+      const config = await Config.findOne().lean<IConfig>();
       const markup = config?.markup || 2.5;
 
       // Calculate suggested price

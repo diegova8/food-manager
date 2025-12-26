@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Product, Category, RawMaterial, Config } from '../lib/models.js';
+import { Product, Category, RawMaterial, Config, type IRawMaterial, type IProduct, type IConfig } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
@@ -10,11 +10,11 @@ import { updateProductSchema } from '../schemas/product.js';
 async function calculateProductCost(
   ingredients: Array<{ rawMaterialId: string; quantity: number }>
 ): Promise<number> {
-  const rawMaterialDocs = await RawMaterial.find({ isActive: true }).lean();
+  const rawMaterialDocs = await RawMaterial.find({ isActive: true }).lean<IRawMaterial[]>();
   const priceMap: Record<string, number> = {};
 
   for (const rm of rawMaterialDocs) {
-    priceMap[rm._id.toString()] = rm.price;
+    priceMap[String(rm._id)] = rm.price;
     priceMap[rm.slug] = rm.price;
   }
 
@@ -65,7 +65,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       const validation = updateProductSchema.safeParse(req.body);
       if (!validation.success) {
-        return errorResponse(res, validation.error.errors[0].message, 400);
+        return errorResponse(res, validation.error.issues[0]?.message || "Datos inválidos", 400);
       }
 
       const updateData = validation.data;
@@ -104,7 +104,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Get current product to check pricing type
-      const currentProduct = await Product.findById(id).lean();
+      const currentProduct = await Product.findById(id).lean<IProduct>();
       if (!currentProduct) {
         return errorResponse(res, 'Producto no encontrado', 404);
       }
@@ -113,9 +113,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       const finalPricingType = updateData.pricingType || currentProduct.pricingType;
 
       // Recalculate prices if ingredients changed or pricing type changed
-      let costoProd = currentProduct.costoProd;
-      let precioSugerido = currentProduct.precioSugerido || currentProduct.precioVenta;
-      let precioVenta = currentProduct.precioVenta;
+      let costoProd = currentProduct.costoProd ?? 0;
+      let precioSugerido = currentProduct.precioSugerido ?? currentProduct.precioVenta ?? 0;
+      let precioVenta = currentProduct.precioVenta ?? 0;
 
       if (finalPricingType === 'ingredient-based') {
         // If ingredients are being updated, recalculate
@@ -123,7 +123,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           costoProd = await calculateProductCost(updateData.ingredients);
           costoProd = Math.round(costoProd);
 
-          const config = await Config.findOne().lean();
+          const config = await Config.findOne().lean<IConfig>();
           const markup = config?.markup || 2.5;
 
           precioSugerido = Math.round(costoProd * markup);

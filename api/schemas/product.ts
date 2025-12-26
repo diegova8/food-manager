@@ -98,7 +98,7 @@ export const createRawMaterialSchema = z.object({
   icon: z.string().max(50, 'Icon name is too long').optional(),
   imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
   price: z.number().min(0, 'Price cannot be negative'),
-  unit: z.enum(['g', 'ml', 'unit'], { errorMap: () => ({ message: 'Unit must be g, ml, or unit' }) }),
+  unit: z.enum(['g', 'ml', 'unit']),
   description: z.string().max(500, 'Description is too long').optional(),
   isActive: z.boolean().optional(),
   displayOrder: z.number().int().min(0).optional()
