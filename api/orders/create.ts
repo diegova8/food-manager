@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Order, User } from '../lib/models.js';
+import { Order, User, Notification } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { sendOrderConfirmation, sendNewOrderNotification } from '../lib/email.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
@@ -43,6 +43,20 @@ const handler: ValidationHandler<CreateOrderInput> = async (req: VercelRequest, 
       notes,
       status: 'pending'
     });
+
+    // Create notification for admins
+    try {
+      await Notification.create({
+        type: 'new_order',
+        entityId: order._id.toString(),
+        title: 'Nueva orden recibida',
+        message: `${personalInfo.name} realizó una orden por ₡${total.toLocaleString()}`,
+        isRead: false
+      });
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Don't fail the order if notification fails
+    }
 
     // Send confirmation emails
     try {

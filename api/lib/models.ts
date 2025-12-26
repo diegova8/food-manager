@@ -381,6 +381,36 @@ RawMaterialSchema.index({ slug: 1 });
 RawMaterialSchema.index({ isActive: 1 });
 RawMaterialSchema.index({ displayOrder: 1 });
 
+// Notification Model
+export type NotificationType = 'new_order' | 'new_user';
+
+export interface INotification extends Document {
+  type: NotificationType;
+  entityId: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+const NotificationSchema = new Schema<INotification>({
+  type: {
+    type: String,
+    enum: ['new_order', 'new_user'],
+    required: true
+  },
+  entityId: { type: String, required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  isRead: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Create indexes for Notification schema
+NotificationSchema.index({ isRead: 1 }); // For fetching unread notifications
+NotificationSchema.index({ createdAt: -1 }); // For sorting by date
+NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 }); // Auto-delete after 30 days
+
 // Prevent model recompilation in development
 export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 export const Config = mongoose.models.Config || mongoose.model<IConfig>('Config', ConfigSchema);
@@ -391,3 +421,4 @@ export const ActivityLog = mongoose.models.ActivityLog || mongoose.model<IActivi
 export const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 export const Product = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
 export const RawMaterial = mongoose.models.RawMaterial || mongoose.model<IRawMaterial>('RawMaterial', RawMaterialSchema);
+export const Notification = mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);

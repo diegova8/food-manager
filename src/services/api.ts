@@ -923,6 +923,50 @@ class ApiService {
     return this.fetch('/raw-materials/migrate', { method: 'POST' });
   }
 
+  // Notifications (Admin)
+  async getNotifications(unreadOnly = false): Promise<{
+    success: boolean;
+    data: {
+      notifications: Array<{
+        _id: string;
+        type: 'new_order' | 'new_user';
+        entityId: string;
+        title: string;
+        message: string;
+        isRead: boolean;
+        createdAt: string;
+      }>;
+      unreadCount: number;
+    };
+  }> {
+    const url = `/notifications${unreadOnly ? '?unreadOnly=true' : ''}`;
+    return this.fetch(url);
+  }
+
+  async markNotificationAsRead(id: string): Promise<{
+    success: boolean;
+    data: { notification: unknown };
+    message: string;
+  }> {
+    return this.fetch(`/notifications/${id}`, { method: 'PATCH' });
+  }
+
+  async markAllNotificationsAsRead(): Promise<{
+    success: boolean;
+    data: { modifiedCount: number };
+    message: string;
+  }> {
+    return this.fetch('/notifications/read-all', { method: 'PATCH' });
+  }
+
+  async deleteNotification(id: string): Promise<{
+    success: boolean;
+    data: { deleted: boolean };
+    message: string;
+  }> {
+    return this.fetch(`/notifications/${id}`, { method: 'DELETE' });
+  }
+
   // Users (Admin)
   async getUsers(params?: {
     search?: string;

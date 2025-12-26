@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { randomBytes } from 'crypto';
 import connectDB from '../lib/mongodb.js';
-import { User, EmailVerification } from '../lib/models.js';
+import { User, EmailVerification, Notification } from '../lib/models.js';
 import { hashPassword } from '../lib/auth.js';
 import { sendVerificationEmail } from '../lib/email.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit, withValidation, type ValidationHandler } from '../middleware/index.js';
@@ -87,6 +87,20 @@ const handler: ValidationHandler<RegisterInput> = async (req: VercelRequest, res
     } catch (emailError) {
       console.error('Error sending verification email:', emailError);
       // Don't fail registration if email fails, user can request new verification
+    }
+
+    // Create notification for admins
+    try {
+      await Notification.create({
+        type: 'new_user',
+        entityId: user._id.toString(),
+        title: 'Nuevo usuario registrado',
+        message: `${fullName} (${emailLower}) se registró en la plataforma`,
+        isRead: false
+      });
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
+      // Don't fail registration if notification fails
     }
 
     return successResponse(
