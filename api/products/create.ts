@@ -5,6 +5,7 @@ import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { createProductSchema } from '../schemas/product.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 // Calculate product cost based on ingredients
 async function calculateProductCost(
@@ -122,6 +123,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .populate('category', 'name slug')
       .populate('includedItems.productId', 'name slug')
       .lean();
+
+    // Log activity
+    await ActivityLogger.productCreated(payload.userId, String(product._id), data.name, req);
 
     return successResponse(res, { product: populatedProduct }, 'Producto creado exitosamente', 201);
   } catch (error) {

@@ -1,11 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import mongoose from 'mongoose';
 import connectDB from '../lib/mongodb.js';
-import { RawMaterial, Product } from '../lib/models.js';
+import { RawMaterial, Product, type IRawMaterial } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateRawMaterialSchema } from '../schemas/product.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   const rawId = req.query.id;
@@ -69,6 +70,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       const updateData = validation.data;
 
+      // Get current material for logging
+      const currentMaterial = await RawMaterial.findById(id).lean<IRawMaterial>();
+      if (!currentMaterial) {
+        return errorResponse(res, 'Materia prima no encontrada', 404);
+      }
+
       // Check for duplicate slug if updating slug
       if (updateData.slug) {
         const existingMaterial = await RawMaterial.findOne({
@@ -80,6 +87,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
 
+      // Detect if this is a toggle operation
+      const isToggle = Object.keys(updateData).length === 1 && updateData.isActive !== undefined;
+
       const rawMaterial = await RawMaterial.findByIdAndUpdate(
         id,
         { ...updateData, updatedAt: new Date() },
@@ -88,6 +98,13 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (!rawMaterial) {
         return errorResponse(res, 'Materia prima no encontrada', 404);
+      }
+
+      // Log activity
+      if (isToggle) {
+        await ActivityLogger.rawMaterialToggled(payload.userId, id, currentMaterial.name, updateData.isActive!, req);
+      } else {
+        await ActivityLogger.rawMaterialUpdated(payload.userId, id, currentMaterial.name, undefined, req);
       }
 
       return successResponse(res, { rawMaterial }, 'Materia prima actualizada exitosamente');
@@ -131,6 +148,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       await RawMaterial.findByIdAndDelete(id);
+
+      // Log activity
+      await ActivityLogger.rawMaterialDeleted(payload.userId, id, materialToDelete.name, req);
 
       return successResponse(res, { deleted: true }, 'Materia prima eliminada exitosamente');
     } catch (error) {

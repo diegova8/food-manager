@@ -5,6 +5,7 @@ import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateProductSchema } from '../schemas/product.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 // Calculate product cost based on ingredients
 async function calculateProductCost(
@@ -164,6 +165,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Producto no encontrado', 404);
       }
 
+      // Log activity
+      await ActivityLogger.productUpdated(payload.userId, id, currentProduct.name, undefined, req);
+
       return successResponse(res, { product }, 'Producto actualizado exitosamente');
     } catch (error) {
       if (error instanceof Error && error.message === 'Unauthorized') {
@@ -182,6 +186,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Unauthorized - Admin access required', 403);
       }
 
+      // Get product name before deletion for logging
+      const productToDelete = await Product.findById(id).lean<IProduct>();
+      if (!productToDelete) {
+        return errorResponse(res, 'Producto no encontrado', 404);
+      }
+
       // Check if product is used in any combo
       const usedInCombo = await Product.findOne({
         'includedItems.productId': id
@@ -194,10 +204,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         );
       }
 
-      const product = await Product.findByIdAndDelete(id);
-      if (!product) {
-        return errorResponse(res, 'Producto no encontrado', 404);
-      }
+      await Product.findByIdAndDelete(id);
+
+      // Log activity
+      await ActivityLogger.productDeleted(payload.userId, id, productToDelete.name, req);
 
       return successResponse(res, { deleted: true }, 'Producto eliminado exitosamente');
     } catch (error) {

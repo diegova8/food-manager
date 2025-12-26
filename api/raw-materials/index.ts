@@ -5,6 +5,7 @@ import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { createRawMaterialSchema } from '../schemas/product.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   await connectDB();
@@ -70,6 +71,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         isActive: data.isActive ?? true,
         displayOrder: data.displayOrder ?? 0
       });
+
+      // Log activity
+      await ActivityLogger.rawMaterialCreated(payload.userId, String(rawMaterial._id), data.name, req);
 
       return successResponse(res, { rawMaterial }, 'Materia prima creada exitosamente', 201);
     } catch (error) {

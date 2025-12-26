@@ -189,8 +189,8 @@ SupportTicketSchema.index({ createdAt: -1 }); // For sorting tickets by date
 // Activity Log Model
 export interface IActivityLog extends Document {
   user: mongoose.Types.ObjectId;
-  action: 'create' | 'update' | 'delete' | 'status_change' | 'login' | 'logout' | 'bulk_delete' | 'export';
-  entityType: 'order' | 'user' | 'ticket' | 'config' | 'auth';
+  action: 'create' | 'update' | 'delete' | 'status_change' | 'login' | 'logout' | 'bulk_delete' | 'export' | 'toggle';
+  entityType: 'order' | 'user' | 'ticket' | 'config' | 'auth' | 'product' | 'category' | 'raw_material';
   entityId?: string;
   description: string;
   metadata?: Record<string, unknown>;
@@ -203,12 +203,12 @@ const ActivityLogSchema = new Schema<IActivityLog>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   action: {
     type: String,
-    enum: ['create', 'update', 'delete', 'status_change', 'login', 'logout', 'bulk_delete', 'export'],
+    enum: ['create', 'update', 'delete', 'status_change', 'login', 'logout', 'bulk_delete', 'export', 'toggle'],
     required: true
   },
   entityType: {
     type: String,
-    enum: ['order', 'user', 'ticket', 'config', 'auth'],
+    enum: ['order', 'user', 'ticket', 'config', 'auth', 'product', 'category', 'raw_material'],
     required: true
   },
   entityId: { type: String },

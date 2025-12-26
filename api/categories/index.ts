@@ -5,6 +5,7 @@ import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { createCategorySchema } from '../schemas/product.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   await connectDB();
@@ -58,6 +59,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         displayOrder: displayOrder ?? 0,
         isActive: isActive ?? true
       });
+
+      // Log activity
+      await ActivityLogger.categoryCreated(payload.userId, String(category._id), name, req);
 
       return successResponse(res, { category }, 'Categoría creada exitosamente', 201);
     } catch (error) {

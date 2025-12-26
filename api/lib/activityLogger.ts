@@ -157,6 +157,153 @@ export const ActivityLogger = {
       description: 'Inició sesión en el panel de administración',
       req,
     }),
+
+  // Product activities
+  productCreated: (userId: string, productId: string, productName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'create',
+      entityType: 'product',
+      entityId: productId,
+      description: `Creó producto "${productName}"`,
+      req,
+    }),
+
+  productUpdated: (userId: string, productId: string, productName: string, changes?: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'update',
+      entityType: 'product',
+      entityId: productId,
+      description: changes ? `Actualizó producto "${productName}": ${changes}` : `Actualizó producto "${productName}"`,
+      req,
+    }),
+
+  productDeleted: (userId: string, productId: string, productName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'delete',
+      entityType: 'product',
+      entityId: productId,
+      description: `Eliminó producto "${productName}"`,
+      req,
+    }),
+
+  productToggled: (userId: string, productId: string, productName: string, field: string, newValue: boolean, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'toggle',
+      entityType: 'product',
+      entityId: productId,
+      description: `${newValue ? 'Activó' : 'Desactivó'} ${field === 'isActive' ? '' : 'disponibilidad de '}producto "${productName}"`,
+      metadata: { field, newValue },
+      req,
+    }),
+
+  // Category activities
+  categoryCreated: (userId: string, categoryId: string, categoryName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'create',
+      entityType: 'category',
+      entityId: categoryId,
+      description: `Creó categoría "${categoryName}"`,
+      req,
+    }),
+
+  categoryUpdated: (userId: string, categoryId: string, categoryName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'update',
+      entityType: 'category',
+      entityId: categoryId,
+      description: `Actualizó categoría "${categoryName}"`,
+      req,
+    }),
+
+  categoryDeleted: (userId: string, categoryId: string, categoryName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'delete',
+      entityType: 'category',
+      entityId: categoryId,
+      description: `Eliminó categoría "${categoryName}"`,
+      req,
+    }),
+
+  // Raw Material activities
+  rawMaterialCreated: (userId: string, materialId: string, materialName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'create',
+      entityType: 'raw_material',
+      entityId: materialId,
+      description: `Creó materia prima "${materialName}"`,
+      req,
+    }),
+
+  rawMaterialUpdated: (userId: string, materialId: string, materialName: string, changes?: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'update',
+      entityType: 'raw_material',
+      entityId: materialId,
+      description: changes ? `Actualizó materia prima "${materialName}": ${changes}` : `Actualizó materia prima "${materialName}"`,
+      req,
+    }),
+
+  rawMaterialDeleted: (userId: string, materialId: string, materialName: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'delete',
+      entityType: 'raw_material',
+      entityId: materialId,
+      description: `Eliminó materia prima "${materialName}"`,
+      req,
+    }),
+
+  rawMaterialToggled: (userId: string, materialId: string, materialName: string, newValue: boolean, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'toggle',
+      entityType: 'raw_material',
+      entityId: materialId,
+      description: `${newValue ? 'Activó' : 'Desactivó'} materia prima "${materialName}"`,
+      metadata: { newValue },
+      req,
+    }),
+
+  // User management activities
+  userCreated: (userId: string, newUserId: string, username: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'create',
+      entityType: 'user',
+      entityId: newUserId,
+      description: `Creó usuario @${username}`,
+      req,
+    }),
+
+  userUpdated: (userId: string, targetUserId: string, username: string, changes?: string, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'update',
+      entityType: 'user',
+      entityId: targetUserId,
+      description: changes ? `Actualizó usuario @${username}: ${changes}` : `Actualizó usuario @${username}`,
+      req,
+    }),
+
+  // Data export activities
+  dataExported: (userId: string, entityType: 'order' | 'user' | 'ticket' | 'product' | 'raw_material', format: string, count: number, req?: VercelRequest) =>
+    logActivity({
+      userId,
+      action: 'export',
+      entityType,
+      description: `Exportó ${count} ${entityType === 'order' ? 'órdenes' : entityType === 'user' ? 'usuarios' : entityType === 'ticket' ? 'tickets' : entityType === 'product' ? 'productos' : 'materias primas'} en formato ${format.toUpperCase()}`,
+      metadata: { format, count },
+      req,
+    }),
 };
 
 export default ActivityLogger;

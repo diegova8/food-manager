@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Category, Product } from '../lib/models.js';
+import { Category, Product, type ICategory } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateCategorySchema } from '../schemas/product.js';
+import { ActivityLogger } from '../lib/activityLogger.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
@@ -55,6 +56,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
 
+      // Get current category name for logging
+      const currentCategory = await Category.findById(id).lean<ICategory>();
+      if (!currentCategory) {
+        return errorResponse(res, 'Categoría no encontrada', 404);
+      }
+
       const category = await Category.findByIdAndUpdate(
         id,
         { ...updateData, updatedAt: new Date() },
@@ -64,6 +71,9 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       if (!category) {
         return errorResponse(res, 'Categoría no encontrada', 404);
       }
+
+      // Log activity
+      await ActivityLogger.categoryUpdated(payload.userId, id, currentCategory.name, req);
 
       return successResponse(res, { category }, 'Categoría actualizada exitosamente');
     } catch (error) {
@@ -83,6 +93,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Unauthorized - Admin access required', 403);
       }
 
+      // Get category name before deletion for logging
+      const categoryToDelete = await Category.findById(id).lean<ICategory>();
+      if (!categoryToDelete) {
+        return errorResponse(res, 'Categoría no encontrada', 404);
+      }
+
       // Check if category has products
       const productCount = await Product.countDocuments({ category: id });
       if (productCount > 0) {
@@ -93,10 +109,10 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         );
       }
 
-      const category = await Category.findByIdAndDelete(id);
-      if (!category) {
-        return errorResponse(res, 'Categoría no encontrada', 404);
-      }
+      await Category.findByIdAndDelete(id);
+
+      // Log activity
+      await ActivityLogger.categoryDeleted(payload.userId, id, categoryToDelete.name, req);
 
       return successResponse(res, { deleted: true }, 'Categoría eliminada exitosamente');
     } catch (error) {
