@@ -12,6 +12,7 @@
     "setup-admin": "tsx --env-file=.env.local scripts/setup-admin.ts"
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^8.9.2",
     "@sentry/node": "^10.27.0",
     "@sentry/react": "^10.27.0",
     "@tailwindcss/postcss": "^4.1.17",

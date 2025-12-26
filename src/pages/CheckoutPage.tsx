@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { useCart } from '../context/CartContext';
 import { api } from '../services/api';
 import { formatCurrency, formatDateDisplay } from '../utils';
 import Header from '../components/Header';
 import DatePicker from '../components/DatePicker';
+import { PayPalButton } from '../components/PayPalButton';
 import logo from '../assets/logo.png';
 
 type DeliveryMethod = 'pickup' | 'uber-flash';
+type PaymentMethod = 'sinpe' | 'paypal';
+
+const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || '';
+const USD_TO_CRC_RATE = parseFloat(import.meta.env.VITE_USD_TO_CRC_RATE || '505');
 
 interface PersonalInfo {
   name: string;
@@ -41,6 +47,7 @@ function CheckoutPage() {
     return tomorrow.toISOString().split('T')[0];
   });
   const [notes, setNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('sinpe');
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
   const [orderCompleted, setOrderCompleted] = useState(false);
@@ -163,9 +170,14 @@ function CheckoutPage() {
     }
 
     if (currentStep === 3) {
-      // Validate payment proof
-      if (!paymentProof) {
+      // Only validate payment proof for SINPE payments
+      if (paymentMethod === 'sinpe' && !paymentProof) {
         setError('Por favor sube el comprobante de pago');
+        return;
+      }
+      // For PayPal, the payment is handled by the PayPal button
+      if (paymentMethod === 'paypal') {
+        // PayPal flow is handled separately by the button
         return;
       }
     }
@@ -182,6 +194,16 @@ function CheckoutPage() {
       setCurrentStep(currentStep - 1);
       setError('');
     }
+  };
+
+  const handlePayPalSuccess = (orderId: string) => {
+    setOrderCompleted(true);
+    clearCart();
+    navigate('/order-success', { state: { orderId } });
+  };
+
+  const handlePayPalError = (errorMessage: string) => {
+    setError(errorMessage);
   };
 
   const handleSubmitOrder = async () => {
@@ -505,175 +527,315 @@ function CheckoutPage() {
     );
   };
 
-  const renderStep3 = () => (
-    <div className="space-y-5">
-      {/* Order Summary Card */}
-      <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200">
-        <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          Resumen del Pedido
-        </h3>
-        <div className="space-y-3">
-          {items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-sm">
-                  {item.quantity}
+  const renderStep3 = () => {
+    const totalUsd = (getTotalPrice() / USD_TO_CRC_RATE).toFixed(2);
+
+    // Prepare order data for PayPal
+    const notesSection = notes ? `Notas:\n${notes}` : '';
+    const preferencesSection = dietaryPreferences ? `Preferencias Alimentarias:\n${dietaryPreferences}` : '';
+    const finalNotes = [notesSection, preferencesSection].filter(section => section).join('\n\n');
+
+    const paypalOrderData = {
+      items: items.map(item => ({
+        cevicheType: item.name,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      total: getTotalPrice(),
+      personalInfo,
+      deliveryMethod,
+      scheduledDate,
+      notes: finalNotes
+    };
+
+    return (
+      <div className="space-y-5">
+        {/* Order Summary Card */}
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Resumen del Pedido
+          </h3>
+          <div className="space-y-3">
+            {items.map((item) => (
+              <div key={item.id} className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-sm">
+                    {item.quantity}
+                  </span>
+                  <span className="text-slate-700">{item.name}</span>
+                </div>
+                <span className="font-semibold text-slate-800">
+                  {formatCurrency(item.price * item.quantity)}
                 </span>
-                <span className="text-slate-700">{item.name}</span>
               </div>
-              <span className="font-semibold text-slate-800">
-                {formatCurrency(item.price * item.quantity)}
+            ))}
+          </div>
+          {/* Delivery Info */}
+          <div className="border-t border-slate-200 mt-4 pt-4 space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-500 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Fecha programada
+              </span>
+              <span className="font-medium text-teal-700">
+                {scheduledDate ? formatDateDisplay(scheduledDate, { weekday: 'short', day: 'numeric', month: 'short' }) : '-'}
               </span>
             </div>
-          ))}
-        </div>
-        {/* Delivery Info */}
-        <div className="border-t border-slate-200 mt-4 pt-4 space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-500 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Fecha programada
-            </span>
-            <span className="font-medium text-teal-700">
-              {scheduledDate ? formatDateDisplay(scheduledDate, { weekday: 'short', day: 'numeric', month: 'short' }) : '-'}
-            </span>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-500 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Entrega
-            </span>
-            <span className="font-medium text-slate-700">
-              {deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber Flash'}
-            </span>
-          </div>
-        </div>
-
-        {/* Total */}
-        <div className="border-t border-slate-200 mt-4 pt-4 flex justify-between items-center">
-          <span className="font-bold text-slate-800">Total</span>
-          <span className="text-2xl font-bold text-orange-600">{formatCurrency(getTotalPrice())}</span>
-        </div>
-      </div>
-
-      {/* Payment Instructions Card */}
-      <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border border-orange-200">
-        <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-          </svg>
-          Instrucciones de Pago
-        </h3>
-        <p className="text-sm text-orange-700 mb-3">
-          Realiza una transferencia SINPE Móvil a:
-        </p>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-200">
-          <p className="text-3xl font-bold text-orange-600 text-center tracking-wider">
-            6000 8080
-          </p>
-          <p className="text-sm text-orange-700 text-center mt-2">
-            A nombre de: <span className="font-semibold">Diego Arturo Vargas Aponte</span>
-          </p>
-        </div>
-        <p className="text-sm text-orange-700 mt-3 text-center">
-          Monto: <span className="font-bold">{formatCurrency(getTotalPrice())}</span>
-        </p>
-      </div>
-
-      {/* Payment Proof Upload */}
-      <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-3">
-          Comprobante de Pago
-        </label>
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${
-            isDragActive
-              ? 'border-orange-500 bg-orange-50'
-              : paymentProofPreview
-              ? 'border-teal-400 bg-teal-50'
-              : 'border-slate-300 bg-slate-50 hover:border-orange-400 hover:bg-orange-50'
-          }`}
-        >
-          <input {...getInputProps()} />
-          {paymentProofPreview ? (
-            <div className="space-y-3">
-              <img
-                src={paymentProofPreview}
-                alt="Comprobante"
-                className="max-h-40 mx-auto rounded-xl shadow-md"
-              />
-              <div className="flex items-center justify-center gap-2 text-teal-600">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-500 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="font-semibold">Comprobante cargado</span>
-              </div>
-              <p className="text-xs text-slate-500">
-                Toca para cambiar
-              </p>
+                Entrega
+              </span>
+              <span className="font-medium text-slate-700">
+                {deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber Flash'}
+              </span>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="w-16 h-16 mx-auto bg-orange-100 rounded-2xl flex items-center justify-center">
-                <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+          </div>
+
+          {/* Total */}
+          <div className="border-t border-slate-200 mt-4 pt-4 flex justify-between items-center">
+            <span className="font-bold text-slate-800">Total</span>
+            <div className="text-right">
+              <span className="text-2xl font-bold text-orange-600">{formatCurrency(getTotalPrice())}</span>
+              {paymentMethod === 'paypal' && (
+                <p className="text-xs text-slate-500">~${totalUsd} USD</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Method Selection */}
+        <div className="space-y-4">
+          <p className="text-sm font-semibold text-slate-700">Método de Pago</p>
+
+          {/* SINPE Option */}
+          <div
+            onClick={() => setPaymentMethod('sinpe')}
+            className={`p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
+              paymentMethod === 'sinpe'
+                ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-amber-50 shadow-md'
+                : 'border-slate-200 bg-white hover:border-orange-200 hover:shadow-sm'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${
+                paymentMethod === 'sinpe' ? 'bg-orange-100' : 'bg-slate-100'
+              }`}>
+                📱
               </div>
-              <div>
-                <p className="font-medium text-slate-700">
-                  Arrastra tu comprobante aquí
-                </p>
-                <p className="text-sm text-slate-500 mt-1">
-                  o toca para seleccionar
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className={`font-bold ${paymentMethod === 'sinpe' ? 'text-orange-700' : 'text-slate-800'}`}>
+                    SINPE Móvil
+                  </span>
+                  {paymentMethod === 'sinpe' && (
+                    <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                      Seleccionado
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500">Transferencia bancaria local</p>
               </div>
-              <p className="text-xs text-slate-400">
-                PNG, JPG, GIF (máx. 10MB)
-              </p>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                paymentMethod === 'sinpe' ? 'border-orange-500 bg-orange-500' : 'border-slate-300'
+              }`}>
+                {paymentMethod === 'sinpe' && (
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* PayPal Option */}
+          {PAYPAL_CLIENT_ID && (
+            <div
+              onClick={() => setPaymentMethod('paypal')}
+              className={`p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
+                paymentMethod === 'paypal'
+                  ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-md'
+                  : 'border-slate-200 bg-white hover:border-blue-200 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  paymentMethod === 'paypal' ? 'bg-blue-100' : 'bg-slate-100'
+                }`}>
+                  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill="#003087" d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.384a.77.77 0 0 1 .757-.645h6.285c2.082 0 3.54.482 4.334 1.434.376.451.618.962.734 1.56.117.615.116 1.357-.006 2.276l-.016.11v.309l.241.137c.203.108.372.235.515.383.257.267.432.6.528.996.098.408.121.889.068 1.436-.062.635-.207 1.197-.433 1.687-.21.452-.497.843-.854 1.164-.344.31-.761.553-1.247.722-.471.165-1.01.249-1.6.249h-.38a1.16 1.16 0 0 0-1.147.979l-.029.158-.483 3.057-.022.116a.28.28 0 0 1-.067.147.256.256 0 0 1-.175.07H7.076z"/>
+                    <path fill="#0070E0" d="M19.15 7.727c-.005.063-.016.127-.027.193-.684 3.507-3.022 4.722-6.012 4.722h-1.522a.74.74 0 0 0-.73.625l-.78 4.941-.22 1.401a.39.39 0 0 0 .385.45h2.7a.647.647 0 0 0 .64-.549l.026-.137.507-3.209.033-.177a.647.647 0 0 1 .64-.55h.403c2.612 0 4.655-1.06 5.254-4.128.25-1.282.12-2.353-.54-3.106a2.563 2.563 0 0 0-.737-.476z"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-bold ${paymentMethod === 'paypal' ? 'text-blue-700' : 'text-slate-800'}`}>
+                      PayPal / Tarjeta
+                    </span>
+                    {paymentMethod === 'paypal' && (
+                      <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                        Seleccionado
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500">Paga con tarjeta de crédito/débito (~${totalUsd} USD)</p>
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                  paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
+                }`}>
+                  {paymentMethod === 'paypal' && (
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Notes */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <label htmlFor="notes" className="block text-sm font-semibold text-slate-700">
-            Notas <span className="text-slate-400 font-normal">(opcional)</span>
-          </label>
-          <span className={`text-xs ${notes.length > 500 ? 'text-red-600 font-medium' : 'text-slate-400'}`}>
-            {notes.length}/500
-          </span>
+        {/* SINPE Payment Section */}
+        {paymentMethod === 'sinpe' && (
+          <>
+            {/* Payment Instructions Card */}
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border border-orange-200">
+              <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Instrucciones de Pago
+              </h3>
+              <p className="text-sm text-orange-700 mb-3">
+                Realiza una transferencia SINPE Móvil a:
+              </p>
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-orange-200">
+                <p className="text-3xl font-bold text-orange-600 text-center tracking-wider">
+                  6000 8080
+                </p>
+                <p className="text-sm text-orange-700 text-center mt-2">
+                  A nombre de: <span className="font-semibold">Diego Arturo Vargas Aponte</span>
+                </p>
+              </div>
+              <p className="text-sm text-orange-700 mt-3 text-center">
+                Monto: <span className="font-bold">{formatCurrency(getTotalPrice())}</span>
+              </p>
+            </div>
+
+            {/* Payment Proof Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3">
+                Comprobante de Pago
+              </label>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${
+                  isDragActive
+                    ? 'border-orange-500 bg-orange-50'
+                    : paymentProofPreview
+                    ? 'border-teal-400 bg-teal-50'
+                    : 'border-slate-300 bg-slate-50 hover:border-orange-400 hover:bg-orange-50'
+                }`}
+              >
+                <input {...getInputProps()} />
+                {paymentProofPreview ? (
+                  <div className="space-y-3">
+                    <img
+                      src={paymentProofPreview}
+                      alt="Comprobante"
+                      className="max-h-40 mx-auto rounded-xl shadow-md"
+                    />
+                    <div className="flex items-center justify-center gap-2 text-teal-600">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="font-semibold">Comprobante cargado</span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Toca para cambiar
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="w-16 h-16 mx-auto bg-orange-100 rounded-2xl flex items-center justify-center">
+                      <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-700">
+                        Arrastra tu comprobante aquí
+                      </p>
+                      <p className="text-sm text-slate-500 mt-1">
+                        o toca para seleccionar
+                      </p>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      PNG, JPG, GIF (máx. 10MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* PayPal Payment Section */}
+        {paymentMethod === 'paypal' && PAYPAL_CLIENT_ID && (
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-200">
+            <h3 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              Pagar con PayPal
+            </h3>
+            <PayPalButton
+              orderData={paypalOrderData}
+              onSuccess={handlePayPalSuccess}
+              onError={handlePayPalError}
+              disabled={loading}
+            />
+          </div>
+        )}
+
+        {/* Notes */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="notes" className="block text-sm font-semibold text-slate-700">
+              Notas <span className="text-slate-400 font-normal">(opcional)</span>
+            </label>
+            <span className={`text-xs ${notes.length > 500 ? 'text-red-600 font-medium' : 'text-slate-400'}`}>
+              {notes.length}/500
+            </span>
+          </div>
+          <textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            maxLength={500}
+            rows={3}
+            className={`w-full px-4 py-3.5 bg-slate-50 border-2 rounded-xl focus:outline-none focus:bg-white transition-all duration-200 text-slate-900 placeholder-slate-400 resize-none ${
+              notes.length > 500 ? 'border-red-300 focus:border-red-400' : 'border-slate-200 focus:border-orange-400'
+            }`}
+            placeholder="Ej: Sin cebolla, sin culantro, alergia a..."
+          />
         </div>
-        <textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          maxLength={500}
-          rows={3}
-          className={`w-full px-4 py-3.5 bg-slate-50 border-2 rounded-xl focus:outline-none focus:bg-white transition-all duration-200 text-slate-900 placeholder-slate-400 resize-none ${
-            notes.length > 500 ? 'border-red-300 focus:border-red-400' : 'border-slate-200 focus:border-orange-400'
-          }`}
-          placeholder="Ej: Sin cebolla, sin culantro, alergia a..."
-        />
       </div>
-    </div>
-  );
+    );
+  };
 
   if (items.length === 0) {
     return null;
   }
 
-  return (
+  const checkoutContent = (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       <Header />
 
@@ -740,35 +902,38 @@ function CheckoutPage() {
                   </button>
                 )}
 
-                <button
-                  onClick={handleNextStep}
-                  disabled={loading || loadingProfile}
-                  className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed shadow-lg shadow-orange-200 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Procesando...
-                    </>
-                  ) : currentStep === 3 ? (
-                    <>
-                      Confirmar Pedido
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </>
-                  ) : (
-                    <>
-                      Continuar
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </>
-                  )}
-                </button>
+                {/* Hide confirm button when PayPal is selected (payment handled by PayPal button) */}
+                {!(currentStep === 3 && paymentMethod === 'paypal') && (
+                  <button
+                    onClick={handleNextStep}
+                    disabled={loading || loadingProfile}
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed shadow-lg shadow-orange-200 flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Procesando...
+                      </>
+                    ) : currentStep === 3 ? (
+                      <>
+                        Confirmar Pedido
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </>
+                    ) : (
+                      <>
+                        Continuar
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
               {/* Back to Menu Link */}
@@ -803,6 +968,21 @@ function CheckoutPage() {
       </div>
     </div>
   );
+
+  // Wrap in PayPalScriptProvider if client ID is available
+  if (PAYPAL_CLIENT_ID) {
+    return (
+      <PayPalScriptProvider options={{
+        clientId: PAYPAL_CLIENT_ID,
+        currency: 'USD',
+        intent: 'capture'
+      }}>
+        {checkoutContent}
+      </PayPalScriptProvider>
+    );
+  }
+
+  return checkoutContent;
 }
 
 export default CheckoutPage;

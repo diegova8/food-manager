@@ -83,6 +83,8 @@ export interface IOrderItem {
   price: number;
 }
 
+export type PaymentMethod = 'sinpe' | 'paypal';
+
 export interface IOrder extends Document {
   user?: mongoose.Types.ObjectId;
   guestInfo?: {
@@ -92,9 +94,13 @@ export interface IOrder extends Document {
   };
   items: IOrderItem[];
   total: number;
+  totalUsd?: number; // USD amount for PayPal orders
   deliveryMethod: 'pickup' | 'uber-flash';
   scheduledDate: Date;
-  paymentProof?: string; // URL to uploaded image
+  paymentMethod: PaymentMethod;
+  paymentProof?: string; // URL to uploaded image (SINPE only)
+  paypalOrderId?: string; // PayPal order ID
+  paypalTransactionId?: string; // PayPal capture/transaction ID
   notes?: string;
   status: 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
   createdAt: Date;
@@ -114,9 +120,13 @@ const OrderSchema = new Schema<IOrder>({
     price: { type: Number, required: true }
   }],
   total: { type: Number, required: true },
+  totalUsd: { type: Number },
   deliveryMethod: { type: String, enum: ['pickup', 'uber-flash'], required: true },
   scheduledDate: { type: Date, required: true },
+  paymentMethod: { type: String, enum: ['sinpe', 'paypal'], default: 'sinpe' },
   paymentProof: { type: String },
+  paypalOrderId: { type: String },
+  paypalTransactionId: { type: String },
   notes: { type: String },
   status: {
     type: String,

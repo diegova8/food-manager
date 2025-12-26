@@ -967,6 +967,50 @@ class ApiService {
     return this.fetch(`/notifications/${id}`, { method: 'DELETE' });
   }
 
+  // PayPal
+  async createPayPalOrder(orderData: {
+    items: Array<{ cevicheType: string; quantity: number; price: number }>;
+    total: number;
+    personalInfo: { name: string; phone: string; email?: string };
+    deliveryMethod: 'pickup' | 'uber-flash';
+    scheduledDate: string;
+    notes?: string;
+  }): Promise<{
+    success: boolean;
+    data: {
+      paypalOrderId: string;
+      totalUsd: number;
+      orderData: unknown;
+    };
+  }> {
+    return this.fetch('/paypal/create-order', {
+      method: 'POST',
+      body: JSON.stringify(orderData),
+    });
+  }
+
+  async capturePayPalOrder(paypalOrderId: string, orderData: {
+    items: Array<{ cevicheType: string; quantity: number; price: number }>;
+    total: number;
+    personalInfo: { name: string; phone: string; email?: string };
+    deliveryMethod: 'pickup' | 'uber-flash';
+    scheduledDate: string;
+    notes?: string;
+  }): Promise<{
+    success: boolean;
+    data: {
+      orderId: string;
+      status: string;
+      transactionId: string;
+    };
+    message: string;
+  }> {
+    return this.fetch('/paypal/capture-order', {
+      method: 'POST',
+      body: JSON.stringify({ paypalOrderId, orderData }),
+    });
+  }
+
   // Users (Admin)
   async getUsers(params?: {
     search?: string;
