@@ -382,7 +382,7 @@ RawMaterialSchema.index({ isActive: 1 });
 RawMaterialSchema.index({ displayOrder: 1 });
 
 // Notification Model
-export type NotificationType = 'new_order' | 'new_user';
+export type NotificationType = 'new_order' | 'new_user' | 'new_ticket';
 
 export interface INotification extends Document {
   type: NotificationType;
@@ -396,7 +396,7 @@ export interface INotification extends Document {
 const NotificationSchema = new Schema<INotification>({
   type: {
     type: String,
-    enum: ['new_order', 'new_user'],
+    enum: ['new_order', 'new_user', 'new_ticket'],
     required: true
   },
   entityId: { type: String, required: true },

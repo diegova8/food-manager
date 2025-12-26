@@ -929,7 +929,7 @@ class ApiService {
     data: {
       notifications: Array<{
         _id: string;
-        type: 'new_order' | 'new_user';
+        type: 'new_order' | 'new_user' | 'new_ticket';
         entityId: string;
         title: string;
         message: string;

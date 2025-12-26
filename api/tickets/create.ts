@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { SupportTicket, User } from '../lib/models.js';
+import { SupportTicket, User, Notification } from '../lib/models.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { sendTicketConfirmation, sendTicketNotificationToSupport } from '../lib/email.js';
@@ -116,6 +116,20 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       });
     } catch (emailError) {
       console.error('Error sending support notification:', emailError);
+    }
+
+    // Create notification for admins
+    try {
+      const ticketTypeLabel = type === 'bug' ? 'reporte de error' : 'sugerencia';
+      await Notification.create({
+        type: 'new_ticket',
+        entityId: ticket._id.toString(),
+        title: `Nuevo ticket: ${ticketTypeLabel}`,
+        message: `${userName || 'Usuario'} envió: "${title}"`,
+        isRead: false
+      });
+    } catch (notificationError) {
+      console.error('Error creating notification:', notificationError);
     }
 
     return successResponse(res, {
