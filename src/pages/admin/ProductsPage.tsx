@@ -34,9 +34,9 @@ interface Product {
   isAvailable: boolean;
   displayOrder: number;
   tags?: string[];
-  costoProd: number;
-  precioSugerido: number;
-  precioVenta: number;
+  costoProd?: number;
+  precioSugerido?: number;
+  precioVenta?: number;
 }
 
 interface Pagination {
@@ -361,21 +361,21 @@ export function ProductsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-right text-gray-600 dark:text-slate-300 text-sm">
-                          {product.pricingType === 'ingredient-based' ? formatPrice(product.costoProd) : '-'}
+                          {product.pricingType === 'ingredient-based' ? formatPrice(product.costoProd ?? 0) : '-'}
                         </td>
                         <td className="px-4 py-4 text-right text-gray-600 dark:text-slate-300 text-sm">
-                          {formatPrice(product.precioSugerido)}
+                          {formatPrice(product.precioSugerido ?? product.precioVenta ?? 0)}
                         </td>
                         <td className="px-4 py-4 text-right">
                           <span className={cn(
                             'font-medium',
-                            product.precioVenta !== product.precioSugerido
+                            product.precioVenta !== product.precioSugerido && product.precioSugerido !== undefined
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-gray-900 dark:text-white'
                           )}>
-                            {formatPrice(product.precioVenta)}
+                            {formatPrice(product.precioVenta ?? 0)}
                           </span>
-                          {product.precioVenta !== product.precioSugerido && (
+                          {product.precioVenta !== product.precioSugerido && product.precioSugerido !== undefined && (
                             <span className="ml-1 text-xs text-green-600 dark:text-green-400">*</span>
                           )}
                         </td>
