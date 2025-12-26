@@ -1,46 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Product, Category, Config } from '../lib/models.js';
+import { Product, Category } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
-
-// Helper to calculate price for ingredient-based products
-function calculateProductPrice(
-  product: {
-    ingredients?: { rawMaterialId: string; quantity: number }[];
-    olores?: number;
-    mezclaJugo?: number;
-  },
-  rawMaterials: Record<string, number>,
-  markup: number
-): { costoProd: number; precioVenta: number } {
-  let costoProd = 0;
-
-  if (product.ingredients) {
-    for (const ingredient of product.ingredients) {
-      const price = rawMaterials[ingredient.rawMaterialId] || 0;
-      costoProd += ingredient.quantity * price;
-    }
-  }
-
-  if (product.olores) {
-    costoProd += product.olores * (rawMaterials.olores || 0);
-  }
-
-  if (product.mezclaJugo) {
-    const juiceCostPerLiter =
-      500 * (rawMaterials.jugoLimon || 0) +
-      500 * (rawMaterials.jugoNaranja || 0) +
-      33 * (rawMaterials.sal || 0) +
-      33 * (rawMaterials.azucar || 0);
-    costoProd += (product.mezclaJugo / 1000) * juiceCostPerLiter;
-  }
-
-  costoProd += rawMaterials.envase || 0;
-
-  return { costoProd, precioVenta: costoProd * markup };
-}
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -101,7 +64,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const sortOptions: Record<string, 1 | -1> = {};
     sortOptions[sortBy as string] = sortOrder === 'desc' ? -1 : 1;
 
-    const [products, totalCount] = await Promise.all([
+    const [rawProducts, totalCount] = await Promise.all([
       Product.find(filter)
         .populate('category', 'name slug')
         .populate('includedItems.productId', 'name slug')
@@ -112,31 +75,13 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       Product.countDocuments(filter)
     ]);
 
-    // Get config for price calculation
-    const config = await Config.findOne().lean();
-    const rawMaterials = config?.rawMaterials || {};
-    const markup = config?.markup || 2.5;
-    const customPrices = config?.customPrices || {};
-
-    // Calculate prices for each product
-    const productsWithPrices = products.map((product) => {
-      let costoProd = 0;
-      let precioVenta = 0;
-
-      if (product.pricingType === 'ingredient-based') {
-        const prices = calculateProductPrice(product, rawMaterials, markup);
-        costoProd = prices.costoProd;
-        precioVenta = customPrices[product.slug] || prices.precioVenta;
-      } else {
-        precioVenta = product.fixedPrice || 0;
-      }
-
-      return {
-        ...product,
-        costoProd: Math.round(costoProd),
-        precioVenta: Math.round(precioVenta)
-      };
-    });
+    // Ensure all products have valid price fields (for backwards compatibility)
+    const products = rawProducts.map(product => ({
+      ...product,
+      costoProd: product.costoProd ?? 0,
+      precioSugerido: product.precioSugerido ?? product.precioVenta ?? 0,
+      precioVenta: product.precioVenta ?? product.fixedPrice ?? 0
+    }));
 
     // Get all categories for filtering
     const categories = await Category.find()
@@ -144,7 +89,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       .lean();
 
     return successResponse(res, {
-      products: productsWithPrices,
+      products,
       categories,
       pagination: {
         page: pageNum,

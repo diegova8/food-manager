@@ -20,7 +20,7 @@ export const updateCategorySchema = createCategorySchema.partial();
 
 // Product ingredient schema
 const ingredientSchema = z.object({
-  rawMaterialId: z.enum(['pescado', 'camaron', 'pulpo', 'piangua']),
+  rawMaterialId: z.string().min(1, 'Raw material ID is required'),
   quantity: z.number().positive('Quantity must be positive')
 });
 
@@ -46,12 +46,11 @@ const baseProductSchema = z.object({
   tags: z.array(z.string().max(50)).max(10).optional()
 });
 
-// Ingredient-based product schema (ceviches)
+// Ingredient-based product schema
 const ingredientBasedProductSchema = baseProductSchema.extend({
   pricingType: z.literal('ingredient-based'),
   ingredients: z.array(ingredientSchema).min(1, 'At least one ingredient is required'),
-  olores: z.number().positive('Olores must be positive'),
-  mezclaJugo: z.number().positive('Mezcla de jugo must be positive')
+  precioVenta: z.number().min(0, 'Price cannot be negative').optional()
 });
 
 // Fixed price product schema (combos)
@@ -77,8 +76,7 @@ export const updateProductSchema = z.object({
   category: z.string().min(1).optional(),
   pricingType: z.enum(['ingredient-based', 'fixed']).optional(),
   ingredients: z.array(ingredientSchema).optional(),
-  olores: z.number().positive().optional(),
-  mezclaJugo: z.number().positive().optional(),
+  precioVenta: z.number().min(0).optional(),
   fixedPrice: z.number().positive().optional(),
   servings: z.number().int().positive().optional(),
   comboDescription: z.string().max(1000).optional(),

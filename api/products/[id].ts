@@ -1,46 +1,30 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Product, Category, Config } from '../lib/models.js';
+import { Product, Category, RawMaterial, Config } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateProductSchema } from '../schemas/product.js';
 
-// Helper to calculate price for ingredient-based products
-function calculateProductPrice(
-  product: {
-    ingredients?: { rawMaterialId: string; quantity: number }[];
-    olores?: number;
-    mezclaJugo?: number;
-  },
-  rawMaterials: Record<string, number>,
-  markup: number
-): { costoProd: number; precioVenta: number } {
+// Calculate product cost based on ingredients
+async function calculateProductCost(
+  ingredients: Array<{ rawMaterialId: string; quantity: number }>
+): Promise<number> {
+  const rawMaterialDocs = await RawMaterial.find({ isActive: true }).lean();
+  const priceMap: Record<string, number> = {};
+
+  for (const rm of rawMaterialDocs) {
+    priceMap[rm._id.toString()] = rm.price;
+    priceMap[rm.slug] = rm.price;
+  }
+
   let costoProd = 0;
-
-  if (product.ingredients) {
-    for (const ingredient of product.ingredients) {
-      const price = rawMaterials[ingredient.rawMaterialId] || 0;
-      costoProd += ingredient.quantity * price;
-    }
+  for (const ingredient of ingredients) {
+    const price = priceMap[ingredient.rawMaterialId] || 0;
+    costoProd += ingredient.quantity * price;
   }
 
-  if (product.olores) {
-    costoProd += product.olores * (rawMaterials.olores || 0);
-  }
-
-  if (product.mezclaJugo) {
-    const juiceCostPerLiter =
-      500 * (rawMaterials.jugoLimon || 0) +
-      500 * (rawMaterials.jugoNaranja || 0) +
-      33 * (rawMaterials.sal || 0) +
-      33 * (rawMaterials.azucar || 0);
-    costoProd += (product.mezclaJugo / 1000) * juiceCostPerLiter;
-  }
-
-  costoProd += rawMaterials.envase || 0;
-
-  return { costoProd, precioVenta: costoProd * markup };
+  return costoProd;
 }
 
 async function handler(req: VercelRequest, res: VercelResponse) {
@@ -64,30 +48,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Producto no encontrado', 404);
       }
 
-      // Calculate price
-      const config = await Config.findOne().lean();
-      const rawMaterials = config?.rawMaterials || {};
-      const markup = config?.markup || 2.5;
-      const customPrices = config?.customPrices || {};
-
-      let costoProd = 0;
-      let precioVenta = 0;
-
-      if (product.pricingType === 'ingredient-based') {
-        const prices = calculateProductPrice(product, rawMaterials, markup);
-        costoProd = prices.costoProd;
-        precioVenta = customPrices[product.slug] || prices.precioVenta;
-      } else {
-        precioVenta = product.fixedPrice || 0;
-      }
-
-      return successResponse(res, {
-        product: {
-          ...product,
-          costoProd: Math.round(costoProd),
-          precioVenta: Math.round(precioVenta)
-        }
-      });
+      return successResponse(res, { product });
     } catch (error) {
       console.error('Error fetching product:', error);
       return errorResponse(res, 'Error al obtener el producto', 500);
@@ -142,9 +103,57 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
 
+      // Get current product to check pricing type
+      const currentProduct = await Product.findById(id).lean();
+      if (!currentProduct) {
+        return errorResponse(res, 'Producto no encontrado', 404);
+      }
+
+      // Determine final pricing type
+      const finalPricingType = updateData.pricingType || currentProduct.pricingType;
+
+      // Recalculate prices if ingredients changed or pricing type changed
+      let costoProd = currentProduct.costoProd;
+      let precioSugerido = currentProduct.precioSugerido || currentProduct.precioVenta;
+      let precioVenta = currentProduct.precioVenta;
+
+      if (finalPricingType === 'ingredient-based') {
+        // If ingredients are being updated, recalculate
+        if (updateData.ingredients) {
+          costoProd = await calculateProductCost(updateData.ingredients);
+          costoProd = Math.round(costoProd);
+
+          const config = await Config.findOne().lean();
+          const markup = config?.markup || 2.5;
+
+          precioSugerido = Math.round(costoProd * markup);
+        }
+
+        // Use custom price if provided, otherwise keep current or use suggested
+        if (updateData.precioVenta !== undefined) {
+          precioVenta = Math.round(updateData.precioVenta);
+        } else if (updateData.ingredients) {
+          // If ingredients changed but no custom price, update to suggested
+          precioVenta = precioSugerido;
+        }
+      } else if (finalPricingType === 'fixed') {
+        // Use fixed price
+        if (updateData.fixedPrice !== undefined) {
+          precioVenta = updateData.fixedPrice;
+          precioSugerido = updateData.fixedPrice;
+          costoProd = 0;
+        }
+      }
+
       const product = await Product.findByIdAndUpdate(
         id,
-        { ...updateData, updatedAt: new Date() },
+        {
+          ...updateData,
+          costoProd,
+          precioSugerido,
+          precioVenta,
+          updatedAt: new Date()
+        },
         { new: true }
       )
         .populate('category', 'name slug')

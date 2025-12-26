@@ -1,13 +1,14 @@
 /**
  * Format a number as Costa Rican Colones (CRC) currency
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | undefined | null): string {
+  const value = amount ?? 0;
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
     currency: 'CRC',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(value);
 }
 
 /**

@@ -272,16 +272,19 @@ export interface IProduct extends Document {
   category: mongoose.Types.ObjectId;
   pricingType: PricingType;
 
-  // For ingredient-based pricing (ceviches)
+  // For ingredient-based pricing
   ingredients?: IProductIngredient[];
-  olores?: number;
-  mezclaJugo?: number;
 
   // For fixed pricing (combos)
   fixedPrice?: number;
   servings?: number;
   comboDescription?: string;
   includedItems?: IProductIncludedItem[];
+
+  // Stored calculated prices
+  costoProd: number;
+  precioSugerido: number;
+  precioVenta: number;
 
   imageUrl?: string;
   isActive: boolean;
@@ -308,8 +311,6 @@ const ProductSchema = new Schema<IProduct>({
     rawMaterialId: { type: String, required: true },
     quantity: { type: Number, required: true }
   }],
-  olores: { type: Number },
-  mezclaJugo: { type: Number },
 
   // Fixed pricing fields
   fixedPrice: { type: Number },
@@ -319,6 +320,11 @@ const ProductSchema = new Schema<IProduct>({
     productId: { type: Schema.Types.ObjectId, ref: 'Product' },
     quantity: { type: Number, required: true }
   }],
+
+  // Stored calculated prices
+  costoProd: { type: Number, default: 0 },
+  precioSugerido: { type: Number, default: 0 },
+  precioVenta: { type: Number, default: 0 },
 
   // Common fields
   imageUrl: { type: String },

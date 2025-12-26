@@ -1,7 +1,8 @@
 import type { RawMaterialPrices, Ceviche } from './types';
 
-export const formatCurrency = (amount: number): string => {
-  return `₡${amount.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export const formatCurrency = (amount: number | undefined | null): string => {
+  const value = amount ?? 0;
+  return `₡${value.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 /**

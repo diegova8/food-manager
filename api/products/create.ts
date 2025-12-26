@@ -1,10 +1,32 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import connectDB from '../lib/mongodb.js';
-import { Product, Category } from '../lib/models.js';
+import { Product, Category, RawMaterial, Config } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
 import { compose, withCORS, withSecurityHeaders, withRateLimit } from '../middleware/index.js';
 import { successResponse, errorResponse } from '../lib/responses.js';
 import { createProductSchema } from '../schemas/product.js';
+
+// Calculate product cost based on ingredients
+async function calculateProductCost(
+  ingredients: Array<{ rawMaterialId: string; quantity: number }>
+): Promise<number> {
+  // Get all raw materials
+  const rawMaterialDocs = await RawMaterial.find({ isActive: true }).lean();
+  const priceMap: Record<string, number> = {};
+
+  for (const rm of rawMaterialDocs) {
+    priceMap[rm._id.toString()] = rm.price;
+    priceMap[rm.slug] = rm.price;
+  }
+
+  let costoProd = 0;
+  for (const ingredient of ingredients) {
+    const price = priceMap[ingredient.rawMaterialId] || 0;
+    costoProd += ingredient.quantity * price;
+  }
+
+  return costoProd;
+}
 
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -48,7 +70,33 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Create product
+    // Calculate prices
+    let costoProd = 0;
+    let precioSugerido = 0;
+    let precioVenta = 0;
+
+    if (data.pricingType === 'ingredient-based') {
+      // Calculate cost from ingredients
+      costoProd = await calculateProductCost(data.ingredients);
+      costoProd = Math.round(costoProd);
+
+      // Get markup from config
+      const config = await Config.findOne().lean();
+      const markup = config?.markup || 2.5;
+
+      // Calculate suggested price
+      precioSugerido = Math.round(costoProd * markup);
+
+      // Use custom price if provided, otherwise use suggested price
+      precioVenta = data.precioVenta !== undefined ? Math.round(data.precioVenta) : precioSugerido;
+    } else {
+      // Fixed pricing
+      precioVenta = data.fixedPrice;
+      precioSugerido = data.fixedPrice;
+      costoProd = 0; // No ingredient cost for fixed price products
+    }
+
+    // Create product with calculated prices
     const product = await Product.create({
       name: data.name,
       slug: data.slug,
@@ -56,12 +104,13 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       category: data.category,
       pricingType: data.pricingType,
       ingredients: data.pricingType === 'ingredient-based' ? data.ingredients : undefined,
-      olores: data.pricingType === 'ingredient-based' ? data.olores : undefined,
-      mezclaJugo: data.pricingType === 'ingredient-based' ? data.mezclaJugo : undefined,
       fixedPrice: data.pricingType === 'fixed' ? data.fixedPrice : undefined,
       servings: data.pricingType === 'fixed' ? data.servings : undefined,
       comboDescription: data.pricingType === 'fixed' ? data.comboDescription : undefined,
       includedItems: data.pricingType === 'fixed' ? data.includedItems : undefined,
+      costoProd,
+      precioSugerido,
+      precioVenta,
       imageUrl: data.imageUrl || undefined,
       isActive: data.isActive ?? true,
       isAvailable: data.isAvailable ?? true,

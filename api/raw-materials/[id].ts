@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import mongoose from 'mongoose';
 import connectDB from '../lib/mongodb.js';
 import { RawMaterial, Product } from '../lib/models.js';
 import { verifyAuth } from '../lib/auth.js';
@@ -7,10 +8,18 @@ import { successResponse, errorResponse } from '../lib/responses.js';
 import { updateRawMaterialSchema } from '../schemas/product.js';
 
 async function handler(req: VercelRequest, res: VercelResponse) {
-  const { id } = req.query;
+  const rawId = req.query.id;
+
+  // Handle case where id might be an array
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
 
   if (!id || typeof id !== 'string') {
     return errorResponse(res, 'Raw material ID is required', 400);
+  }
+
+  // Validate MongoDB ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return errorResponse(res, 'Invalid raw material ID format', 400);
   }
 
   await connectDB();
@@ -47,9 +56,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Unauthorized - Admin access required', 403);
       }
 
+      // Ensure body exists
+      if (!req.body || typeof req.body !== 'object') {
+        return errorResponse(res, 'Request body is required', 400);
+      }
+
       const validation = updateRawMaterialSchema.safeParse(req.body);
       if (!validation.success) {
-        return errorResponse(res, validation.error.errors[0].message, 400);
+        const errorMessage = validation.error.errors?.[0]?.message || 'Datos inválidos';
+        return errorResponse(res, errorMessage, 400);
       }
 
       const updateData = validation.data;
@@ -99,9 +114,12 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Materia prima no encontrada', 404);
       }
 
-      // Check if any product uses this raw material
+      // Check if any product uses this raw material (by ID or by slug for backwards compatibility)
       const usedInProduct = await Product.findOne({
-        'ingredients.rawMaterialId': materialToDelete.slug
+        $or: [
+          { 'ingredients.rawMaterialId': id },
+          { 'ingredients.rawMaterialId': materialToDelete.slug }
+        ]
       });
 
       if (usedInProduct) {

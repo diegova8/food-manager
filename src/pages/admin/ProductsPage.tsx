@@ -26,8 +26,6 @@ interface Product {
   category: { _id: string; name: string; slug: string };
   pricingType: 'ingredient-based' | 'fixed';
   ingredients?: Array<{ rawMaterialId: string; quantity: number }>;
-  olores?: number;
-  mezclaJugo?: number;
   fixedPrice?: number;
   servings?: number;
   comboDescription?: string;
@@ -37,6 +35,7 @@ interface Product {
   displayOrder: number;
   tags?: string[];
   costoProd: number;
+  precioSugerido: number;
   precioVenta: number;
 }
 
@@ -303,6 +302,9 @@ export function ProductsPage() {
                         Costo
                       </th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        P. Sugerido
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                         Precio
                       </th>
                       <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
@@ -358,11 +360,24 @@ export function ProductsPage() {
                             {product.pricingType === 'ingredient-based' ? 'Ingredientes' : 'Fijo'}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-right text-gray-600 dark:text-slate-300">
+                        <td className="px-4 py-4 text-right text-gray-600 dark:text-slate-300 text-sm">
                           {product.pricingType === 'ingredient-based' ? formatPrice(product.costoProd) : '-'}
                         </td>
-                        <td className="px-4 py-4 text-right font-medium text-gray-900 dark:text-white">
-                          {formatPrice(product.precioVenta)}
+                        <td className="px-4 py-4 text-right text-gray-600 dark:text-slate-300 text-sm">
+                          {formatPrice(product.precioSugerido)}
+                        </td>
+                        <td className="px-4 py-4 text-right">
+                          <span className={cn(
+                            'font-medium',
+                            product.precioVenta !== product.precioSugerido
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-gray-900 dark:text-white'
+                          )}>
+                            {formatPrice(product.precioVenta)}
+                          </span>
+                          {product.precioVenta !== product.precioSugerido && (
+                            <span className="ml-1 text-xs text-green-600 dark:text-green-400">*</span>
+                          )}
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex items-center justify-center gap-2">
