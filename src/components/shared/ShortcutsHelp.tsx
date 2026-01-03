@@ -21,7 +21,7 @@ const shortcuts = [
       { keys: ['g', 'o'], description: 'Ir a Órdenes' },
       { keys: ['g', 'u'], description: 'Ir a Usuarios' },
       { keys: ['g', 't'], description: 'Ir a Tickets' },
-      { keys: ['g', 'p'], description: 'Ir a Precios' },
+      { keys: ['g', 'p'], description: 'Ir a Calculadora' },
     ],
   },
 ];

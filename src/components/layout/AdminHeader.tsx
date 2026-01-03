@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/cn';
-import { decodeJWT, type JWTPayload } from '../../utils/jwt';
+import { decodeJWT, isTokenExpired, type JWTPayload } from '../../utils/jwt';
 import { ThemeToggle } from '../shared/ThemeToggle';
 import { api } from '../../services/api';
 
@@ -31,6 +31,15 @@ export function AdminHeader({ onMenuToggle, showMenuButton = false, onOpenComman
 
   const fetchNotifications = useCallback(async () => {
     try {
+      // Check if token exists and is not expired before making request
+      const token = localStorage.getItem('authToken');
+      if (!token || isTokenExpired(token)) {
+        // Token is missing or expired - clean up and redirect
+        localStorage.removeItem('authToken');
+        navigate('/login');
+        return;
+      }
+
       const response = await api.getNotifications();
       if (response.success) {
         setNotifications(response.data.notifications);
@@ -38,12 +47,21 @@ export function AdminHeader({ onMenuToggle, showMenuButton = false, onOpenComman
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      // If we get an auth error, the api.ts will handle cleanup
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
+      // Check if token is expired before using it
+      if (isTokenExpired(token)) {
+        // Token is expired - clean it up and redirect to login
+        localStorage.removeItem('authToken');
+        navigate('/login');
+        return;
+      }
+
       const decoded = decodeJWT(token);
       setUser(decoded);
 
@@ -55,7 +73,7 @@ export function AdminHeader({ onMenuToggle, showMenuButton = false, onOpenComman
         return () => clearInterval(interval);
       }
     }
-  }, [fetchNotifications]);
+  }, [fetchNotifications, navigate]);
 
   const handleNotificationClick = async (notification: Notification) => {
     // Mark as read

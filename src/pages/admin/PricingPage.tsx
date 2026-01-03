@@ -1,24 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { Button } from '../../components/ui/Button';
 import { LoadingState } from '../../components/shared/LoadingState';
-import {
-  PricingTabs,
-  MarkupSlider,
-  CostMatrixCard,
-  CevicheCatalogCard,
-  OrderCalculator,
-} from '../../components/features/pricing';
+import { OrderCalculator } from '../../components/features/pricing';
 import type { RawMaterialPrices, CevicheCost } from '../../types';
 import { getCevichesList, calculateCevicheCost, calculateMezclaJugoCostPerLiter } from '../../utils';
 import { api } from '../../services/api';
 import defaultConfig from '../../config/defaultPrices.json';
 
-type PricingTab = 'costs' | 'catalog' | 'calculator';
-
 export function PricingPage() {
-  const [activeTab, setActiveTab] = useState<PricingTab>('costs');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -78,51 +68,13 @@ export function PricingPage() {
     });
   }, [prices, markup]);
 
-  const handlePriceChange = (key: keyof RawMaterialPrices, value: number) => {
-    setPrices({ ...prices, [key]: value });
-  };
-
-  const handleCustomPriceChange = (cevicheId: string, value: number) => {
-    setCustomPrices({ ...customPrices, [cevicheId]: value });
-  };
-
-  const copyMenuLink = () => {
-    const menuUrl = `${window.location.origin}/menu`;
-    navigator.clipboard.writeText(menuUrl);
-    toast.success('Link del menú copiado al portapapeles');
-  };
-
-  const exportConfiguration = () => {
-    const config = {
-      rawMaterials: prices,
-      markup: markup,
-      customPrices: customPrices
-    };
-
-    const dataStr = JSON.stringify(config, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'defaultPrices.json';
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success('Configuración exportada');
-  };
-
-  const resetToDefaults = () => {
-    setPrices(defaultConfig.rawMaterials);
-    setMarkup(defaultConfig.markup);
-    setCustomPrices(defaultConfig.customPrices);
-    toast.success('Precios restablecidos a los valores por defecto');
-  };
 
   if (loading) {
     return (
       <div>
         <PageHeader
-          title="Configuración de Precios"
-          description="Administra los costos y precios de venta"
+          title="Calculadora"
+          description="Calcula las materias primas necesarias para tus pedidos"
         />
         <LoadingState variant="skeleton" rows={5} />
       </div>
@@ -132,8 +84,8 @@ export function PricingPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Configuración de Precios"
-        description="Administra los costos y precios de venta"
+        title="Calculadora"
+        description="Calcula las materias primas necesarias para tus pedidos"
         actions={
           <div className="flex items-center gap-2">
             {saving && (
@@ -145,63 +97,14 @@ export function PricingPage() {
                 Guardando...
               </span>
             )}
-            <Button variant="outline" size="sm" onClick={copyMenuLink}>
-              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-              Copiar Menú
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportConfiguration}>
-              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Exportar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={resetToDefaults}>
-              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Restablecer
-            </Button>
           </div>
         }
       />
 
-      {/* Tabs */}
-      <PricingTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Tab Content */}
-      {activeTab === 'costs' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <CostMatrixCard
-              prices={prices}
-              onPriceChange={handlePriceChange}
-            />
-          </div>
-          <div>
-            <MarkupSlider
-              value={markup}
-              onChange={setMarkup}
-            />
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'catalog' && (
-        <CevicheCatalogCard
-          cevicheCosts={cevicheCosts}
-          customPrices={customPrices}
-          onPriceChange={handleCustomPriceChange}
-        />
-      )}
-
-      {activeTab === 'calculator' && (
-        <OrderCalculator
-          cevicheCosts={cevicheCosts}
-          customPrices={customPrices}
-        />
-      )}
+      <OrderCalculator
+        cevicheCosts={cevicheCosts}
+        customPrices={customPrices}
+      />
     </div>
   );
 }

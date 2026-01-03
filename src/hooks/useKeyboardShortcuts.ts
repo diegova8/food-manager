@@ -111,7 +111,7 @@ export function useKeyboardShortcuts({
       { key: 'g o', description: 'Ir a Órdenes' },
       { key: 'g u', description: 'Ir a Usuarios' },
       { key: 'g t', description: 'Ir a Tickets' },
-      { key: 'g p', description: 'Ir a Precios' },
+      { key: 'g p', description: 'Ir a Calculadora' },
       { key: 'g a', description: 'Ir a Actividad' },
       { key: 'g s', description: 'Ir a Configuración' },
       { key: '?', description: 'Mostrar atajos' },

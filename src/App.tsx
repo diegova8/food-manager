@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import HomePage from './pages/HomePage';
 import MenuPage from './pages/MenuPage';
+import RestaurantMenuPage from './pages/RestaurantMenuPage';
 import AdminPage from './pages/AdminPage';
 import TicketsManagementPage from './pages/TicketsManagementPage';
 import LoginPage from './pages/LoginPage';
@@ -62,6 +63,7 @@ function App() {
         <GlobalTutorial />
         <Routes>
         <Route path="/menu" element={<MenuPage />} />
+        <Route path="/menu-restaurante" element={<RestaurantMenuPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />

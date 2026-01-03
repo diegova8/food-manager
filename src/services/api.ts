@@ -62,6 +62,23 @@ class ApiService {
     const data = await response.json();
 
     if (!response.ok) {
+      // Handle authentication errors
+      if (response.status === 401 || data.error?.includes('token') || data.error?.includes('Unauthorized')) {
+        // Token is invalid or expired - clean it up
+        this.removeToken();
+
+        // Redirect to login if we're not already there
+        if (!window.location.pathname.includes('/login') &&
+            !window.location.pathname.includes('/register') &&
+            !window.location.pathname.includes('/menu') &&
+            !window.location.pathname.includes('/') &&
+            !window.location.pathname.includes('/verify-email') &&
+            !window.location.pathname.includes('/forgot-password') &&
+            !window.location.pathname.includes('/reset-password')) {
+          window.location.href = '/login';
+        }
+      }
+
       throw new Error(data.error || 'Request failed');
     }
 
