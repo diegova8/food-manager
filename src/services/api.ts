@@ -996,7 +996,8 @@ class ApiService {
   }): Promise<{
     success: boolean;
     data: {
-      paypalOrderId: string;
+      id: string; // PayPal SDK expects 'id'
+      paypalOrderId: string; // Kept for backward compatibility
       totalUsd: number;
       orderData: unknown;
     };

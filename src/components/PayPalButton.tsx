@@ -60,7 +60,7 @@ export function PayPalButton({ orderData, onSuccess, onError, disabled }: PayPal
         createOrder={async () => {
           try {
             const response = await api.createPayPalOrder(orderData);
-            return response.data.paypalOrderId;
+            return response.data.id; // PayPal SDK expects 'id' field
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Error al crear la orden';
             onError(message);
