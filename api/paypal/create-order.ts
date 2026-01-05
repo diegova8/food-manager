@@ -49,8 +49,19 @@ async function getPayPalAccessToken(): Promise<string> {
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('PayPal auth error:', error);
+    const errorText = await response.text();
+    let errorDetails;
+    try {
+      errorDetails = JSON.parse(errorText);
+    } catch {
+      errorDetails = errorText;
+    }
+    console.error('PayPal auth error:', {
+      status: response.status,
+      mode: PAYPAL_MODE,
+      url: PAYPAL_API_URL,
+      error: errorDetails
+    });
     throw new Error('Failed to authenticate with PayPal');
   }
 
@@ -93,8 +104,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         brand_name: 'Ceviche Manager',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        return_url: `${process.env.VITE_APP_URL || 'https://ceviche-manager.vercel.app'}/checkout`,
-        cancel_url: `${process.env.VITE_APP_URL || 'https://ceviche-manager.vercel.app'}/checkout`
+        return_url: `${process.env.APP_URL || process.env.VERCEL_URL || 'https://ceviche-manager.vercel.app'}/checkout`,
+        cancel_url: `${process.env.APP_URL || process.env.VERCEL_URL || 'https://ceviche-manager.vercel.app'}/checkout`
       }
     };
 
@@ -108,15 +119,28 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('PayPal create order error:', error);
+      const errorText = await response.text();
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(errorText);
+      } catch {
+        errorDetails = errorText;
+      }
+      console.error('PayPal create order error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorDetails,
+        payload: paypalOrderPayload
+      });
       return errorResponse(res, 'Error al crear orden de PayPal', 500);
     }
 
     const paypalOrder = await response.json();
 
+    // Return in the format expected by PayPal SDK: { id: "ORDER_ID" }
     return successResponse(res, {
-      paypalOrderId: paypalOrder.id,
+      id: paypalOrder.id, // PayPal SDK expects 'id', not 'paypalOrderId'
+      paypalOrderId: paypalOrder.id, // Keep for backward compatibility
       totalUsd,
       orderData // Return order data to be used in capture
     });
