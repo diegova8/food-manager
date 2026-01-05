@@ -22,6 +22,9 @@ export const createOrderSchema = z.object({
     message: 'Delivery method must be either "pickup" or "uber-flash"'
   }),
   scheduledDate: z.string().min(1, 'Scheduled date is required'),
+  paymentMethod: z.enum(['sinpe', 'paypal', 'card'], {
+    message: 'Payment method must be "sinpe", "paypal", or "card"'
+  }).default('sinpe'),
   notes: z.string().max(500, 'Notes are too long').optional(),
   paymentProof: z.string().url('Payment proof must be a valid URL')
 });

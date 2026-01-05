@@ -59,11 +59,9 @@ export function PayPalButton({ orderData, onSuccess, onError, disabled }: PayPal
         }}
         createOrder={async () => {
           try {
-            setIsProcessing(true);
             const response = await api.createPayPalOrder(orderData);
             return response.data.paypalOrderId;
           } catch (error) {
-            setIsProcessing(false);
             const message = error instanceof Error ? error.message : 'Error al crear la orden';
             onError(message);
             throw error;
@@ -71,6 +69,7 @@ export function PayPalButton({ orderData, onSuccess, onError, disabled }: PayPal
         }}
         onApprove={async (data) => {
           try {
+            setIsProcessing(true);
             const response = await api.capturePayPalOrder(data.orderID, orderData);
             setIsProcessing(false);
             onSuccess(response.data.orderId);
@@ -81,7 +80,7 @@ export function PayPalButton({ orderData, onSuccess, onError, disabled }: PayPal
           }
         }}
         onCancel={() => {
-          setIsProcessing(false);
+          // User cancelled the payment - no processing state to reset
         }}
         onError={(err) => {
           setIsProcessing(false);

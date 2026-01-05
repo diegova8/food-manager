@@ -83,7 +83,7 @@ export interface IOrderItem {
   price: number;
 }
 
-export type PaymentMethod = 'sinpe' | 'paypal';
+export type PaymentMethod = 'sinpe' | 'paypal' | 'card';
 
 export interface IOrder extends Document {
   user?: mongoose.Types.ObjectId;
@@ -123,7 +123,7 @@ const OrderSchema = new Schema<IOrder>({
   totalUsd: { type: Number },
   deliveryMethod: { type: String, enum: ['pickup', 'uber-flash'], required: true },
   scheduledDate: { type: Date, required: true },
-  paymentMethod: { type: String, enum: ['sinpe', 'paypal'], default: 'sinpe' },
+  paymentMethod: { type: String, enum: ['sinpe', 'paypal', 'card'], default: 'sinpe' },
   paymentProof: { type: String },
   paypalOrderId: { type: String },
   paypalTransactionId: { type: String },

@@ -8,6 +8,7 @@ import { formatCurrency, formatDateDisplay } from '../utils';
 import Header from '../components/Header';
 import DatePicker from '../components/DatePicker';
 import { PayPalButton } from '../components/PayPalButton';
+import { PayPalTestHelper } from '../components/PayPalTestHelper';
 import logo from '../assets/logo.png';
 
 type DeliveryMethod = 'pickup' | 'uber-flash';
@@ -51,6 +52,7 @@ function CheckoutPage() {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
   const [orderCompleted, setOrderCompleted] = useState(false);
+  const [showTestHelper, setShowTestHelper] = useState(false);
 
   // Redirect if cart is empty (but not after order completion)
   useEffect(() => {
@@ -239,6 +241,7 @@ function CheckoutPage() {
         personalInfo,
         deliveryMethod,
         scheduledDate,
+        paymentMethod,
         notes: finalNotes,
         paymentProof: paymentProofUrl
       };
@@ -835,9 +838,36 @@ function CheckoutPage() {
     return null;
   }
 
+  // Check if we're in development mode
+  const isDevelopment = import.meta.env.DEV;
+  const showTestButton = isDevelopment && currentStep === 3 && paymentMethod === 'paypal';
+
   const checkoutContent = (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
       <Header />
+
+      {/* PayPal Test Helper - Dev Only */}
+      {showTestButton && (
+        <>
+          <button
+            onClick={() => setShowTestHelper(true)}
+            className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 font-bold transition-all hover:scale-105 active:scale-95 border-2 border-white"
+            title="PayPal Test Cards (Dev Only)"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <div className="flex flex-col items-start">
+              <span className="text-sm leading-none">Test Cards</span>
+              <span className="text-xs opacity-75 leading-none mt-0.5">Dev Mode</span>
+            </div>
+          </button>
+          <PayPalTestHelper
+            isVisible={showTestHelper}
+            onClose={() => setShowTestHelper(false)}
+          />
+        </>
+      )}
 
       {/* Main Content */}
       <div className="px-4 py-6 md:py-10">

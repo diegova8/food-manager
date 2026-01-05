@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { formatCurrency, formatDateDisplay } from '../utils';
 import type { Order } from '../types';
 import { BulkDeleteModal } from '../components/BulkDeleteModal';
+import { PaymentMethodIcon, getPaymentMethodLabel } from '../components/PaymentMethodIcon';
 
 interface OrdersManagementPageProps {
   embedded?: boolean;
@@ -214,6 +215,11 @@ function OrdersManagementPage({ embedded: _embedded = false }: OrdersManagementP
               <span className="text-slate-400">•</span>
               <span className="text-slate-600">
                 {selectedOrder.deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber Flash'}
+              </span>
+              <span className="text-slate-400">•</span>
+              <span className="inline-flex items-center gap-1.5 text-slate-700">
+                <PaymentMethodIcon paymentMethod={selectedOrder.paymentMethod || 'sinpe'} className="w-4 h-4" />
+                {getPaymentMethodLabel(selectedOrder.paymentMethod || 'sinpe')}
               </span>
               <span className="text-slate-400">•</span>
               <span className="inline-flex items-center gap-1 text-teal-700">
@@ -432,6 +438,7 @@ function OrdersManagementPage({ embedded: _embedded = false }: OrdersManagementP
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Cliente</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Items</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrega</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Programado</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
@@ -442,7 +449,7 @@ function OrdersManagementPage({ embedded: _embedded = false }: OrdersManagementP
             <tbody className="divide-y divide-slate-100">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-6 py-12 text-center">
+                  <td colSpan={11} className="px-6 py-12 text-center">
                     <div className="w-16 h-16 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
                       <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -485,6 +492,12 @@ function OrdersManagementPage({ embedded: _embedded = false }: OrdersManagementP
                         <span className="font-bold text-orange-600">
                           {formatCurrency(order.total)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <PaymentMethodIcon paymentMethod={order.paymentMethod || 'sinpe'} className="w-5 h-5" />
+                          <span className="text-sm">{getPaymentMethodLabel(order.paymentMethod || 'sinpe')}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-slate-600">
                         {order.deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber'}

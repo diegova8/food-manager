@@ -27,9 +27,13 @@ interface OrderWithPopulatedUser {
     price: number;
   }>;
   total: number;
+  totalUsd?: number;
   deliveryMethod: 'pickup' | 'uber-flash';
   scheduledDate: Date;
+  paymentMethod?: 'sinpe' | 'paypal' | 'card';
   paymentProof?: string;
+  paypalOrderId?: string;
+  paypalTransactionId?: string;
   notes?: string;
   status: 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
   createdAt: Date;

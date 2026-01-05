@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import { api } from '../services/api';
 import { formatCurrency, formatDateDisplay } from '../utils';
 import type { Order } from '../types';
+import { PaymentMethodIcon, getPaymentMethodLabel } from '../components/PaymentMethodIcon';
 
 function OrderDetailPage() {
   const navigate = useNavigate();
@@ -227,6 +228,31 @@ function OrderDetailPage() {
                     month: 'long',
                     day: 'numeric'
                   })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <div className="p-5 border-b border-slate-100">
+            <h2 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Método de Pago
+            </h2>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
+                <PaymentMethodIcon paymentMethod={order.paymentMethod || 'sinpe'} className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-slate-800">
+                  {getPaymentMethodLabel(order.paymentMethod || 'sinpe')}
+                </p>
+                <p className="text-sm text-slate-500">
+                  {(order.paymentMethod === 'sinpe' || !order.paymentMethod) && 'Pago por SINPE Móvil'}
+                  {order.paymentMethod === 'card' && 'Pago con tarjeta'}
+                  {order.paymentMethod === 'paypal' && 'Pago por PayPal'}
                 </p>
               </div>
             </div>

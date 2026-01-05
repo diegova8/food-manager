@@ -189,6 +189,7 @@ class ApiService {
     personalInfo: { name: string; phone: string; email?: string };
     deliveryMethod: string;
     scheduledDate: string;
+    paymentMethod: 'sinpe' | 'paypal' | 'card';
     notes?: string;
     paymentProof: string;
   }): Promise<{ success: boolean; data: { orderId: string; status: string }; message: string }> {

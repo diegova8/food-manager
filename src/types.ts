@@ -41,6 +41,8 @@ export interface OrderItem {
 
 export type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'completed' | 'cancelled';
 
+export type PaymentMethod = 'sinpe' | 'paypal' | 'card';
+
 export interface PersonalInfo {
   name: string;
   phone: string;
@@ -65,7 +67,8 @@ export interface Order {
   total: number;
   deliveryMethod: 'pickup' | 'uber-flash';
   scheduledDate: string;
-  paymentProof: string;
+  paymentMethod?: PaymentMethod;
+  paymentProof?: string;
   notes?: string;
   status: OrderStatus;
   createdAt: string;
