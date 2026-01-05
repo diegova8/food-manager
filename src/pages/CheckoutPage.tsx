@@ -1005,7 +1005,9 @@ function CheckoutPage() {
       <PayPalScriptProvider options={{
         clientId: PAYPAL_CLIENT_ID,
         currency: 'USD',
-        intent: 'capture'
+        intent: 'capture',
+        locale: 'es_CR', // Spanish (Costa Rica)
+        'buyer-country': 'CR' // Pre-select Costa Rica
       }}>
         {checkoutContent}
       </PayPalScriptProvider>
