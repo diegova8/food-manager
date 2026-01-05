@@ -98,11 +98,17 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           currency_code: 'USD',
           value: totalUsd.toFixed(2)
         },
-        description: `Orden Ceviche Manager - ${orderData.items.length} producto(s)`
+        description: `Orden Ceviche Manager - ${orderData.items.length} producto(s)`,
+        shipping: {
+          address: {
+            country_code: 'CR' // Pre-select Costa Rica
+          }
+        }
       }],
       application_context: {
         brand_name: 'Ceviche Manager',
         landing_page: 'NO_PREFERENCE',
+        shipping_preference: 'SET_PROVIDED_ADDRESS',
         user_action: 'PAY_NOW',
         return_url: `${process.env.APP_URL || process.env.VERCEL_URL || 'https://ceviche-manager.vercel.app'}/checkout`,
         cancel_url: `${process.env.APP_URL || process.env.VERCEL_URL || 'https://ceviche-manager.vercel.app'}/checkout`
