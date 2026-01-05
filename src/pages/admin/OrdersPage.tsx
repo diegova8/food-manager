@@ -7,6 +7,7 @@ import { ConfirmDialog } from '../../components/shared/ConfirmDialog';
 import { LoadingState } from '../../components/shared/LoadingState';
 import { EmptyState } from '../../components/shared/EmptyState';
 import { BulkDeleteModal } from '../../components/BulkDeleteModal';
+import { PaymentMethodIcon, getPaymentMethodLabel } from '../../components/PaymentMethodIcon';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/formatters';
 import { formatDateDisplay } from '../../utils';
@@ -236,6 +237,7 @@ export function OrdersPage() {
                     <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Cliente</th>
                     <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Items</th>
                     <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Pago</th>
                     <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Entrega</th>
                     <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Programado</th>
                     <th className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado</th>
@@ -282,6 +284,12 @@ export function OrdersPage() {
                           <span className="font-bold text-orange-600">
                             {formatCurrency(order.total)}
                           </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-2 text-slate-600">
+                            <PaymentMethodIcon paymentMethod={order.paymentMethod || 'sinpe'} className="w-5 h-5" />
+                            <span className="text-sm">{getPaymentMethodLabel(order.paymentMethod || 'sinpe')}</span>
+                          </div>
                         </td>
                         <td className="px-4 py-4 text-slate-600">
                           {order.deliveryMethod === 'pickup' ? '🏪 Pick Up' : '🚗 Uber'}

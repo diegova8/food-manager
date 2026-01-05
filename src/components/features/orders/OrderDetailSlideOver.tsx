@@ -1,6 +1,7 @@
 import { SlideOver, SlideOverSection, SlideOverFooter } from '../../ui/SlideOver';
 import { Button } from '../../ui/Button';
 import { OrderStatusFlow, type OrderStatus } from './OrderStatusFlow';
+import { PaymentMethodIcon, getPaymentMethodLabel } from '../../PaymentMethodIcon';
 import { formatCurrency } from '../../../utils/formatters';
 import { formatDateDisplay } from '../../../utils';
 import type { Order } from '../../../types';
@@ -62,7 +63,7 @@ export function OrderDetailSlideOver({
 
         {/* Delivery Info */}
         <SlideOverSection title="Información de Entrega">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg">
               {order.deliveryMethod === 'pickup' ? (
                 <>
@@ -82,6 +83,12 @@ export function OrderDetailSlideOver({
               </svg>
               <span className="font-medium">
                 {formatDateDisplay(order.scheduledDate, { weekday: 'short', month: 'short', day: 'numeric' })}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg">
+              <PaymentMethodIcon paymentMethod={order.paymentMethod || 'sinpe'} className="w-4 h-4" />
+              <span className="font-medium">
+                {getPaymentMethodLabel(order.paymentMethod || 'sinpe')}
               </span>
             </div>
           </div>
