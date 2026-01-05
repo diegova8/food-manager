@@ -1007,7 +1007,7 @@ function CheckoutPage() {
         currency: 'USD',
         intent: 'capture',
         locale: 'es_ES', // Spanish - using es_ES for compatibility (es_CR not supported)
-        'buyer-country': 'CR' // Pre-select Costa Rica
+        buyerCountry: 'CR' // Pre-select Costa Rica
       }}>
         {checkoutContent}
       </PayPalScriptProvider>
