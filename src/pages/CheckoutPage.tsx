@@ -1006,7 +1006,7 @@ function CheckoutPage() {
         clientId: PAYPAL_CLIENT_ID,
         currency: 'USD',
         intent: 'capture',
-        locale: 'es_CR', // Spanish (Costa Rica)
+        locale: 'es_ES', // Spanish - using es_ES for compatibility (es_CR not supported)
         'buyer-country': 'CR' // Pre-select Costa Rica
       }}>
         {checkoutContent}
