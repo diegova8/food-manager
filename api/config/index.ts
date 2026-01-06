@@ -52,7 +52,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       return successResponse(res, {
         rawMaterials: config.rawMaterials,
         markup: config.markup,
-        customPrices: config.customPrices
+        customPrices: config.customPrices,
+        paypalEnabled: config.paypalEnabled ?? true
       });
     }
 
@@ -70,7 +71,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         return errorResponse(res, 'Admin access required', 403);
       }
 
-      const { rawMaterials, markup, customPrices } = req.body;
+      const { rawMaterials, markup, customPrices, paypalEnabled } = req.body;
 
       // Validar inputs
       if (!rawMaterials || !markup) {
@@ -103,12 +104,16 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         config = await Config.create({
           rawMaterials,
           markup,
-          customPrices: customPrices || {}
+          customPrices: customPrices || {},
+          paypalEnabled: paypalEnabled ?? true
         });
       } else {
         config.rawMaterials = rawMaterials;
         config.markup = markup;
         config.customPrices = customPrices || config.customPrices;
+        if (paypalEnabled !== undefined) {
+          config.paypalEnabled = paypalEnabled;
+        }
         config.updatedAt = new Date();
         await config.save();
       }
@@ -116,7 +121,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       return successResponse(res, {
         rawMaterials: config.rawMaterials,
         markup: config.markup,
-        customPrices: config.customPrices
+        customPrices: config.customPrices,
+        paypalEnabled: config.paypalEnabled
       }, 'Configuration updated successfully');
     }
 

@@ -55,6 +55,7 @@ export interface IConfig extends Document {
   };
   markup: number;
   customPrices: { [key: string]: number };
+  paypalEnabled: boolean;
   updatedAt: Date;
 }
 
@@ -73,6 +74,7 @@ const ConfigSchema = new Schema<IConfig>({
   },
   markup: { type: Number, required: true },
   customPrices: { type: Schema.Types.Mixed, default: {} },
+  paypalEnabled: { type: Boolean, default: true },
   updatedAt: { type: Date, default: Date.now }
 });
 

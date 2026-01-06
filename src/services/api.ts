@@ -23,6 +23,7 @@ interface ConfigResponse {
     rawMaterials: RawMaterialPrices;
     markup: number;
     customPrices: { [key: string]: number };
+    paypalEnabled: boolean;
   };
 }
 
@@ -158,6 +159,7 @@ class ApiService {
     rawMaterials: RawMaterialPrices;
     markup: number;
     customPrices: { [key: string]: number };
+    paypalEnabled?: boolean;
   }): Promise<ConfigResponse['data']> {
     const response = await this.fetch<ConfigResponse>('/config', {
       method: 'PUT',

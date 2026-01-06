@@ -35,6 +35,9 @@ function CheckoutPage() {
   const [loadingProfile, setLoadingProfile] = useState(api.isAuthenticated());
   const [dietaryPreferences, setDietaryPreferences] = useState<string>('');
 
+  // PayPal configuration
+  const [paypalEnabled, setPaypalEnabled] = useState(true);
+
   // Form data
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     name: '',
@@ -93,6 +96,19 @@ function CheckoutPage() {
       }
     };
     loadUserData();
+  }, []);
+
+  // Load PayPal configuration
+  useEffect(() => {
+    const loadPaypalConfig = async () => {
+      try {
+        const config = await api.getConfig();
+        setPaypalEnabled(config.paypalEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to load PayPal config:', error);
+      }
+    };
+    loadPaypalConfig();
   }, []);
 
   // Dropzone for payment proof
@@ -660,7 +676,7 @@ function CheckoutPage() {
           </div>
 
           {/* PayPal Option */}
-          {PAYPAL_CLIENT_ID && (
+          {PAYPAL_CLIENT_ID && paypalEnabled && (
             <div
               onClick={() => setPaymentMethod('paypal')}
               className={`p-4 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
@@ -791,7 +807,7 @@ function CheckoutPage() {
         )}
 
         {/* PayPal Payment Section */}
-        {paymentMethod === 'paypal' && PAYPAL_CLIENT_ID && (
+        {paymentMethod === 'paypal' && PAYPAL_CLIENT_ID && paypalEnabled && (
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-200">
             <h3 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
