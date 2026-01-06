@@ -102,6 +102,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       }],
       application_context: {
         brand_name: 'Ceviche Manager',
+        locale: 'es_CR', // Spanish - Costa Rica locale
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
         return_url: `${process.env.APP_URL || process.env.VERCEL_URL || 'https://ceviche-manager.vercel.app'}/checkout`,
